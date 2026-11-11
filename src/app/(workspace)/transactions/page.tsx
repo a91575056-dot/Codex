@@ -59,8 +59,7 @@ export default async function TransactionPage({
         <CardContent>
           {!ledger.accounts.length || !ledger.categories.length ? (
             <p role="alert">
-              Lipsesc contul sau categoriile. Aplică migrația Supabase pentru
-              inițializarea utilizatorilor.
+              Lipsesc contul sau categoriile. Creează-le în pagina Setări.
             </p>
           ) : (
             <TransactionForm

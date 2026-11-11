@@ -23,7 +23,7 @@ export function ReportDownload({
             .map(
               (c) =>
                 '"' +
-                (typeof c === "string" && /^[=+@\-\t\r]/.test(c)
+                (typeof c === "string" && /^[\s]*[=+@\-]|^[\t\r]/.test(c)
                   ? "'" + c
                   : String(c)
                 ).replaceAll('"', '""') +

@@ -1,6 +1,12 @@
 import Link from "next/link";
-import { Wallet, ArrowDownLeft, ArrowUpRight } from "lucide-react";
-import { Heading, StatCard, Charts, Transactions } from "./finance-view";
+import { Wallet, ArrowDownLeft, ArrowUpRight, TrendingUp } from "lucide-react";
+import {
+  Heading,
+  StatCard,
+  Charts,
+  Transactions,
+  Budgets,
+} from "./finance-view";
 import { Button } from "./ui/button";
 import type { FinanceData } from "@/types/finance";
 export function ConnectedStats({ data }: { data: FinanceData }) {
@@ -28,11 +34,13 @@ export function ConnectedStats({ data }: { data: FinanceData }) {
         note="luna curentă · până astăzi"
         icon={ArrowUpRight}
       />
-      <div className="demo-note">
-        <strong>Investiții · DEMO</strong>
-        <p>Urmărirea portofoliului nu este încă conectată la contul tău.</p>
-        <Link href="/investments">Vezi exemplul fictiv</Link>
-      </div>
+      <StatCard
+        label="Valoare portofoliu"
+        value={data.portfolio}
+        change="RON"
+        note="evaluări introduse manual"
+        icon={TrendingUp}
+      />
     </div>
   );
 }
@@ -56,15 +64,24 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
         </p>
       )}
       <Charts data={data} only="cash" demo={false} />
-      <div className="mt-6">
+      <div className="bottom-grid mt-6">
         <Transactions
           data={{ ...data, transactions: data.transactions.slice(0, 5) }}
           demo={false}
         />
+        {data.budgets.length ? (
+          <Budgets data={data} />
+        ) : (
+          <div className="demo-note">
+            <strong>Planifică bugetul lunii</strong>
+            <p>Nu ai limite definite încă.</p>
+            <Link href="/budgets">Creează un buget</Link>
+          </div>
+        )}
       </div>
       <p className="mt-6 text-sm text-muted-foreground">
-        Bugetele și investițiile sunt disponibile separat ca exemple DEMO.
-        Tranzacțiile cu dată viitoare nu intră în soldul de astăzi.
+        Portofoliul folosește prețuri introduse manual. Tranzacțiile cu dată
+        viitoare nu intră în soldul de astăzi.
       </p>
     </>
   );

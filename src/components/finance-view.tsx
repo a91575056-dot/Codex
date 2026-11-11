@@ -187,7 +187,9 @@ export function Charts({
           <CardContent>
             <AllocationChart data={data.allocation} />
             <div className="portfolio-note">
-              <span>Portofoliu demonstrativ</span>
+              <span>
+                {demo ? "Portofoliu demonstrativ" : "Evaluări manuale"}
+              </span>
               <strong>{money(data.portfolio)}</strong>
             </div>
           </CardContent>
@@ -306,14 +308,18 @@ export function Budgets({
                 className="budget-track"
                 role="progressbar"
                 aria-label={b.name}
-                aria-valuenow={b.spent}
+                aria-valuenow={Math.min(b.spent, b.limit)}
+                aria-valuetext={`${money(b.spent)} din ${money(b.limit)}`}
                 aria-valuemin={0}
                 aria-valuemax={b.limit}
               >
                 <div
                   style={{
                     width: `${Math.min(100, (b.spent / b.limit) * 100)}%`,
-                    background: ["#137d67", "#7c9cad", "#c8a369"][i],
+                    background:
+                      b.spent > b.limit
+                        ? "#a44236"
+                        : ["#137d67", "#7c9cad", "#c8a369"][i % 3],
                   }}
                 />
               </div>

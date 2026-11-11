@@ -113,8 +113,10 @@ export function AllocationChart({ data }: { data: FinanceData["allocation"] }) {
           </PieChart>
         </ResponsiveContainer>
         <div className="donut-center">
-          <strong>4</strong>
-          <span>clase de active</span>
+          <strong>{data.length}</strong>
+          <span>
+            {data.length === 1 ? "clasă de active" : "clase de active"}
+          </span>
         </div>
       </div>
       <div className="allocation-legend">

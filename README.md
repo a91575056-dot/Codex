@@ -1,115 +1,181 @@
-# FinTrack
+# FinTrack 1.0
 
-Aplicație de licență pentru finanțe personale și urmărirea portofoliului, cu Next.js
-App Router, TypeScript, Tailwind CSS, shadcn/ui, Lucide și Recharts. Interfață în română.
+Aplicație web de licență pentru finanțe personale, bugete, obiective de economisire
+și urmărirea unui portofoliu introdus manual. Interfață în română, monedă RON,
+fus orar de calcul Europe/Chisinau. Nu conectează bănci/brokeri și nu execută trading.
 
-## Pornire locală
+## Pornire rapidă
 
-Necesită Node.js 22.13+ (recomandat 24) și npm.
+Necesită **Node.js 24 recomandat**, minimum 22.13, și npm. Node.js 16 nu este compatibil.
 
-```bash
+```powershell
+node -v
 npm ci
 npm run dev
 ```
 
-Deschideți **http://localhost:3000**. Fără variabile Supabase, aplicația pornește în
-mod demonstrativ, doar pentru citire. Toate identitățile și valorile demo sunt fictive.
-Nu există conectări bancare, brokeri sau tranzacționare.
+Deschideți http://localhost:3000. Fără configurare Supabase, aplicația folosește
+numai date demonstrative etichetate. Exemplul complet este și la `/demo`.
 
-## Configurarea Supabase — etapa 2
+Pe Windows, dacă Node este prea vechi:
 
-1. În Supabase, deschideți proiectul și **Project Settings → API** (sau **API Keys**).
-   Copiați URL-ul proiectului și cheia **publishable** (`sb_publishable_...`).
-2. Copiați `.env.example` în `.env.local` la rădăcina proiectului:
+```powershell
+winget install --id OpenJS.NodeJS.LTS --exact --source winget
+```
+
+Închideți complet VS Code și redeschideți-l după instalare. Dacă `node -v` arată tot
+versiunea veche, verificați `where.exe node` și eliminați din PATH instalarea veche.
+`.nvmrc` și `.node-version` indică versiunea recomandată.
+
+## Actualizare sau clonare
+
+Versiunea completă se publică pe branch-ul **work**:
+
+```powershell
+git fetch origin
+git switch work
+git pull --ff-only
+npm ci
+npm run dev
+```
+
+Pe alt calculator:
+
+```powershell
+git clone -b work https://github.com/a91575056-dot/Codex.git FinTrack
+cd FinTrack
+npm ci
+code .
+npm run dev
+```
+
+Fișierul `.env.local` nu vine din GitHub. Copiați-l separat de pe calculatorul vechi
+sau configurați-l conform pașilor de mai jos. Nu suprascrieți modificările locale
+necomise prin comenzi Git destructive.
+
+## Funcționalități
+
+| Secțiune             | Mod conectat                                                                             |
+| -------------------- | ---------------------------------------------------------------------------------------- |
+| Dashboard            | Solduri, venituri, cheltuieli, bugetele lunii, portofoliu manual și cash flow            |
+| Tranzacții           | Creare, editare, ștergere cu confirmare, căutare și filtre                               |
+| Bugete               | Limite lunare pe categorii de cheltuieli, progres și depășiri calculate automat          |
+| Investiții           | Poziții manuale, cantitate fracționară, cost/preț în RON, alocare și rezultat nerealizat |
+| Obiective            | Ținte, termene, contribuții, scenarii salvate și comparație plan/rezultat                |
+| Laborator de decizii | Impactul reducerilor de cheltuieli, obiectiv și șoc de venit, formule explicabile        |
+| Analize              | Flux net, rata surplusului, distribuția cheltuielilor, cash flow și alocare              |
+| Rapoarte             | Interval de date inclusiv, categorii, CSV și tipărire/salvare PDF în browser             |
+| Setări               | Administrarea conturilor, soldurilor inițiale și categoriilor, schimbare parolă          |
+| Autentificare        | Înregistrare, confirmare/retrimitere email, login, logout și recuperare parolă           |
+
+Toate paginile personale folosesc datele utilizatorului autentificat. Nu există
+fallback la valori fictive dacă baza de date returnează o eroare. Datele demo
+rămân în `/demo/*` și în modul fără configurare, fără salvare în conturi.
+
+## Configurarea Supabase
+
+Proiectul FinTrack conectat a fost creat și are deja toate cele trei migrații aplicate.
+**Nu le rulați din nou acolo.** Pentru alt proiect, aplicați fișierele SQL o singură
+dată, în ordinea din `supabase/migrations`, folosind SQL Editor. Migrațiile nu sunt
+idempotente și nu se execută automat la pornirea aplicației.
+
+1. În Project Settings → API / API Keys, identificați URL-ul și cheia **publishable**.
+2. Copiați exemplul în `.env.local`, la rădăcină:
 
    ```powershell
    Copy-Item .env.example .env.local
    ```
 
-   Pe macOS/Linux: `cp .env.example .env.local`.
-
-3. Completați local:
+3. Completați local, fără a trimite secrete în chat:
 
    ```dotenv
    NEXT_PUBLIC_SUPABASE_URL=https://proiectul-tau.supabase.co
    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_cheia_ta
+   NEXT_PUBLIC_SITE_URL=http://localhost:3000
    ```
 
-   Nu trimiteți chei în chat. Nu folosiți chei `service_role` sau `sb_secret_...`.
-   `.env.local` este ignorat de Git. Lăsați AMBELE valori goale pentru modul demo;
-   o configurare parțială este tratată ca eroare, nu înlocuită cu date fictive.
+   Nu folosiți `service_role` sau `sb_secret_...`. `.env.local` este ignorat de Git.
+   Lăsați ambele valori Supabase goale pentru modul demo; o configurare parțială este eroare.
 
-4. În **SQL Editor**, creați o interogare și rulați conținutul fișierului
-   [`supabase/migrations/202611110001_finance.sql`](supabase/migrations/202611110001_finance.sql).
-   Verificați proiectul selectat înainte de rulare. Migrația creează tabelele,
-   politicile RLS, relațiile de proprietate și inițializarea utilizatorilor.
-   Aplicați fișierul **o singură dată**. Nu este o migrație idempotentă.
-   Pentru un proiect deja administrat prin CLI, folosiți fluxul de migrații al
-   proiectului în loc să aplicați același SQL și din editor, și prin CLI.
-5. În **Authentication → Providers → Email**, activați Email și **Confirm email**.
-6. În **Authentication → URL Configuration**, setați:
-
+4. În Authentication → Providers → Email, activați Email și **Confirm email**.
+5. În Authentication → URL Configuration:
    - Site URL: `http://localhost:3000`
-   - Redirect URLs: `http://localhost:3000/auth/callback`
-   - Pentru șablonul de email de mai jos: `http://localhost:3000/auth/confirm`
-
-7. În **Authentication → Email Templates → Confirm signup**, recomandăm linkul:
+   - Redirect URL: `http://localhost:3000/auth/callback`
+   - Pentru șabloanele de mai jos: `http://localhost:3000/auth/confirm`
+6. Șablonul recomandat **Confirm signup**:
 
    ```html
    <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email"
-     >Confirmă adresa de email</a
+     >Confirmă emailul</a
    >
    ```
 
-   Acest flux funcționează și dacă emailul este deschis în alt browser. Șablonul
-   implicit `{{ .ConfirmationURL }}` este suportat prin callback PKCE, dar necesită
-   browserul în care a început înregistrarea. Nu folosiți linkuri consumate sau expirate.
+   Șablonul recomandat **Reset password**:
 
-8. Reporniți serverul (`Ctrl+C`, apoi `npm run dev`). Creați un cont la
-   `/auth/register`, confirmați emailul și conectați-vă. Contul pornește cu sold zero,
-   un cont personal și categorii implicite, **fără tranzacții fictive**.
+   ```html
+   <a
+     href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery"
+     >Alege parola nouă</a
+   >
+   ```
 
-În producție, setați și `NEXT_PUBLIC_SITE_URL=https://domeniul-tau`, apoi configurați
-Site URL, redirecturile și șablonul de email pentru acel domeniu HTTPS. Variabilele
-`NEXT_PUBLIC_*` se aplică la build; reconstruiți aplicația după modificare.
+   Acestea permit deschiderea emailului și în alt browser. Șablonul implicit
+   `{{ .ConfirmationURL }}` este suportat prin PKCE, în browserul din care a început
+   cererea. Codurile redirecționate la rădăcină sunt trimise automat către callback.
+   Linkurile expirate sau consumate produc un mesaj și pot fi solicitate din nou.
 
-Dacă înregistrarea returnează o eroare de bază de date, verificați migrația și
-jurnalele triggerului în Supabase. Pentru erori de email, verificați limita de
-trimitere și configurarea serviciului de email din Supabase. Nicio schemă la distanță
-nu este modificată automat de aplicație sau de comenzile de dezvoltare.
+7. Reporniți serverul. Înregistrați-vă, confirmați emailul și conectați-vă.
+   Contul nou are sold zero, un cont personal și categorii, fără tranzacții fictive.
 
-## Funcționalități și separarea datelor
+În producție utilizați domeniul HTTPS în variabile, Site URL și lista de redirecturi,
+apoi reconstruiți aplicația. `NEXT_PUBLIC_*` este evaluat la build. Configurarea reală
+a emailurilor/URL-urilor se face în panoul Supabase; integrarea MCP disponibilă nu
+permite administrarea acestor setări. Verificați limitele de email ale proiectului.
 
-- `/auth/register`, `/auth/login`, `/auth/confirm`, `/auth/callback`: autentificare SSR.
-- `/`, `/transactions`, `/analytics`, `/reports`, `/settings`: datele contului
-  autentificat când Supabase este configurat. Accesul este verificat pe server.
-- `/transactions`: creare, editare, ștergere cu confirmare, căutare după descriere,
-  filtre după tip, categorie și interval inclusiv de date. Formularele validează
-  atât în browser, cât și pe server. Sumele se salvează ca bani întregi, în RON.
-- Soldul include soldurile inițiale și toate tranzacțiile până astăzi. Veniturile,
-  cheltuielile și graficul folosesc luna curentă și ultimele șase luni, în fusul
-  `Europe/Chisinau`. Tranzacțiile viitoare se afișează, dar nu intră încă în sold.
-- `/budgets` și `/investments` sunt încă **DEMO** și sunt etichetate explicit.
-- `/demo` și `/demo/*`: exemple fictive separate, fără salvare. Deconectarea nu
-  este necesară pentru explorare. Datele demo nu sunt inserate în conturi.
-- Raportul conectat exportă toate tranzacțiile salvate; raportul demo exportă
-  numai eșantionul fictiv. Exportul este local și neutralizează formulele CSV.
+Aplicarea migrațiilor prin MCP poate produce timestamp-uri diferite în istoricul
+Supabase. Comparați istoricul și aliniați-l înainte de a folosi `supabase db push`
+pe proiectul deja configurat. Nu reaplicați SQL doar pentru că numele diferă.
 
-Conturile și categoriile sunt inițializate automat de migrație/trigger. În această
-etapă nu există încă formulare de administrare a conturilor, bugetelor sau categoriilor.
-Lista demo este un eșantion; totalurile și procentele demo sunt exemple independente.
+## Reguli de calcul și limite ale versiunii 1
 
-## Structură
+- Sumele monetare sunt stocate în bani întregi. Soldul = solduri inițiale + venituri
+  − cheltuieli până astăzi. Înregistrările viitoare sunt vizibile, dar nu intră în sold.
+- Soldul inițial se referă la momentul anterior tranzacțiilor înregistrate. Schimbarea
+  lui modifică soldul calculat. Nu există încă un registru separat de transferuri;
+  nu introduceți transferuri între conturile proprii ca venit/cheltuială.
+- Bugetele sunt unice pe categorie de cheltuieli și lună; cheltuielile viitoare nu
+  sunt consumate anticipat. O categorie sau un cont utilizat nu se poate șterge
+  până la modificarea înregistrărilor care îl referă.
+- Pozițiile de portofoliu sunt manuale, cu maximum șase zecimale la cantitate.
+  Valoarea și costul se rotunjesc la ban după înmulțire. Prețurile nu sunt live;
+  fiecare poziție arată data evaluării. Rezultatul este nerealizat și nu include
+  dividende, taxe, comisioane sau operațiuni închise. Nu se scade automat din numerar.
+- Rapoartele folosesc intervale inclusive. Portofoliul afișat este evaluarea curentă
+  introdusă, nu o reconstrucție a valorii istorice. CSV exportă selecția raportului;
+  tipărirea poate salva PDF prin browser. Textele care pot deveni formule CSV sunt neutralizate.
+- Contribuțiile pentru obiective sunt evidențe manuale, nu mișcări de bani. Nu sunt
+  adăugate la venituri și nu se adună cu soldurile conturilor/portofoliului.
+- Simulatorul este determinist, fără randamente sau inflație. Istoricul incomplet
+  limitează rezultatele. Scenariile salvate sunt imuabile și nu garantează termene.
+- Aplicația nu este un serviciu bancar, contabilitate fiscală sau platformă de trading.
 
-- `src/app/(workspace)`: pagini protejate, tranzacții și server actions.
-- `src/app/auth`: formulare și rute de confirmare/sesiune.
-- `src/app/demo`: spațiul demonstrativ explicit.
-- `src/lib/supabase`: clienți browser/server, tipuri SQL și repository cu filtre user_id.
-- `src/proxy.ts`: reîmprospătarea cookie-urilor; autorizarea rămâne pe server și în RLS.
-- `src/lib/finance-calculations.ts`: calcule din unități monetare minore.
-- `src/lib/transaction-validation.ts`: validare comună Zod.
-- `src/components/ui`: componente locale după modelul shadcn/Radix.
-- `supabase/migrations`: schema versionată. [Detalii de securitate](docs/supabase.md).
+[Laborator: model și evaluare academică](docs/decision-lab.md) ·
+[Obiective și comparații](docs/savings-goals.md) · [Securitate Supabase](docs/supabase.md).
+
+## Arhitectură
+
+Next.js App Router, TypeScript strict, Tailwind 4, componente shadcn/ui locale cu
+Radix Slot/CVA, Lucide și Recharts. Server actions validează cu Zod și verifică
+sesiunea înaintea modificărilor. Clienți Supabase separați browser/server; cookie-urile
+se reîmprospătează în `src/proxy.ts`. Datele personale nu folosesc cache global.
+
+- `src/app/(workspace)`: pagini protejate și operații server.
+- `src/app/auth`, `src/lib/auth`: autentificare și recuperare.
+- `src/lib/supabase`: tipuri SQL și repository-uri cu paginare integrală de 500 rânduri.
+- `src/lib/planning.ts`, `reports.ts`, `finance-calculations.ts`: calcule și validare.
+- `src/components`: componente reutilizabile, formulare și grafice.
+- `supabase/migrations`: schema versionată, RLS și relații de proprietate.
+- `tests`: verificări de model, SQL, browser și integrare locală.
 
 ## Verificări
 
@@ -121,80 +187,29 @@ npm run build
 npm start
 ```
 
-`npm test` execută validarea, calculele și migrația/RLS într-un PostgreSQL embedded
-PGlite. Nu necesită Docker, chei sau acces la proiectul Supabase. Testul RLS simulează
-identitatea JWT prin `auth.uid()` și verifică doi utilizatori, CRUD, accesul anonim,
-asocierea între utilizatori și tipul categoriei. Nu înlocuiește verificarea serviciului
-Supabase Auth real.
+Pentru testele browser:
 
 ```bash
 npx playwright install chromium
 npm run test:e2e
 npm run test:auth
+npm run test:integration
 ```
 
-Prima suită verifică modul fără Supabase: navigare, mobil, CSV și 404. A doua pornește
-un server separat cu o configurație Supabase fictivă, verifică protejarea rutelor,
-formularele auth, linkurile de confirmare invalide și izolarea navigării demo.
-Nu trimite emailuri și nu testează conectarea reușită la un serviciu real.
-Pentru Chromium deja instalat, pe Linux:
+Rulați suitele secvențial. Porturile 3000, 3001, 3002 și 54329 trebuie să fie libere.
+Pentru Chromium de sistem pe Linux, prefixați comenzile Playwright cu
+`PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium`.
 
-```bash
-PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e
-PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:auth
-```
+- `npm test`: modele financiare și migrațiile/RLS în PostgreSQL embedded PGlite.
+- `test:e2e`: demo, navigare, mobil, export, obiective și laborator.
+- `test:auth`: protejarea tuturor rutelor cu o configurație fictivă fără sesiune.
+- `test:integration`: formularele reale și cookie-urile SSR împotriva unui serviciu
+  local de test, cu PostgreSQL/RLS reale. Verifică doi utilizatori, conturi/categorii,
+  tranzacții, buget depășit, evaluare portofoliu, obiectiv, scenariu, raport și logout.
+  **Autentificarea furnizorului este simulată**; fixture-ul nu se publică, nu trimite
+  emailuri și nu înlocuiește verificarea Supabase Auth real.
 
-Suitele browser trebuie rulate **secvențial**, cu porturile 3000/3001 libere. Pentru
-suita demo, lăsați variabilele Supabase neconfigurate. GitHub Actions rulează aceleași verificări.
-
-### Verificare manuală după configurarea proiectului real
-
-1. Înregistrați doi utilizatori de test, confirmați emailurile și conectați-vă în
-   două profiluri de browser diferite.
-2. În contul A, creați, editați și ștergeți o tranzacție; verificați dashboardul,
-   filtrele și exportul. În contul B, tranzacția nu trebuie să apară.
-3. Verificați refresh-ul paginii și deconectarea; revenirea la o rută protejată
-   trebuie să redirecționeze la conectare.
-4. Testați linkurile de confirmare expirate și sesiunea expirată. Dacă este necesar,
-   retrimiteți confirmarea din panoul Supabase pentru utilizatorul de test.
-
-## Actualizarea copiei locale
-
-După ce modificările sunt publicate pe GitHub:
-
-```bash
-git fetch origin
-git switch feat/supabase-transactions
-git pull --ff-only
-npm ci
-```
-
-Nu este necesară reclonarea. Salvați/commitați modificările locale înainte de schimbarea
-branch-ului. Git nu descarcă automat modificările de pe GitHub.
-
-## Laborator de decizii
-
-În meniul **Laborator de decizii** poți simula impactul reducerii unor cheltuieli
-asupra termenului unui obiectiv, apoi testa o scădere permanentă a venitului.
-Aplicația arată impactul marginal al fiecărei categorii și formulele folosite.
-Modul conectat folosește ultimele trei luni încheiate din istoricul personal;
-`/demo/decision-lab` folosește agregate explicit fictive. Un istoric gol nu este
-înlocuit cu date demo. Scenariile nu modifică tranzacțiile și pot fi exportate local
-în JSON. Simulările libere nu persistă după închiderea paginii; scenariile unui obiectiv pot fi salvate explicit pe server.
-
-[Model, exemplu verificabil, limite și evaluare pentru licență](docs/decision-lab.md).
-
-## Obiective de economisire și plan versus rezultat
-
-Meniul **Obiective** permite creare/editare/ștergere, contribuții datate și progres.
-Contribuțiile sunt economii înregistrate manual; nu mută bani și nu modifică soldul
-tranzacțiilor. „Simulează acest obiectiv” preia ținta și economiile în laborator.
-În modul conectat, poți salva un scenariu și compara ulterior planul original cu
-contribuțiile înregistrate. Modificarea țintei nu rescrie scenariile vechi.
-
-- Pagina personală: `/goals`; exemplul fictiv, doar pentru citire: `/demo/goals`.
-- Noua migrație: `supabase/migrations/20261111074234_savings_goals.sql`.
-- Migrația este deja aplicată proiectului FinTrack conectat; nu o rulați din nou acolo.
-- Pentru alt proiect Supabase, aplicați o singură dată, după migrația financiară inițială.
-
-[Flux, formule, securitate și limite](docs/savings-goals.md).
+Înainte de publicare pe un domeniu propriu, verificați cu două conturi reale:
+confirmarea emailului, recuperarea parolei, persistența sesiunii și CRUD-ul. Nu
+folosiți conturile/cheile din fixture cu un serviciu real. GitHub Actions rulează
+verificările automate; documentația de review este în `docs/release-v1.md`.

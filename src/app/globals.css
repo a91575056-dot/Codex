@@ -1399,3 +1399,48 @@ footer {
 .goal-comparison b.negative {
   color: #a44236;
 }
+@media print {
+  .sidebar,
+  .mobile-bar,
+  .topbar,
+  .session-bar,
+  footer,
+  .no-print,
+  .skip-link {
+    display: none !important;
+  }
+  .main-shell {
+    margin: 0;
+  }
+  main {
+    padding: 0;
+    max-width: none;
+  }
+  body {
+    background: white;
+    color: black;
+  }
+  [data-slot="card"] {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  table {
+    white-space: normal;
+  }
+}
+.stat-value {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.section-heading > h2,
+.section-heading > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.section-heading > .category {
+  flex-shrink: 0;
+}

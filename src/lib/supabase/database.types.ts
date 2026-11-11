@@ -1,3 +1,4 @@
+import type { BudgetRow, HoldingRow } from "@/lib/planning";
 import type { Goal, Contribution, Scenario } from "@/lib/goals";
 // Local types matching the committed migration. Regenerate with Supabase CLI after applying it.
 export type AccountRow = {
@@ -35,6 +36,20 @@ type Table<Row, Required extends keyof Row> = {
 export type Database = {
   public: {
     Tables: {
+      budgets: Table<
+        BudgetRow,
+        "user_id" | "category_id" | "month_start" | "limit_minor"
+      >;
+      holdings: Table<
+        HoldingRow,
+        | "user_id"
+        | "name"
+        | "asset_class"
+        | "quantity_micros"
+        | "cost_price_minor"
+        | "current_price_minor"
+        | "price_on"
+      >;
       savings_goals: Table<
         Goal,
         "user_id" | "name" | "target_minor" | "due_on"

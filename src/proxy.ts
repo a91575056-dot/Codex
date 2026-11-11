@@ -5,6 +5,14 @@ export async function proxy(request: NextRequest) {
   const config = supabaseConfig();
   if (!config || request.nextUrl.pathname.startsWith("/demo"))
     return NextResponse.next();
+  if (
+    request.nextUrl.pathname === "/" &&
+    request.nextUrl.searchParams.has("code")
+  ) {
+    const target = request.nextUrl.clone();
+    target.pathname = "/auth/callback";
+    return NextResponse.redirect(target);
+  }
   let response = NextResponse.next({ request });
   const client = createServerClient(config.url, config.key, {
     cookies: {

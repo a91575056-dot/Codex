@@ -68,6 +68,16 @@ export function AuthForm({
           ? "Nu ai cont? Înregistrează-te"
           : "Ai deja cont? Conectează-te"}
       </Link>
+      {mode === "login" && (
+        <>
+          <Link className="text-link" href="/auth/reset-password">
+            Am uitat parola
+          </Link>
+          <Link className="text-link" href="/auth/resend-confirmation">
+            Retrimite confirmarea emailului
+          </Link>
+        </>
+      )}
       <Link className="text-link" href="/demo">
         Explorează datele fictive
       </Link>

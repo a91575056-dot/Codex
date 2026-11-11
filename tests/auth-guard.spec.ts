@@ -12,6 +12,7 @@ test("configured app protects financial routes and exposes a separate read-only 
     "/settings",
     "/budgets",
     "/investments",
+    "/auth/update-password",
   ]) {
     await page.goto(path);
     await expect(page).toHaveURL(/\/auth\/login/);

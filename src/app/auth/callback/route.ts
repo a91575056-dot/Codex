@@ -6,11 +6,13 @@ export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
   if (code && supabaseConfig()) {
     const client = await createClient();
-    const { error } = await client.auth.exchangeCodeForSession(code);
+    const { data, error } = await client.auth.exchangeCodeForSession(code);
     if (!error)
       return NextResponse.redirect(
         new URL(
-          safeNext(request.nextUrl.searchParams.get("next")),
+          "redirectType" in data && data.redirectType === "recovery"
+            ? "/auth/update-password"
+            : safeNext(request.nextUrl.searchParams.get("next")),
           request.url,
         ),
       );
