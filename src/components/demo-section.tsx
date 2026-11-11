@@ -10,9 +10,8 @@ import {
 import { financeRepository } from "@/lib/finance";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ReportDownload } from "@/components/report-download";
-export const instant = false;
 
-const sections = {
+const demoSections = {
   transactions: ["Tranzacții", "Activitatea financiară, într-un singur loc."],
   budgets: ["Bugete", "Un plan clar pentru fiecare categorie de cheltuieli."],
   investments: [
@@ -23,24 +22,23 @@ const sections = {
   reports: ["Rapoarte", "O imagine de ansamblu pe care o poți lua cu tine."],
   settings: ["Setări", "Informații despre aplicație și modul demonstrativ."],
 } as const;
-export function generateStaticParams() {
-  return Object.keys(sections).map((section) => ({ section }));
-}
-export default async function Section({
+
+export async function DemoSection({
   params,
 }: {
   params: Promise<{ section: string }>;
 }) {
   const { section } = await params;
-  if (!Object.hasOwn(sections, section)) notFound();
-  const [title, description] = sections[section as keyof typeof sections];
+  if (!Object.hasOwn(demoSections, section)) notFound();
+  const [title, description] =
+    demoSections[section as keyof typeof demoSections];
   const data = await financeRepository.getSnapshot();
   return (
     <>
       <Heading title={title} description={description} />
       <DemoNotice />
       {section === "transactions" && <Transactions data={data} full />}
-      {section === "budgets" && <Budgets data={data} />}{" "}
+      {section === "budgets" && <Budgets data={data} basePath="/demo" />}{" "}
       {section === "investments" && (
         <>
           <Stats data={data} />
@@ -92,7 +90,7 @@ export default async function Section({
               </div>
               <div>
                 <dt>Supabase</dt>
-                <dd>Planificat pentru etapa următoare</dd>
+                <dd>Disponibil în zona contului personal</dd>
               </div>
             </dl>
             <p>

@@ -61,7 +61,7 @@ const demo: FinanceData = {
     },
   ],
 };
-// Replace this adapter with a server-only Supabase repository in phase two.
+// Read-only fictional adapter; authenticated pages use the separate Supabase repository.
 export const financeRepository: FinanceRepository = {
   async getSnapshot() {
     return structuredClone(demo);

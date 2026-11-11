@@ -4,12 +4,14 @@ import { Button } from "./ui/button";
 import type { Transaction } from "@/types/finance";
 export function ReportDownload({
   transactions,
+  demo = true,
 }: {
   transactions: Transaction[];
+  demo?: boolean;
 }) {
   function download() {
     const rows = [
-      ["DEMO — Date fictive"],
+      [demo ? "DEMO — Date fictive" : "FinTrack — Tranzacții personale"],
       ["Dată", "Descriere", "Categorie", "Sumă RON"],
       ...transactions.map((t) => [t.date, t.name, t.category, t.amount]),
     ];
@@ -17,7 +19,17 @@ export function ReportDownload({
       "\uFEFF" +
       rows
         .map((r) =>
-          r.map((c) => '"' + String(c).replaceAll('"', '""') + '"').join(";"),
+          r
+            .map(
+              (c) =>
+                '"' +
+                (typeof c === "string" && /^[=+@\-\t\r]/.test(c)
+                  ? "'" + c
+                  : String(c)
+                ).replaceAll('"', '""') +
+                '"',
+            )
+            .join(";"),
         )
         .join("\r\n");
     const url = URL.createObjectURL(
@@ -25,13 +37,15 @@ export function ReportDownload({
     );
     const a = document.createElement("a");
     a.href = url;
-    a.download = "fintrack-demo-noiembrie-2026.csv";
+    a.download = demo
+      ? "fintrack-demo-noiembrie-2026.csv"
+      : "fintrack-tranzactii.csv";
     a.click();
     URL.revokeObjectURL(url);
   }
   return (
     <Button onClick={download}>
-      <Download /> Descarcă raportul demo
+      <Download /> {demo ? "Descarcă raportul demo" : "Descarcă raportul CSV"}
     </Button>
   );
 }

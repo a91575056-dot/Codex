@@ -1,33 +1,49 @@
-# Review — inițializare FinTrack
+# Review — etapa 2: Supabase și tranzacții
 
-## Implementare
+Branch: `feat/supabase-transactions`, pornit din `work`.
 
-- Next.js App Router în rădăcina repository-ului, TypeScript strict și Tailwind 4.
-- Shell responsive în română, șapte destinații, indicator de pagină activă.
-- Componente UI locale în stil shadcn/ui, Radix Slot, CVA și Lucide.
-- Carduri reutilizabile, grafice Recharts, tranzacții și bugete fictive.
-- Export CSV local; toate datele sunt etichetate ca demo.
-- Contract de repository pentru viitorul adapter Supabase, fără chei API.
-- README, plan Supabase și workflow GitHub Actions.
+## Comportament
 
-## Validare locală
+Cu Supabase configurat, utilizatorii se înregistrează, confirmă emailul și se
+conectează. Datele personale sunt protejate pe server și prin RLS. Utilizatorul nou
+primește un cont personal cu sold zero și categorii, fără tranzacții fictive.
+Tranzacțiile pot fi create, editate, șterse cu confirmare, căutate și filtrate.
+Dashboardul calculează soldul, veniturile, cheltuielile și cash flow din datele salvate.
 
-- `npm run lint` — trecut.
-- `npm run typecheck` — trecut.
-- `npm run build` — trecut.
-- `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e`
-  — 3 teste trecute: navigare desktop, export CSV și 404; navigare mobilă fără
-  overflow; captură dashboard desktop.
-- Capturi desktop 1440px și mobil 390px inspectate vizual.
-- `git diff --check` — trecut.
+Fără configurare, rutele existente rămân demonstrative. `/demo` păstrează permanent
+un spațiu fictiv separat. Bugetele și investițiile rămân explicit DEMO. Eșecurile
+Supabase nu înlocuiesc datele personale cu date fictive.
 
-Chromium din sistem a fost folosit deoarece descărcarea Playwright este blocată
-în acest mediu (HTTP 403 de la cdn.playwright.dev). Acest lucru nu a împiedicat testele.
-CLI-ul shadcn nu a putut accesa registry-ul în mediul inițial; componentele Card și
-Button sunt incluse local după modelul shadcn/Radix și pot fi ajustate direct.
+## Fișiere de urmărit
 
-## Limite asumate pentru etapa 1
+- `supabase/migrations/202611110001_finance.sql`: tabele, RLS, chei externe compuse,
+  trigger de inițializare. Aplicare manuală o singură dată, conform README.
+- `src/lib/supabase`: clienți SSR/browser, tipuri și repository fără cache global.
+- `src/lib/auth`, `src/app/auth`, `src/proxy.ts`: autentificare și sesiune.
+- `src/app/(workspace)/transactions`: CRUD autorizat și pagină cu filtre.
+- `src/lib/transaction-validation.ts`, `src/lib/finance-calculations.ts`: validare și calcule.
+- `tests/unit`, `tests/auth-guard.spec.ts`: verificări noi de securitate și comportament.
+- `.env.example`, README și `docs/supabase.md`: configurare și limite.
 
-Nu există autentificare, persistență, conturi reale sau tranzacționare. Perioada și
-valorile demo sunt fixe. Lista tranzacțiilor recente este un eșantion și nu reconciliază
-totalurile lunare. Planul etapei următoare este în `docs/supabase.md`.
+## Verificări
+
+- Lint și verificarea TypeScript.
+- Teste Node: validare sumă/dată/filtre, autentificare/redirecționări, calcule și RLS.
+- Migrația executată în PostgreSQL embedded PGlite: doi utilizatori, CRUD, refuzul
+  accesului anonim și al asocierilor cu resursele altui utilizator.
+- Playwright demo: navigare, mobil fără overflow, export CSV și 404.
+- Playwright configurat cu endpoint fictiv: rute protejate, formulare auth,
+  confirmare invalidă și navigare demo separată.
+- Build de producție fără configurare și cu o configurație Supabase fictivă,
+  plus `git diff --check`.
+
+## Configurare și limite rămase
+
+Nu a fost accesat sau modificat niciun proiect Supabase la distanță. Fluxul real de
+email, conectarea reușită, refresh-ul unei sesiuni reale și CRUD prin PostgREST trebuie
+verificate după configurarea variabilelor și aplicarea migrației. Pașii sunt în README.
+Testul SQL simulează `auth.uid()`; nu înlocuiește verificarea serviciului Auth real.
+
+Conturile/categoriile sunt inițializate automat, fără formulare de administrare în
+această etapă. Pentru volume mari, agregările și paginarea UI pot fi mutate în SQL;
+repository-ul încarcă acum toate paginile pentru a nu trunchia totalurile.

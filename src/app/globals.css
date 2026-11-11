@@ -897,3 +897,164 @@ footer {
     visibility: hidden;
   }
 }
+.auth-shell {
+  max-width: 480px;
+  padding-top: 70px;
+}
+.form-grid {
+  display: grid;
+  gap: 18px;
+}
+.form-grid label,
+.filter-form label {
+  display: grid;
+  gap: 7px;
+  font-size: 12px;
+  color: #4c6e5b;
+}
+.form-grid input:not([type="checkbox"]),
+.form-grid select,
+.filter-form input,
+.filter-form select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #ceded3;
+  border-radius: 7px;
+  padding: 11px 12px;
+  background: white;
+  color: #243e30;
+  font: inherit;
+}
+.form-grid input:focus-visible,
+.form-grid select:focus-visible,
+.filter-form input:focus-visible,
+.filter-form select:focus-visible {
+  outline: 2px solid #137d67;
+  outline-offset: 2px;
+}
+.form-grid small {
+  font-size: 11px;
+  color: #617f6b;
+}
+.form-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.form-error {
+  padding: 12px;
+  background: #fff0ee;
+  color: #993c32;
+  border-radius: 8px;
+  line-height: 1.7;
+}
+.form-success {
+  padding: 12px;
+  background: #e9f6ed;
+  color: #23623d;
+  border-radius: 8px;
+  line-height: 1.7;
+}
+.session-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+  align-items: center;
+  padding: 12px 38px;
+  font-size: 12px;
+}
+.session-bar a {
+  color: #137d67;
+}
+.profile-email {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+}
+.filter-form label {
+  flex: 1 1 140px;
+}
+.ledger-list {
+  display: grid;
+  gap: 18px;
+}
+.ledger-item {
+  border-top: 1px solid #e3ebe5;
+  padding: 20px 0;
+}
+.ledger-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.ledger-summary h2 {
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.ledger-summary p {
+  font-size: 11px;
+  color: #647e6d;
+  margin-top: 6px;
+}
+.ledger-summary strong {
+  white-space: nowrap;
+}
+.positive {
+  color: #137d67;
+}
+.ledger-item summary {
+  font-size: 12px;
+  color: #137d67;
+  padding: 8px 0;
+  cursor: pointer;
+}
+.ledger-item details > .form-grid {
+  margin: 14px 0;
+}
+.delete-panel summary {
+  color: #9a483b;
+}
+.confirm-label {
+  display: flex !important;
+  align-items: center;
+}
+.empty-state {
+  padding: 24px;
+  background: #edf5f0;
+  border-radius: 12px;
+  margin: 18px 0;
+  color: #587764;
+}
+.form-grid button {
+  justify-self: start;
+}
+.ledger-item .form-grid button {
+  max-width: 100%;
+}
+@media (max-width: 640px) {
+  .form-columns {
+    grid-template-columns: 1fr;
+  }
+  .session-bar {
+    padding: 12px 18px;
+    flex-wrap: wrap;
+  }
+  .ledger-summary {
+    align-items: flex-start;
+  }
+  .ledger-summary strong {
+    font-size: 12px;
+  }
+  .auth-shell {
+    padding-top: 30px;
+  }
+}

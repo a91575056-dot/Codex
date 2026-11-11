@@ -74,7 +74,7 @@ export function StatCard({
       <strong className="stat-value">{money(value)}</strong>
       <div className="stat-bottom">
         <span>
-          <ArrowUpRight size={12} />
+          {change.includes("%") && <ArrowUpRight size={12} />}
           {change}
         </span>
         <small>{note}</small>
@@ -117,9 +117,11 @@ export function Stats({ data }: { data: FinanceData }) {
 export function Charts({
   data,
   only,
+  demo = true,
 }: {
   data: FinanceData;
   only?: "cash" | "allocation";
+  demo?: boolean;
 }) {
   return (
     <div className={only ? "" : "charts-grid"}>
@@ -130,7 +132,9 @@ export function Charts({
               <CardTitle>Flux de numerar</CardTitle>
               <p>Venituri și cheltuieli în echilibru</p>
             </div>
-            <span className="period">Iun – Noi 2026</span>
+            <span className="period">
+              {demo ? "Iun – Noi 2026" : "Ultimele 6 luni"}
+            </span>
           </CardHeader>
           <CardContent>
             <div className="chart-legend">
@@ -143,9 +147,11 @@ export function Charts({
                 Cheltuieli
               </span>
             </div>
-            <CashChart data={data.cashFlow} />
+            <CashChart data={data.cashFlow} demo={demo} />
             <details className="chart-details">
-              <summary>Date fictive · Vezi valorile în RON</summary>
+              <summary>
+                {demo ? "Date fictive · " : ""}Vezi valorile în RON
+              </summary>
               <div className="table-scroll">
                 <table>
                   <thead>
@@ -192,22 +198,30 @@ export function Charts({
 }
 export function Transactions({
   data,
+  basePath = "",
   full = false,
+  demo = true,
 }: {
   data: FinanceData;
+  basePath?: string;
   full?: boolean;
+  demo?: boolean;
 }) {
   return (
     <Card>
       <CardHeader className="section-heading">
         <div>
           <CardTitle>
-            {full ? "Toate tranzacțiile demo" : "Tranzacții recente"}
+            {full
+              ? demo
+                ? "Toate tranzacțiile demo"
+                : "Tranzacțiile tale"
+              : "Tranzacții recente"}
           </CardTitle>
           <p>O imagine clară a activității tale</p>
         </div>
         {!full && (
-          <Link className="text-link" href="/transactions">
+          <Link className="text-link" href={basePath + "/transactions"}>
             Vezi toate <ArrowRight size={14} />
           </Link>
         )}
@@ -261,12 +275,22 @@ export function Transactions({
     </Card>
   );
 }
-export function Budgets({ data }: { data: FinanceData }) {
+export function Budgets({
+  data,
+  basePath = "",
+}: {
+  data: FinanceData;
+  basePath?: string;
+}) {
   return (
     <Card>
       <CardHeader className="section-heading">
         <CardTitle>Bugetele lunii</CardTitle>
-        <Link href="/budgets" className="text-link" aria-label="Vezi bugetele">
+        <Link
+          href={basePath + "/budgets"}
+          className="text-link"
+          aria-label="Vezi bugetele"
+        >
           <ArrowUpRight size={18} />
         </Link>
       </CardHeader>
@@ -309,7 +333,13 @@ export function Budgets({ data }: { data: FinanceData }) {
     </Card>
   );
 }
-export function Dashboard({ data }: { data: FinanceData }) {
+export function Dashboard({
+  data,
+  basePath = "",
+}: {
+  data: FinanceData;
+  basePath?: string;
+}) {
   return (
     <>
       <Heading
@@ -325,8 +355,8 @@ export function Dashboard({ data }: { data: FinanceData }) {
       </div>
       <Charts data={data} />
       <div className="bottom-grid">
-        <Transactions data={data} />
-        <Budgets data={data} />
+        <Transactions data={data} basePath={basePath} />
+        <Budgets data={data} basePath={basePath} />
       </div>
       <div className="insight">
         <span>
@@ -339,7 +369,7 @@ export function Dashboard({ data }: { data: FinanceData }) {
           </p>
         </div>
         <Button asChild variant="outline">
-          <Link href="/analytics">
+          <Link href={basePath + "/analytics"}>
             Explorează analizele <ArrowRight />
           </Link>
         </Button>

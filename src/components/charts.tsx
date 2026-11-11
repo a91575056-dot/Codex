@@ -13,12 +13,22 @@ import {
 } from "recharts";
 import type { FinanceData } from "@/types/finance";
 import { money } from "@/lib/finance";
-export function CashChart({ data }: { data: FinanceData["cashFlow"] }) {
+export function CashChart({
+  data,
+  demo = true,
+}: {
+  data: FinanceData["cashFlow"];
+  demo?: boolean;
+}) {
   return (
     <div
       className="h-64 w-full"
       role="img"
-      aria-label="Flux de numerar fictiv în RON, iunie–noiembrie 2026; valorile sunt disponibile sub grafic."
+      aria-label={
+        demo
+          ? "Flux de numerar fictiv în RON, iunie–noiembrie 2026; valorile sunt disponibile sub grafic."
+          : "Flux de numerar în RON pentru ultimele șase luni. Valorile sunt disponibile sub grafic."
+      }
     >
       <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <AreaChart
