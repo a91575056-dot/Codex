@@ -5,6 +5,7 @@ import type {
 } from "@/lib/operations";
 import type { ImportRow } from "@/lib/csv-import";
 import type { ShortcutDevice, ShortcutReceipt } from "@/lib/shortcut";
+import type { Receivable } from "@/lib/receivables";
 import type { BudgetRow, HoldingRow } from "@/lib/planning";
 import type { Goal, Contribution, Scenario } from "@/lib/goals";
 // Local types matching the committed migration. Regenerate with Supabase CLI after applying it.
@@ -12,7 +13,7 @@ export type AccountRow = {
   id: string;
   user_id: string;
   name: string;
-  currency: "MDL";
+  currency: "MDL" | "EUR";
   opening_balance_minor: number;
   created_at: string;
 };
@@ -45,6 +46,15 @@ type Table<Row, Required extends keyof Row> = {
 export type Database = {
   public: {
     Tables: {
+      receivables: Table<
+        Receivable,
+        | "id"
+        | "user_id"
+        | "person"
+        | "amount_minor"
+        | "currency"
+        | "occurred_on"
+      >;
       transfers: Table<
         Transfer,
         | "id"

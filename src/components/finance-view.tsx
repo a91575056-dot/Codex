@@ -276,7 +276,7 @@ export function Transactions({
                   <td>{paymentLabels[t.paymentMethod || "unspecified"]}</td>
                   <td className={`amount ${t.amount > 0 ? "positive" : ""}`}>
                     {t.amount > 0 ? "+" : ""}
-                    {money(t.amount)}
+                    {money(t.amount, t.currency)}
                   </td>
                 </tr>
               ))}

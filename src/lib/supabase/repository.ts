@@ -1,3 +1,4 @@
+import { transactionsInCurrency } from "@/lib/currency";
 import type { Transfer } from "@/lib/operations";
 import { getRecurringRules } from "./operations-repository";
 import "server-only";
@@ -66,15 +67,29 @@ export async function getUserFinance() {
     ledger.categories,
     ledger.transactions,
   );
+  const euro = calculateFinance(
+    ledger.accounts,
+    ledger.categories,
+    ledger.transactions,
+    new Date(),
+    "EUR",
+  );
   const portfolio = portfolioSummary(planning.holdings);
   const names = new Map(ledger.categories.map((c) => [c.id, c.name]));
   return {
     ...data,
+    transactions: [...data.transactions, ...euro.transactions].sort(
+      (a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id),
+    ),
+    euro: ledger.accounts.some((a) => a.currency === "EUR")
+      ? { balance: euro.balance, income: euro.income, expenses: euro.expenses }
+      : undefined,
     upcoming: recurring
       .filter((r) => r.active)
       .slice(0, 5)
       .map((r) => ({
         id: r.id,
+        currency: ledger.accounts.find((a) => a.id === r.account_id)?.currency,
         name: r.description,
         date: r.next_due_on,
         amount: ((r.kind === "income" ? 1 : -1) * r.amount_minor) / 100,
@@ -85,7 +100,11 @@ export async function getUserFinance() {
       .filter((b) => b.month_start.startsWith(todayISO().slice(0, 7)))
       .map((b) => ({
         name: names.get(b.category_id) || "Categorie",
-        spent: budgetProgress(b, ledger.transactions).spent / 100,
+        spent:
+          budgetProgress(
+            b,
+            transactionsInCurrency(ledger.accounts, ledger.transactions),
+          ).spent / 100,
         limit: b.limit_minor / 100,
       })),
   };

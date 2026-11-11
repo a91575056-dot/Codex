@@ -55,7 +55,9 @@ test("currency migration preserves numeric amounts, restricts currencies and pre
     const files = (await readdir("supabase/migrations"))
       .filter((f) => f.endsWith(".sql"))
       .sort();
-    for (const file of files.filter((f) => !f.includes("mdl_and_euro")))
+    for (const file of files.filter(
+      (f) => f < files.find((n) => n.includes("mdl_and_euro"))!,
+    ))
       await db.exec(await readFile(`supabase/migrations/${file}`, "utf8"));
     const a = "00000000-0000-4000-8000-000000000001",
       b = "00000000-0000-4000-8000-000000000002";

@@ -28,7 +28,7 @@ export function ConnectedStats({ data }: { data: FinanceData }) {
         label="Sold total"
         value={data.balance}
         change="MDL"
-        note="toate conturile · până astăzi"
+        note="conturi MDL · până astăzi"
         icon={Wallet}
         featured
         action={{ href: "/settings", label: "Gestionează conturile" }}
@@ -68,7 +68,7 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
     <>
       <Heading
         title="Finanțele tale"
-        description="Datele salvate în contul tău. Sumele sunt în MDL."
+        description="Conturile MDL și EUR sunt afișate separat, fără conversie valutară."
       />
       <div className="lab-actions mb-6">
         <Button asChild>
@@ -86,6 +86,19 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
         </Button>
       </div>
       <ConnectedStats data={data} />
+      {data.euro && (
+        <section className="currency-summary" aria-label="Conturi în euro">
+          <h2>Conturi în EUR</h2>
+          <p>
+            Sold: <strong>{money(data.euro.balance, "EUR")}</strong> · Venituri
+            luna curentă: {money(data.euro.income, "EUR")} · Cheltuieli luna
+            curentă: {money(data.euro.expenses, "EUR")}
+          </p>
+          <Link href="/settings" className="text-link">
+            Gestionează conturile în euro
+          </Link>
+        </section>
+      )}
       {!data.transactions.length && (
         <section
           className="dashboard-onboarding"
@@ -120,7 +133,7 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
           {data.upcoming.map((r) => (
             <p key={r.id}>
               <strong>{r.date}</strong> · {r.name} · {r.amount > 0 ? "+" : ""}
-              {money(r.amount)}
+              {money(r.amount, r.currency)}
             </p>
           ))}
           <Link className="text-link" href="/recurring">
@@ -137,6 +150,13 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
         </h2>
         <div className="dashboard-tools-grid">
           {[
+            {
+              href: "/debts",
+              title: "Cine îmi datorează bani",
+              description:
+                "Notează datorii în MDL sau EUR și marchează încasarea.",
+              icon: Wallet,
+            },
             {
               href: "/transfers",
               title: "Transferuri între conturi",

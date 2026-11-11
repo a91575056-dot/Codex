@@ -20,6 +20,20 @@ export async function saveTransfer(
   if (!p.success) return { error: p.error.issues[0].message };
   const { client, user } = await requireUser("/transfers");
   const { id, request_id, amount, ...fields } = p.data;
+  const { data: currencies, error: currencyError } = await client
+    .from("accounts")
+    .select("id,currency")
+    .eq("user_id", user.id)
+    .in("id", [fields.from_account_id, fields.to_account_id]);
+  if (
+    currencyError ||
+    currencies?.length !== 2 ||
+    currencies[0].currency !== currencies[1].currency
+  )
+    return {
+      error:
+        "Alege două conturi proprii în aceeași monedă. Nu se efectuează conversii valutare.",
+    };
   const payload = { ...fields, amount_minor: amount, user_id: user.id };
   const result = id
     ? await client

@@ -73,7 +73,10 @@ export default async function RecurringPage() {
             <CardContent>
               <strong className={r.kind === "income" ? "positive" : ""}>
                 {r.kind === "income" ? "+" : "−"}
-                {money(r.amount_minor / 100)}
+                {money(
+                  r.amount_minor / 100,
+                  ledger.accounts.find((a) => a.id === r.account_id)?.currency,
+                )}
               </strong>
               <p>
                 {accounts.get(r.account_id)} · {frequencyLabels[r.frequency]}

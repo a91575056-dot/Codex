@@ -25,7 +25,7 @@ export async function saveQuickExpense(
   const [account, category] = await Promise.all([
     client
       .from("accounts")
-      .select("id")
+      .select("id,currency")
       .eq("user_id", user.id)
       .eq("id", fields.account_id)
       .maybeSingle(),
@@ -92,7 +92,7 @@ export async function saveQuickExpense(
   }
   revalidatePath("/", "layout");
   return {
-    success: `Salvat: ${money(amount / 100)} · ${paymentLabels[fields.payment_method]} · ${category.data.name}.`,
+    success: `Salvat: ${money(amount / 100, account.data.currency)} · ${paymentLabels[fields.payment_method]} · ${category.data.name}.`,
     transactionId: request_id,
     nextRequestId: randomUUID(),
   };

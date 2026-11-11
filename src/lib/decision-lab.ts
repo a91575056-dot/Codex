@@ -35,7 +35,11 @@ export function decisionBaseline(
   const months = Array.from({ length: 3 }, (_, i) =>
     new Date(Date.UTC(y, m - 4 + i, 1)).toISOString().slice(0, 7),
   );
-  const relevant = rows.filter((t) => months.includes(t.date.slice(0, 7)));
+  const relevant = rows.filter(
+    (t) =>
+      (!t.currency || t.currency === "MDL") &&
+      months.includes(t.date.slice(0, 7)),
+  );
   let income = 0,
     expenses = 0;
   const categories = new Map<string, number>();

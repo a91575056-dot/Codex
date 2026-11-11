@@ -32,7 +32,7 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
   await page.goto("/settings");
   let form = card(page, "Adaugă un cont");
   await form.getByLabel("Numele contului").fill("Numerar test");
-  await form.getByLabel("Sold inițial (MDL)").fill("1000");
+  await form.getByLabel("Sold inițial (în moneda contului)").fill("1000");
   await form.getByRole("button", { name: "Adaugă înregistrarea" }).click();
   await expect(
     page.getByRole("heading", { name: "Numerar test", exact: true }),
@@ -58,7 +58,7 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
     await f.getByLabel("Sumă (MDL)").fill(amount);
     await f
       .getByRole("combobox", { name: "Cont", exact: true })
-      .selectOption({ label: "Numerar test" });
+      .selectOption({ label: "Numerar test · MDL" });
     await f
       .getByRole("combobox", { name: "Categorie", exact: true })
       .selectOption({ label: type === "income" ? "Salariu" : "Educație test" });
@@ -198,7 +198,7 @@ test("iPhone quick expense uses a personal profile, records cash/card, retries i
   await page.getByRole("button", { name: "Cash", exact: true }).click();
   await page
     .getByRole("combobox", { name: "Din ce cont?" })
-    .selectOption({ label: "Portofel Dionis" });
+    .selectOption({ label: "Portofel Dionis · MDL" });
   await page
     .getByRole("combobox", { name: "Pe ce ai cheltuit?" })
     .selectOption({ label: "Alimente" });
@@ -238,7 +238,7 @@ test("iPhone quick expense uses a personal profile, records cash/card, retries i
   await page.getByRole("button", { name: "Card", exact: true }).click();
   await page
     .getByRole("combobox", { name: "Din ce cont?" })
-    .selectOption({ label: "Cont personal" });
+    .selectOption({ label: "Cont personal · MDL" });
   await page
     .getByRole("combobox", { name: "Pe ce ai cheltuit?" })
     .selectOption({ label: "Alimente" });
@@ -251,13 +251,13 @@ test("iPhone quick expense uses a personal profile, records cash/card, retries i
     page
       .getByRole("combobox", { name: "Din ce cont?" })
       .locator("option:checked"),
-  ).toHaveText("Cont personal");
+  ).toHaveText("Cont personal · MDL");
   await page.getByRole("button", { name: "Cash", exact: true }).click();
   await expect(
     page
       .getByRole("combobox", { name: "Din ce cont?" })
       .locator("option:checked"),
-  ).toHaveText("Portofel Dionis");
+  ).toHaveText("Portofel Dionis · MDL");
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -623,7 +623,7 @@ test("dashboard exposes income and every feature; opening balance stays distinct
   await initial
     .getByText("Modifică numele sau soldul inițial", { exact: true })
     .click();
-  await initial.getByLabel("Sold inițial (MDL)").fill("10000");
+  await initial.getByLabel("Sold inițial (în moneda contului)").fill("10000");
   await initial
     .getByRole("button", { name: "Salvează modificările", exact: true })
     .click();
@@ -768,7 +768,7 @@ test("complete finance: transfers stay neutral, recurring confirmation posts onc
   await c
     .getByText("Modifică numele sau soldul inițial", { exact: true })
     .click();
-  await c.getByLabel("Sold inițial (MDL)").fill("1000");
+  await c.getByLabel("Sold inițial (în moneda contului)").fill("1000");
   await c
     .getByRole("button", { name: "Salvează modificările", exact: true })
     .click();
@@ -978,4 +978,109 @@ test("complete finance: transfers stay neutral, recurring confirmation posts onc
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
+});
+
+test("EUR accounts keep separate totals and receivables settle into history", async ({
+  page,
+  browser,
+}) => {
+  await login(page, "e@fintrack.invalid");
+  await page.goto("/settings");
+  const account = card(page, "Adaugă un cont");
+  await account.getByLabel("Numele contului").fill("Economii euro");
+  await account
+    .getByLabel("Moneda contului", { exact: true })
+    .selectOption("EUR");
+  await account.getByLabel("Sold inițial (în moneda contului)").fill("500");
+  await account.getByRole("button", { name: "Adaugă înregistrarea" }).click();
+  await expect(card(page, "Economii euro")).toContainText("500 EUR");
+  await page.goto("/transactions");
+  const entry = card(page, "Adaugă o tranzacție");
+  await entry.getByLabel("Descriere", { exact: true }).fill("Salariu în euro");
+  await entry
+    .getByRole("combobox", { name: "Tip", exact: true })
+    .selectOption("income");
+  await entry
+    .getByRole("combobox", { name: "Cont", exact: true })
+    .selectOption({ label: "Economii euro · EUR" });
+  await entry.getByLabel("Sumă (EUR)", { exact: true }).fill("120");
+  await entry
+    .getByRole("combobox", { name: "Categorie", exact: true })
+    .selectOption({ label: "Salariu" });
+  await entry.getByRole("button", { name: "Adaugă tranzacția" }).click();
+  await expect(
+    page.locator(".ledger-item").filter({ hasText: "Salariu în euro" }),
+  ).toContainText("120 EUR");
+  await page.goto("/");
+  await expect(
+    page.getByRole("region", { name: "Conturi în euro" }),
+  ).toContainText("620 EUR");
+  await expect(page.locator(".stats-grid")).toContainText("0 MDL");
+  await page.goto("/reports?currency=EUR");
+  await expect(page.locator(".stats-grid")).toContainText("120 EUR");
+  await page.goto("/reports?currency=MDL");
+  await expect(page.locator(".stats-grid")).toContainText("0 MDL");
+  await page.goto("/debts");
+  const form = card(page, "Adaugă o datorie");
+  await form.getByLabel("Cine îți datorează bani?").fill("Ion · test");
+  await form.getByLabel("Moneda datoriei").selectOption("EUR");
+  await form.getByLabel("Sumă (EUR)", { exact: true }).fill("75,50");
+  await form.getByLabel("Detalii (opțional)").fill("Împrumut personal");
+  await form.getByRole("button", { name: "Adaugă datoria" }).click();
+  let debt = card(page, "Ion · test");
+  await expect(debt).toContainText("75,5 EUR");
+  await expect(card(page, "De primit în EUR")).toContainText("75,5 EUR");
+  await debt.getByLabel("Confirm că am primit toată suma").check();
+  await debt.getByRole("button", { name: "Marchează achitat" }).click();
+  await expect(debt).toHaveCount(0);
+  await expect(card(page, "De primit în EUR")).toContainText("0 EUR");
+  await page.getByRole("link", { name: /Istoric achitate/ }).click();
+  debt = card(page, "Ion · test");
+  await expect(debt).toContainText("Achitat la");
+  await debt.getByLabel("Confirm că datoria este încă neachitată").check();
+  await debt.getByRole("button", { name: "Mută în lista activă" }).click();
+  await expect(debt).toHaveCount(0);
+  await page.goto("/debts");
+  await expect(card(page, "Ion · test")).toBeVisible();
+  const context = await browser.newContext();
+  const other = await context.newPage();
+  await login(other, "b@fintrack.invalid");
+  await other.goto("/debts");
+  await expect(card(other, "Ion · test")).toHaveCount(0);
+  await context.close();
+  await page.goto("/settings");
+  const category = card(page, "Adaugă o categorie");
+  await category
+    .getByLabel("Numele categoriei")
+    .fill(
+      "Altele · descriere foarte lungă pentru verificarea aspectului pe telefon",
+    );
+  await category.getByRole("button", { name: "Adaugă înregistrarea" }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  const heading = page
+    .locator(".category-card-heading")
+    .filter({ hasText: "Altele · descriere foarte lungă" });
+  await expect(heading).toBeVisible();
+  const boxes = await heading.evaluate((el) => {
+    const title = el.querySelector("h2")!.getBoundingClientRect(),
+      badge = el.querySelector(".category")!.getBoundingClientRect();
+    return {
+      overlap:
+        title.left < badge.right &&
+        title.right > badge.left &&
+        title.top < badge.bottom &&
+        title.bottom > badge.top,
+      overflow: document.documentElement.scrollWidth > innerWidth,
+    };
+  });
+  expect(boxes.overlap).toBe(false);
+  expect(boxes.overflow).toBe(false);
+  await page.screenshot({
+    path: "artifacts/euro-accounts-categories-mobile.png",
+    fullPage: true,
+  });
+  await page.goto("/");
+  await expect(
+    page.getByRole("region", { name: "Conturi în euro" }),
+  ).toContainText("620 EUR");
 });

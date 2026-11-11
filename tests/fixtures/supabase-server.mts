@@ -17,6 +17,7 @@ for (const name of (await readdir("supabase/migrations"))
   .sort())
   await db.exec(await readFile("supabase/migrations/" + name, "utf8"));
 const users = [
+  { id: "00000000-0000-4000-8000-000000000005", email: "e@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000004", email: "d@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000003", email: "c@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000001", email: "a@fintrack.invalid" },
@@ -77,6 +78,7 @@ async function body(req: IncomingMessage) {
   return s ? JSON.parse(s) : {};
 }
 const tables = new Set([
+  "receivables",
   "transfers",
   "recurring_rules",
   "recurring_occurrences",
@@ -240,6 +242,23 @@ const server = createServer(async (req, res) => {
       const where: string[] = [];
       for (const [key, value] of url.searchParams) {
         if (["select", "order", "offset", "limit"].includes(key)) continue;
+        if (value === "is.null") {
+          where.push(quote(key) + " is null");
+          continue;
+        }
+        if (value.startsWith("in.(") && value.endsWith(")")) {
+          where.push(
+            quote(key) +
+              " in (" +
+              value
+                .slice(4, -1)
+                .split(",")
+                .map((v) => placeholder(v.replace(/^"|"$/g, "")))
+                .join(",") +
+              ")",
+          );
+          continue;
+        }
         if (!value.startsWith("eq.")) throw Error("Unsupported fixture filter");
         where.push(quote(key) + "=" + placeholder(value.slice(3)));
       }
@@ -256,7 +275,7 @@ const server = createServer(async (req, res) => {
           keys
             .map((k) =>
               placeholder(
-                typeof payload[k] === "object"
+                payload[k] !== null && typeof payload[k] === "object"
                   ? JSON.stringify(payload[k])
                   : payload[k],
               ),
@@ -275,7 +294,7 @@ const server = createServer(async (req, res) => {
                 quote(k) +
                 "=" +
                 placeholder(
-                  typeof payload[k] === "object"
+                  payload[k] !== null && typeof payload[k] === "object"
                     ? JSON.stringify(payload[k])
                     : payload[k],
                 ),

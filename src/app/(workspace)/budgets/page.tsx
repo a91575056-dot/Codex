@@ -1,3 +1,4 @@
+import { transactionsInCurrency } from "@/lib/currency";
 import { connection } from "next/server";
 import { supabaseConfig } from "@/lib/supabase/config";
 import { getLedger } from "@/lib/supabase/repository";
@@ -77,7 +78,10 @@ export default async function BudgetsPage({
       )}
       <div className="goal-grid">
         {budgets.map((b) => {
-          const p = budgetProgress(b, ledger.transactions);
+          const p = budgetProgress(
+            b,
+            transactionsInCurrency(ledger.accounts, ledger.transactions),
+          );
           return (
             <Card key={b.id}>
               <CardHeader className="section-heading">

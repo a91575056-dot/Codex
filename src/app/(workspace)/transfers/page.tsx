@@ -18,8 +18,8 @@ export default async function TransfersPage() {
         />
         <DemoNotice />
         <p>
-          În modul personal poți adăuga, modifica și șterge transferuri în MDL.
-          Modul demo nu salvează date.
+          În modul personal poți adăuga, modifica și șterge transferuri în MDL
+          sau EUR. Modul demo nu salvează date.
         </p>
       </>
     );
@@ -43,9 +43,10 @@ export default async function TransfersPage() {
                 {money(
                   accountBalance(a, ledger.transactions, ledger.transfers) /
                     100,
+                  a.currency,
                 )}
               </strong>
-              <span>MDL · sold până astăzi</span>
+              <span>{a.currency} · sold până astăzi</span>
             </CardContent>
           </Card>
         ))}
@@ -84,7 +85,13 @@ export default async function TransfersPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <strong>{money(t.amount_minor / 100)}</strong>
+              <strong>
+                {money(
+                  t.amount_minor / 100,
+                  ledger.accounts.find((a) => a.id === t.from_account_id)
+                    ?.currency,
+                )}
+              </strong>
               <p>
                 {t.occurred_on}
                 {t.description ? ` · ${t.description}` : ""}
@@ -105,8 +112,8 @@ export default async function TransfersPage() {
       </div>
       <p className="lab-help mt-6">
         Transferurile viitoare se aplică soldurilor la data aleasă.
-        Înregistrează numai mutări între conturile tale în MDL; o plată către
-        altcineva este o cheltuială.
+        Înregistrează numai mutări între conturile tale în aceeași monedă (MDL
+        sau EUR); o plată către altcineva este o cheltuială.
       </p>
     </>
   );

@@ -31,6 +31,7 @@ const links = [
   ["/quick-expense", "Cheltuială rapidă", PlusCircle],
   ["/transactions", "Tranzacții", ArrowLeftRight],
   ["/transfers", "Transferuri", ArrowLeftRight],
+  ["/debts", "Datorii de primit", Wallet],
   ["/recurring", "Recurente", Repeat],
   ["/import", "Import CSV", Upload],
   ["/budgets", "Bugete", Wallet],
@@ -206,6 +207,7 @@ export function Shell({
                 [
                   "/quick-expense",
                   "/transfers",
+                  "/debts",
                   "/recurring",
                   "/import",
                 ].includes(href)

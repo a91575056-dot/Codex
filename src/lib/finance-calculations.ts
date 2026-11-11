@@ -3,6 +3,8 @@ import type {
   CategoryRow,
   TransactionRow,
 } from "./supabase/database.types";
+import { transactionsInCurrency } from "./currency";
+import type { SavingsCurrency } from "./finance";
 import type { FinanceData } from "@/types/finance";
 export function currentMonth(now = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -16,7 +18,10 @@ export function calculateFinance(
   categories: CategoryRow[],
   rows: TransactionRow[],
   now = new Date(),
+  currency: SavingsCurrency = "MDL",
 ): FinanceData {
+  rows = transactionsInCurrency(accounts, rows, currency);
+  accounts = accounts.filter((a) => a.currency === currency);
   const month = currentMonth(now);
   const [year, m] = month.split("-").map(Number);
   const cashFlow = Array.from({ length: 6 }, (_, i) => {
@@ -82,6 +87,7 @@ export function calculateFinance(
     })),
     transactions: rows.map((t) => ({
       id: t.id,
+      currency,
       name: t.description,
       account: accounts.find((a) => a.id === t.account_id)?.name,
       category: names.get(t.category_id) || "Categorie indisponibilă",

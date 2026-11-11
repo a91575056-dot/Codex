@@ -118,7 +118,7 @@ export function TransferForm({
   );
   const options = accounts.map((a) => ({
     value: a.id,
-    label: a.name + " · MDL",
+    label: a.name + " · " + a.currency,
   }));
   return (
     <form key={version} action={action} className="form-grid">
@@ -130,7 +130,10 @@ export function TransferForm({
             name="from_account_id"
             label="Din contul"
             value={fields.from_account_id}
-            onChange={(v) => change("from_account_id", v)}
+            onChange={(v) => {
+              change("from_account_id", v);
+              change("to_account_id", "");
+            }}
             options={options}
           />
           <Field
@@ -138,11 +141,17 @@ export function TransferForm({
             label="În contul"
             value={fields.to_account_id}
             onChange={(v) => change("to_account_id", v)}
-            options={options}
+            options={options.filter(
+              (o) =>
+                o.value !== fields.from_account_id &&
+                accounts.find((a) => a.id === o.value)?.currency ===
+                  accounts.find((a) => a.id === fields.from_account_id)
+                    ?.currency,
+            )}
           />
           <Field
             name="amount"
-            label="Sumă transferată (MDL)"
+            label={`Sumă transferată (${accounts.find((a) => a.id === fields.from_account_id)?.currency || "MDL"})`}
             value={fields.amount}
             onChange={(v) => change("amount", v)}
           />
@@ -240,7 +249,7 @@ export function RecurringForm({
           />
           <Field
             name="amount"
-            label="Sumă recurentă (MDL)"
+            label={`Sumă recurentă (${accounts.find((a) => a.id === f.account_id)?.currency || "MDL"})`}
             value={f.amount}
             onChange={(v) => change("amount", v)}
           />
@@ -249,7 +258,10 @@ export function RecurringForm({
             label="Contul regulii"
             value={f.account_id}
             onChange={(v) => change("account_id", v)}
-            options={accounts.map((a) => ({ value: a.id, label: a.name }))}
+            options={accounts.map((a) => ({
+              value: a.id,
+              label: a.name + " · " + a.currency,
+            }))}
           />
           <Field
             name="category_id"

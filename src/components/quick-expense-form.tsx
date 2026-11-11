@@ -112,10 +112,13 @@ export function QuickExpenseForm({
         }
       >
         <label className="quick-amount">
-          Cât ai cheltuit? <span>MDL</span>
+          Cât ai cheltuit?{" "}
+          <span>
+            {accounts.find((a) => a.id === selected)?.currency || "MDL"}
+          </span>
           <input
             name="amount"
-            aria-label="Suma cheltuită (MDL)"
+            aria-label={`Suma cheltuită (${accounts.find((a) => a.id === selected)?.currency || "MDL"})`}
             inputMode="decimal"
             pattern="[0-9]{1,10}([.,][0-9]{1,2})?"
             placeholder="0,00"
@@ -157,7 +160,7 @@ export function QuickExpenseForm({
             </option>
             {accounts.map((a) => (
               <option value={a.id} key={a.id}>
-                {a.name}
+                {a.name} · {a.currency}
               </option>
             ))}
           </select>

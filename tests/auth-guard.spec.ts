@@ -6,6 +6,7 @@ test("configured app protects financial routes and exposes a separate read-only 
     "/",
     "/transactions",
     "/transfers",
+    "/debts",
     "/recurring",
     "/import",
     "/quick-expense",

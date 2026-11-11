@@ -94,7 +94,10 @@ export function TransactionForm({
             </select>
           </label>
           <label>
-            Sumă (MDL)
+            Sumă (
+            {accounts.find((a) => a.id === fields.account_id)?.currency ||
+              "MDL"}
+            )
             <input
               name="amount"
               inputMode="decimal"
@@ -115,7 +118,7 @@ export function TransactionForm({
             >
               {accounts.map((a) => (
                 <option key={a.id} value={a.id}>
-                  {a.name}
+                  {a.name} · {a.currency}
                 </option>
               ))}
             </select>

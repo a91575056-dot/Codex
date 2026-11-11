@@ -48,7 +48,7 @@ export default async function ImportPage() {
             prin import ca venit/cheltuială.
           </p>
           <CSVImportForm
-            accounts={ledger.accounts}
+            accounts={ledger.accounts.filter((a) => a.currency === "MDL")}
             categories={ledger.categories}
           />
         </CardContent>

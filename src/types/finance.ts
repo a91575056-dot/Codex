@@ -1,4 +1,5 @@
 export interface Transaction {
+  currency?: "MDL" | "EUR";
   id: string;
   name: string;
   category: string;
@@ -8,7 +9,14 @@ export interface Transaction {
   paymentMethod?: "unspecified" | "cash" | "card";
 }
 export interface FinanceData {
-  upcoming?: { id: string; name: string; date: string; amount: number }[];
+  euro?: { balance: number; income: number; expenses: number };
+  upcoming?: {
+    id: string;
+    name: string;
+    date: string;
+    amount: number;
+    currency?: "MDL" | "EUR";
+  }[];
   balance: number;
   income: number;
   expenses: number;

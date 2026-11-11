@@ -1,3 +1,4 @@
+import { transactionsInCurrency } from "@/lib/currency";
 import { supabaseConfig } from "@/lib/supabase/config";
 import { getLedger, getUserFinance } from "@/lib/supabase/repository";
 import { financialReport } from "@/lib/reports";
@@ -13,7 +14,7 @@ export default async function AnalyticsPage() {
     return <DemoSection params={Promise.resolve({ section: "analytics" })} />;
   const [data, ledger] = await Promise.all([getUserFinance(), getLedger()]);
   const report = financialReport(
-    ledger.transactions,
+    transactionsInCurrency(ledger.accounts, ledger.transactions),
     ledger.categories,
     todayISO().slice(0, 7) + "-01",
     todayISO(),
@@ -22,7 +23,7 @@ export default async function AnalyticsPage() {
     <>
       <Heading
         title="Analize"
-        description="Indicatori explicați, calculați din tranzacțiile tale până astăzi."
+        description="Indicatori în MDL, calculați până astăzi. Conturile EUR sunt separate; raportul în EUR este disponibil în Rapoarte."
       />
       <ConnectedStats data={data} />
       <Charts data={data} only="cash" demo={false} />

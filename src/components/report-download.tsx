@@ -6,14 +6,16 @@ import type { Transaction } from "@/types/finance";
 export function ReportDownload({
   transactions,
   demo = true,
+  currency = "MDL",
 }: {
   transactions: Transaction[];
   demo?: boolean;
+  currency?: "MDL" | "EUR";
 }) {
   function download() {
     const rows = [
       [demo ? "DEMO — Date fictive" : "FinTrack — Tranzacții personale"],
-      ["Dată", "Descriere", "Categorie", "Plată", "Sumă MDL", "Cont"],
+      ["Dată", "Descriere", "Categorie", "Plată", `Sumă ${currency}`, "Cont"],
       ...transactions.map((t) => [
         t.date,
         t.name,

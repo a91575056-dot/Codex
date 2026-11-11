@@ -1,3 +1,4 @@
+import { transactionsInCurrency } from "@/lib/currency";
 import { connection } from "next/server";
 import { supabaseConfig } from "@/lib/supabase/config";
 import { getLedger } from "@/lib/supabase/repository";
@@ -16,12 +17,13 @@ export const instant = false;
 export default async function ReportsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; to?: string }>;
+  searchParams: Promise<{ from?: string; to?: string; currency?: string }>;
 }) {
   if (!supabaseConfig())
     return <DemoSection params={Promise.resolve({ section: "reports" })} />;
   await connection();
   const params = await searchParams;
+  const currency = params.currency === "EUR" ? "EUR" : "MDL";
   const defaults = { from: todayISO().slice(0, 7) + "-01", to: todayISO() };
   const parsed = reportRangeSchema.safeParse({
     from: params.from || defaults.from,
@@ -30,7 +32,7 @@ export default async function ReportsPage({
   const range = parsed.success ? parsed.data : defaults;
   const [ledger, planning] = await Promise.all([getLedger(), getPlanning()]);
   const report = financialReport(
-    ledger.transactions,
+    transactionsInCurrency(ledger.accounts, ledger.transactions, currency),
     ledger.categories,
     range.from,
     range.to,
@@ -52,6 +54,13 @@ export default async function ReportsPage({
           Până la
           <input name="to" type="date" defaultValue={range.to} required />
         </label>
+        <label>
+          Moneda raportului
+          <select name="currency" defaultValue={currency}>
+            <option value="MDL">MDL</option>
+            <option value="EUR">EUR</option>
+          </select>
+        </label>
         <Button>Generează raportul</Button>
       </form>
       {!parsed.success && (
@@ -60,9 +69,9 @@ export default async function ReportsPage({
         </p>
       )}
       <p className="lab-help">
-        Perioadă inclusivă: {range.from} — {range.to}. {report.rows.length}{" "}
-        tranzacții. Dacă selectezi date viitoare, raportul include și
-        înregistrările respective.
+        Moneda: {currency}. Fără conversie valutară. Perioadă inclusivă:{" "}
+        {range.from} — {range.to}. {report.rows.length} tranzacții. Dacă
+        selectezi date viitoare, raportul include și înregistrările respective.
       </p>
       <div className="stats-grid">
         {[
@@ -72,15 +81,19 @@ export default async function ReportsPage({
         ].map((c) => (
           <Card key={c.label} className="stat-card">
             <span>{c.label}</span>
-            <strong className="stat-value">{money(c.value / 100)}</strong>
+            <strong className="stat-value">
+              {money(c.value / 100, currency)}
+            </strong>
           </Card>
         ))}
       </div>
       <div className="lab-actions mb-6 no-print">
         <ReportDownload
           demo={false}
+          currency={currency}
           transactions={report.rows.map((t) => ({
             id: t.id,
+            currency,
             name: t.description,
             account: ledger.accounts.find((a) => a.id === t.account_id)?.name,
             category: names.get(t.category_id) || "Categorie",
@@ -108,7 +121,7 @@ export default async function ReportsPage({
                     <th>Categorie</th>
                     <th>Tip</th>
                     <th>Înregistrări</th>
-                    <th>Total MDL</th>
+                    <th>Total {currency}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -117,7 +130,7 @@ export default async function ReportsPage({
                       <td>{c.name}</td>
                       <td>{c.kind === "income" ? "Venit" : "Cheltuială"}</td>
                       <td>{c.count}</td>
-                      <td>{money(c.total / 100)}</td>
+                      <td>{money(c.total / 100, currency)}</td>
                     </tr>
                   ))}
                 </tbody>

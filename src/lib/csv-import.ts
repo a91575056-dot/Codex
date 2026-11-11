@@ -205,6 +205,8 @@ export function previewCSV(
       const candidates = obj.account
         ? accounts.filter((a) => normalize(a.name) === normalize(obj.account))
         : accounts.filter((a) => a.id === fallbackAccount);
+      if (candidates.length === 1 && candidates[0].currency !== "MDL")
+        throw Error("Importul acceptă numai conturi MDL.");
       if (candidates.length !== 1)
         throw Error(
           "Cont inexistent sau ambiguu. Alege contul corect și verifică numele.",

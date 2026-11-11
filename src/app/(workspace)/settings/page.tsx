@@ -19,7 +19,7 @@ export default async function SettingsPage() {
     <>
       <Heading
         title="Setări"
-        description="Administrează conturile și categoriile tale. Toate sumele sunt în MDL."
+        description="Conturi în MDL și EUR, cu solduri separate. Categorii distincte pentru venituri și cheltuieli."
       />
       <div className="demo-banner">
         <p>
@@ -82,7 +82,9 @@ export default async function SettingsPage() {
                 <CardTitle>{a.name}</CardTitle>
               </CardHeader>
               <CardContent>
-                <strong className="stat-value">{money(balance / 100)}</strong>
+                <strong className="stat-value">
+                  {money(balance / 100, a.currency)}
+                </strong>
                 <details className="goal-detail">
                   <summary>Modifică numele sau soldul inițial</summary>
                   <ResourceForm
@@ -97,11 +99,11 @@ export default async function SettingsPage() {
           );
         })}
       </div>
-      <h2 className="overview-heading">Categorii</h2>
+      <h2 className="overview-heading">Categorii de venituri și cheltuieli</h2>
       <div className="goal-grid">
         {ledger.categories.map((c) => (
           <Card key={c.id}>
-            <CardHeader className="section-heading">
+            <CardHeader className="category-card-heading">
               <CardTitle>{c.name}</CardTitle>
               <span className="category">
                 {c.kind === "income" ? "Venit" : "Cheltuială"}

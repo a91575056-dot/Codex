@@ -6,8 +6,20 @@ const moneyPattern = "[0-9]{1,10}([.,][0-9]{1,2})?";
 export const accountFields = (row?: AccountRow): FieldSpec[] => [
   { name: "name", label: "Numele contului", value: row?.name, maxLength: 80 },
   {
+    name: "currency",
+    label: "Moneda contului",
+    value: row?.currency || "MDL",
+    options: row
+      ? [{ value: row.currency, label: row.currency }]
+      : [
+          { value: "MDL", label: "MDL · Leu moldovenesc" },
+          { value: "EUR", label: "EUR · Euro" },
+        ],
+    hint: "Moneda nu se schimbă după crearea contului.",
+  },
+  {
     name: "opening_balance",
-    label: "Sold inițial (MDL)",
+    label: "Sold inițial (în moneda contului)",
     value: ((row?.opening_balance_minor || 0) / 100).toFixed(2),
     pattern: "-?" + moneyPattern,
     hint: "Soldul înaintea tranzacțiilor înregistrate. Poate fi negativ.",

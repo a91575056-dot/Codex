@@ -108,7 +108,7 @@ export default async function TransactionPage({
                 <option value="">Toate</option>
                 {ledger.categories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name}
+                    {c.name} · {c.kind === "income" ? "Venit" : "Cheltuială"}
                   </option>
                 ))}
               </select>
@@ -153,7 +153,11 @@ export default async function TransactionPage({
                   </div>
                   <strong className={t.kind === "income" ? "positive" : ""}>
                     {t.kind === "income" ? "+" : "−"}
-                    {money(t.amount_minor / 100)}
+                    {money(
+                      t.amount_minor / 100,
+                      ledger.accounts.find((a) => a.id === t.account_id)
+                        ?.currency,
+                    )}
                   </strong>
                 </div>
                 <details>
