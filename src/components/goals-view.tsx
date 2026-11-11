@@ -13,7 +13,7 @@ import {
   type Contribution,
   type Scenario,
 } from "@/lib/goals";
-import { money } from "@/lib/finance";
+import { money as formatMoney } from "@/lib/finance";
 export function GoalsView({
   goals,
   contributions,
@@ -41,6 +41,25 @@ export function GoalsView({
           ipotezele originale.
         </p>
       </div>
+      <div className="goal-intro" aria-label="Economii pe monede">
+        {(["MDL", "EUR"] as const).map((currency) => {
+          const total = goals
+            .filter((g) => g.currency === currency)
+            .reduce(
+              (sum, g) =>
+                sum + BigInt(goalProgress(g, contributions, today).saved),
+              BigInt(0),
+            );
+          if (total > BigInt(Number.MAX_SAFE_INTEGER))
+            throw Error("Economiile depășesc limita de precizie.");
+          return (
+            <p key={currency}>
+              Economii dedicate {currency}:{" "}
+              <strong>{formatMoney(Number(total) / 100, currency)}</strong>
+            </p>
+          );
+        })}
+      </div>
       {!demo && (
         <Card className="mb-6">
           <CardHeader>
@@ -59,6 +78,7 @@ export function GoalsView({
       )}
       <div className="goal-grid">
         {goals.map((goal) => {
+          const money = (amount: number) => formatMoney(amount, goal.currency);
           const progress = goalProgress(goal, contributions, today);
           const entries = contributions.filter((c) => c.goal_id === goal.id);
           const plans = scenarios.filter((s) => s.goal_id === goal.id);
@@ -108,18 +128,29 @@ export function GoalsView({
                       ? "Obiectivul este acoperit."
                       : `Necesar orientativ: ${money(progress.requiredMonthly / 100)} / lună, inclusiv luna curentă.`}
                 </p>
-                <Button asChild variant="outline">
-                  <Link
-                    href={`${demo ? "/demo" : ""}/decision-lab?goal=${goal.id}`}
-                  >
-                    Simulează acest obiectiv <ArrowRight />
-                  </Link>
-                </Button>
+                {goal.currency === "MDL" ? (
+                  <Button asChild variant="outline">
+                    <Link
+                      href={`${demo ? "/demo" : ""}/decision-lab?goal=${goal.id}`}
+                    >
+                      Simulează acest obiectiv <ArrowRight />
+                    </Link>
+                  </Button>
+                ) : (
+                  <p className="lab-help">
+                    Economii în EUR, separate de soldul în MDL. Contribuțiile
+                    sunt în EUR. Simularea pe veniturile în MDL necesită un curs
+                    de schimb și nu este disponibilă pentru acest obiectiv.
+                  </p>
+                )}
                 {!demo && (
                   <>
                     <details className="goal-detail">
                       <summary>Adaugă o contribuție</summary>
-                      <ContributionForm goalId={goal.id} />
+                      <ContributionForm
+                        goalId={goal.id}
+                        currency={goal.currency}
+                      />
                     </details>
                     <details className="goal-detail">
                       <summary>Editează obiectivul</summary>

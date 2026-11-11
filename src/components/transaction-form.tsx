@@ -52,7 +52,7 @@ export function TransactionForm({
           </select>
         </label>
         <label>
-          Sumă (RON)
+          Sumă (MDL)
           <input
             name="amount"
             inputMode="decimal"

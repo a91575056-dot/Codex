@@ -20,7 +20,7 @@ export default async function SettingsPage() {
     <>
       <Heading
         title="Setări"
-        description="Administrează conturile și categoriile tale. Toate sumele sunt în RON."
+        description="Administrează conturile și categoriile tale. Toate sumele sunt în MDL."
       />
       <div className="demo-banner">
         <p>

@@ -78,7 +78,7 @@ export async function DemoSection({
               </div>
               <div>
                 <dt>Monedă</dt>
-                <dd>Leu românesc (RON)</dd>
+                <dd>Leu românesc (MDL)</dd>
               </div>
               <div>
                 <dt>Limbă</dt>

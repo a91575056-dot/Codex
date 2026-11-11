@@ -18,7 +18,7 @@ export default async function InvestmentsPage() {
     <>
       <Heading
         title="Investiții"
-        description="Portofoliu manual în RON. Înregistrările urmăresc activele; nu execută ordine."
+        description="Portofoliu manual în MDL. Înregistrările urmăresc activele; nu execută ordine."
       />
       <div className="demo-banner">
         <p>

@@ -26,6 +26,18 @@ export default async function DecisionPage({
       : { goals: demoGoals, contributions: demoContributions };
     const found = ledger.goals.find((g) => g.id === params.goal);
     if (!found) notFound();
+    if (found.currency !== "MDL")
+      return (
+        <section>
+          <h1>Obiectiv în EUR</h1>
+          <p>
+            Economiile în EUR sunt separate de veniturile și cheltuielile în
+            MDL. Simularea necesită un curs de schimb și nu este disponibilă
+            pentru acest obiectiv.
+          </p>
+          <a href="/goals">Înapoi la obiective</a>
+        </section>
+      );
     goal = {
       id: found.id,
       name: found.name,

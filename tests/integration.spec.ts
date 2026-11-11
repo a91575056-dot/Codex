@@ -32,7 +32,7 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
   await page.goto("/settings");
   let form = card(page, "Adaugă un cont");
   await form.getByLabel("Numele contului").fill("Numerar test");
-  await form.getByLabel("Sold inițial (RON)").fill("1000");
+  await form.getByLabel("Sold inițial (MDL)").fill("1000");
   await form.getByRole("button", { name: "Adaugă înregistrarea" }).click();
   await expect(
     page.getByRole("heading", { name: "Numerar test", exact: true }),
@@ -55,7 +55,7 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
     await f
       .getByRole("combobox", { name: "Tip", exact: true })
       .selectOption(type);
-    await f.getByLabel("Sumă (RON)").fill(amount);
+    await f.getByLabel("Sumă (MDL)").fill(amount);
     await f
       .getByRole("combobox", { name: "Cont", exact: true })
       .selectOption({ label: "Numerar test" });
@@ -83,15 +83,15 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
   await form
     .getByLabel("Categorie de cheltuieli")
     .selectOption({ label: "Educație test" });
-  await form.getByLabel("Limită lunară (RON)").fill("80");
+  await form.getByLabel("Limită lunară (MDL)").fill("80");
   await form.getByRole("button", { name: "Adaugă înregistrarea" }).click();
   await expect(page.getByText("Buget depășit", { exact: true })).toBeVisible();
   await page.goto("/investments");
   form = card(page, "Înregistrează un activ");
   await form.getByLabel("Numele activului").fill("ETF educație");
   await form.getByLabel("Cantitate", { exact: true }).fill("2,5");
-  await form.getByLabel("Cost mediu pe unitate (RON)").fill("100");
-  await form.getByLabel("Preț introdus pe unitate (RON)").fill("120");
+  await form.getByLabel("Cost mediu pe unitate (MDL)").fill("100");
+  await form.getByLabel("Preț introdus pe unitate (MDL)").fill("120");
   await form.getByRole("button", { name: "Adaugă înregistrarea" }).click();
   await expect(
     page.getByRole("heading", { name: "ETF educație", exact: true }),
@@ -100,13 +100,13 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
   await position
     .getByText("Actualizează poziția sau prețul", { exact: true })
     .click();
-  await position.getByLabel("Preț introdus pe unitate (RON)").fill("130");
+  await position.getByLabel("Preț introdus pe unitate (MDL)").fill("130");
   await position.getByRole("button", { name: "Salvează modificările" }).click();
-  await expect(position.getByText("325 RON", { exact: true })).toBeVisible();
+  await expect(position.getByText("325 MDL", { exact: true })).toBeVisible();
   await page.goto("/goals");
   form = card(page, "Un obiectiv nou");
   await form.getByLabel("Numele obiectivului").fill("Laptop test");
-  await form.getByLabel("Suma țintă (RON)").fill("3000");
+  await form.getByLabel("Suma țintă (MDL)").fill("3000");
   await form.getByLabel("Termen dorit").fill("2027-12-31");
   await form.getByRole("button", { name: "Creează obiectivul" }).click();
   await expect(
@@ -114,14 +114,14 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
   ).toBeVisible();
   const goal = card(page, "Laptop test");
   await goal.getByText("Adaugă o contribuție", { exact: true }).click();
-  await goal.getByLabel("Contribuție (RON)").fill("500");
+  await goal.getByLabel("Contribuție (MDL)").fill("500");
   await goal.getByRole("button", { name: "Înregistrează contribuția" }).click();
   await expect(
-    goal.getByText("500 RON", { exact: true }).first(),
+    goal.getByText("500 MDL", { exact: true }).first(),
   ).toBeVisible();
   await goal.getByRole("link", { name: "Simulează acest obiectiv" }).click();
   await expect(
-    page.getByLabel("Economii deja dedicate obiectivului (RON)"),
+    page.getByLabel("Economii deja dedicate obiectivului (MDL)"),
   ).toHaveValue("500.00");
   await page.getByLabel("Numele scenariului").fill("Plan laptop");
   await page
@@ -133,7 +133,7 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
   await page.goto("/goals");
   await expect(page.getByText("Plan laptop", { exact: true })).toBeVisible();
   await page.goto("/reports");
-  await expect(page.getByText("1.899,5 RON", { exact: true })).toBeVisible();
+  await expect(page.getByText("1.899,5 MDL", { exact: true })).toBeVisible();
   const promise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Descarcă raportul CSV" }).click();
   const download = await promise;
@@ -143,8 +143,8 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
   expect(csv).toContain("Curs de programare");
   expect(csv).not.toContain("Venit istoric");
   await page.goto("/");
-  await expect(page.getByText("5.899,5 RON", { exact: true })).toBeVisible();
-  await expect(page.getByText("325 RON", { exact: true })).toBeVisible();
+  await expect(page.getByText("5.899,5 MDL", { exact: true })).toBeVisible();
+  await expect(page.getByText("325 MDL", { exact: true })).toBeVisible();
   await page.screenshot({
     path: "artifacts/connected-dashboard.png",
     fullPage: true,
@@ -202,18 +202,18 @@ test("iPhone quick expense uses a personal profile, records cash/card, retries i
   await page
     .getByRole("combobox", { name: "Pe ce ai cheltuit?" })
     .selectOption({ label: "Alimente" });
-  await page.getByLabel("Suma cheltuită (RON)").fill("25,50");
+  await page.getByLabel("Suma cheltuită (MDL)").fill("25,50");
   await page.getByLabel("Detalii (opțional)").fill("Cafea rapidă Cash");
   const request = await page.locator("input[name=request_id]").inputValue();
   await page.getByRole("button", { name: "Salvează cheltuiala" }).click();
   await expect(
     page.getByRole("status").filter({ hasText: "Salvat:" }),
   ).toBeVisible();
-  await expect(page.getByLabel("Suma cheltuită (RON)")).toHaveValue("");
+  await expect(page.getByLabel("Suma cheltuită (MDL)")).toHaveValue("");
   await page
     .getByRole("combobox", { name: "Pe ce ai cheltuit?" })
     .selectOption({ label: "Alimente" });
-  await page.getByLabel("Suma cheltuită (RON)").fill("25,50");
+  await page.getByLabel("Suma cheltuită (MDL)").fill("25,50");
   await page.getByLabel("Detalii (opțional)").fill("Cafea rapidă Cash");
   await page.locator("input[name=request_id]").evaluate((element, value) => {
     (element as HTMLInputElement).value = value;
@@ -222,7 +222,7 @@ test("iPhone quick expense uses a personal profile, records cash/card, retries i
   await expect(
     page.getByRole("button", { name: "Salvează cheltuiala" }),
   ).toBeEnabled();
-  await expect(page.getByLabel("Suma cheltuită (RON)")).toHaveValue("");
+  await expect(page.getByLabel("Suma cheltuită (MDL)")).toHaveValue("");
   await page.goto("/transactions");
   await expect(
     page.getByRole("heading", { name: "Cafea rapidă Cash", exact: true }),
@@ -242,10 +242,10 @@ test("iPhone quick expense uses a personal profile, records cash/card, retries i
   await page
     .getByRole("combobox", { name: "Pe ce ai cheltuit?" })
     .selectOption({ label: "Alimente" });
-  await page.getByLabel("Suma cheltuită (RON)").fill("10");
+  await page.getByLabel("Suma cheltuită (MDL)").fill("10");
   await page.getByLabel("Detalii (opțional)").fill("Plată rapidă Card");
   await page.getByRole("button", { name: "Salvează cheltuiala" }).click();
-  await expect(page.getByLabel("Suma cheltuită (RON)")).toHaveValue("");
+  await expect(page.getByLabel("Suma cheltuită (MDL)")).toHaveValue("");
   await page.reload();
   await expect(
     page
@@ -299,4 +299,41 @@ test("signup explains the provider email limit and retains entered values", asyn
   await expect(page.getByLabel("Parolă", { exact: true })).toHaveValue(
     "FixturePassword2026!",
   );
+});
+
+test("EUR savings use their own currency and stay separate from the MDL ledger", async ({
+  page,
+}) => {
+  await login(page, "b@fintrack.invalid");
+  await page.goto("/goals");
+  const form = card(page, "Un obiectiv nou");
+  await form.getByLabel("Moneda obiectivului").selectOption("EUR");
+  await form.getByLabel("Numele obiectivului").fill("Economii euro vacanță");
+  await form.getByLabel("Suma țintă (EUR)").fill("2000");
+  await form.getByLabel("Termen dorit").fill("2027-12-31");
+  await form.getByRole("button", { name: "Creează obiectivul" }).click();
+  const goal = card(page, "Economii euro vacanță");
+  await expect(goal.getByText("din 2.000 EUR", { exact: true })).toBeVisible();
+  await goal.getByText("Adaugă o contribuție", { exact: true }).click();
+  await goal.getByLabel("Contribuție (EUR)").fill("125,50");
+  await goal.getByRole("button", { name: "Înregistrează contribuția" }).click();
+  await expect(goal.locator(".goal-value strong")).toHaveText("125,5 EUR");
+  await expect(
+    goal.getByRole("link", { name: "Simulează acest obiectiv" }),
+  ).toHaveCount(0);
+  await expect(page.getByLabel("Economii pe monede")).toContainText(
+    "Economii dedicate EUR: 125,5 EUR",
+  );
+  await expect(page.getByLabel("Economii pe monede")).toContainText(
+    "Economii dedicate MDL: 0 MDL",
+  );
+  await goal.getByText("Editează obiectivul", { exact: true }).click();
+  await expect(goal.locator("select[name=currency]")).toHaveCount(0);
+  const goalId = await goal.locator("input[name=id]").first().inputValue();
+  await page.goto(`/decision-lab?goal=${goalId}`);
+  await expect(
+    page.getByRole("heading", { name: "Obiectiv în EUR" }),
+  ).toBeVisible();
+  await page.goto("/reports");
+  await expect(page.getByText("125,5 EUR", { exact: true })).toHaveCount(0);
 });

@@ -151,7 +151,7 @@ export function Charts({
             <CashChart data={data.cashFlow} demo={demo} />
             <details className="chart-details">
               <summary>
-                {demo ? "Date fictive · " : ""}Vezi valorile în RON
+                {demo ? "Date fictive · " : ""}Vezi valorile în MDL
               </summary>
               <div className="table-scroll">
                 <table>
@@ -360,7 +360,7 @@ export function Dashboard({
       <Stats data={data} />
       <div className="overview-heading">
         <h2>Perspectiva ta financiară</h2>
-        <span>Toate sumele sunt în RON</span>
+        <span>Toate sumele sunt în MDL</span>
       </div>
       <Charts data={data} />
       <div className="bottom-grid">

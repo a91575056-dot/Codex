@@ -7,7 +7,7 @@ export const demoGoals: Goal[] = [
     name: "Fond de urgență · DEMO",
     target_minor: 1000000,
     due_on: "2027-05-31",
-    currency: "RON",
+    currency: "MDL",
     created_at: "2026-08-11T12:00:00Z",
   },
 ];

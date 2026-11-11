@@ -1,8 +1,10 @@
 import type { FinanceData, FinanceRepository } from "@/types/finance";
-export const money = (n: number) =>
+export type SavingsCurrency = "MDL" | "EUR";
+export const money = (n: number, currency: SavingsCurrency = "MDL") =>
   new Intl.NumberFormat("ro-RO", {
     style: "currency",
-    currency: "RON",
+    currency,
+    currencyDisplay: "code",
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(n);

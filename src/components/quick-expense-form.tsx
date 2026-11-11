@@ -112,10 +112,10 @@ export function QuickExpenseForm({
         }
       >
         <label className="quick-amount">
-          Cât ai cheltuit? <span>RON</span>
+          Cât ai cheltuit? <span>MDL</span>
           <input
             name="amount"
-            aria-label="Suma cheltuită (RON)"
+            aria-label="Suma cheltuită (MDL)"
             inputMode="decimal"
             pattern="[0-9]{1,10}([.,][0-9]{1,2})?"
             placeholder="0,00"

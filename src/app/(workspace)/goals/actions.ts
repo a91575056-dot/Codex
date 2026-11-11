@@ -24,6 +24,21 @@ export async function saveGoal(
   if (!p.success) return { error: p.error.issues[0].message };
   const { client, user } = await requireUser();
   const { id, target, ...fields } = p.data;
+  if (id) {
+    const current = await client
+      .from("savings_goals")
+      .select("currency")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (current.error || !current.data)
+      return { error: "Obiectivul nu este disponibil." };
+    if (current.data.currency !== fields.currency)
+      return {
+        error:
+          "Moneda unui obiectiv existent nu poate fi schimbată. Creează un obiectiv separat.",
+      };
+  }
   const data = { ...fields, target_minor: target, user_id: user.id };
   const r = id
     ? await client
@@ -117,6 +132,11 @@ export async function saveGoalScenario(
   const ledger = await getGoals();
   const goal = ledger.goals.find((g) => g.id === p.data.goal_id);
   if (!goal) return { error: "Obiectivul nu este disponibil." };
+  if (goal.currency !== "MDL")
+    return {
+      error:
+        "Scenariile bazate pe venituri în MDL sunt disponibile doar pentru obiective în MDL.",
+    };
   const progress = goalProgress(goal, ledger.contributions);
   if (
     Number(form.get("expected_target")) !== goal.target_minor ||

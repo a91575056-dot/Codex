@@ -26,8 +26,8 @@ export function CashChart({
       role="img"
       aria-label={
         demo
-          ? "Flux de numerar fictiv în RON, iunie–noiembrie 2026; valorile sunt disponibile sub grafic."
-          : "Flux de numerar în RON pentru ultimele șase luni. Valorile sunt disponibile sub grafic."
+          ? "Flux de numerar fictiv în MDL, iunie–noiembrie 2026; valorile sunt disponibile sub grafic."
+          : "Flux de numerar în MDL pentru ultimele șase luni. Valorile sunt disponibile sub grafic."
       }
     >
       <ResponsiveContainer width="100%" height="100%" minWidth={0}>

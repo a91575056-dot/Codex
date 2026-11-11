@@ -15,7 +15,7 @@ export function ConnectedStats({ data }: { data: FinanceData }) {
       <StatCard
         label="Sold total"
         value={data.balance}
-        change="RON"
+        change="MDL"
         note="toate conturile · până astăzi"
         icon={Wallet}
         featured
@@ -23,21 +23,21 @@ export function ConnectedStats({ data }: { data: FinanceData }) {
       <StatCard
         label="Venituri lunare"
         value={data.income}
-        change="RON"
+        change="MDL"
         note="luna curentă · până astăzi"
         icon={ArrowDownLeft}
       />
       <StatCard
         label="Cheltuieli lunare"
         value={data.expenses}
-        change="RON"
+        change="MDL"
         note="luna curentă · până astăzi"
         icon={ArrowUpRight}
       />
       <StatCard
         label="Valoare portofoliu"
         value={data.portfolio}
-        change="RON"
+        change="MDL"
         note="evaluări introduse manual"
         icon={TrendingUp}
       />
@@ -49,7 +49,7 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
     <>
       <Heading
         title="Finanțele tale"
-        description="Datele salvate în contul tău. Sumele sunt în RON."
+        description="Datele salvate în contul tău. Sumele sunt în MDL."
       />
       <div className="lab-actions mb-6">
         <Button asChild>

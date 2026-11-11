@@ -5,7 +5,7 @@ export type AccountRow = {
   id: string;
   user_id: string;
   name: string;
-  currency: "RON";
+  currency: "MDL";
   opening_balance_minor: number;
   created_at: string;
 };

@@ -10,19 +10,19 @@ test("demo goals show real-versus-plan math and load linked goal into the lab wi
   await expect(
     page.getByRole("progressbar", { name: "Progres Fond de urgență · DEMO" }),
   ).toHaveAttribute("aria-valuenow", "55");
-  await expect(page.getByText("5.950 RON", { exact: true })).toBeVisible();
+  await expect(page.getByText("5.950 MDL", { exact: true })).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Creează obiectivul" }),
   ).toHaveCount(0);
   await page.getByRole("link", { name: "Simulează acest obiectiv" }).click();
   await expect(page).toHaveURL(/\/demo\/decision-lab\?goal=/);
-  await expect(page.getByLabel("Valoare obiectiv (RON)")).toHaveValue(
+  await expect(page.getByLabel("Valoare obiectiv (MDL)")).toHaveValue(
     "10000.00",
   );
   await expect(
-    page.getByLabel("Economii deja dedicate obiectivului (RON)"),
+    page.getByLabel("Economii deja dedicate obiectivului (MDL)"),
   ).toHaveValue("5500.00");
-  await expect(page.getByLabel("Valoare obiectiv (RON)")).toHaveAttribute(
+  await expect(page.getByLabel("Valoare obiectiv (MDL)")).toHaveAttribute(
     "readonly",
     "",
   );

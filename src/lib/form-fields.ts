@@ -7,7 +7,7 @@ export const accountFields = (row?: AccountRow): FieldSpec[] => [
   { name: "name", label: "Numele contului", value: row?.name, maxLength: 80 },
   {
     name: "opening_balance",
-    label: "Sold inițial (RON)",
+    label: "Sold inițial (MDL)",
     value: ((row?.opening_balance_minor || 0) / 100).toFixed(2),
     pattern: "-?" + moneyPattern,
     hint: "Soldul înaintea tranzacțiilor înregistrate. Poate fi negativ.",
@@ -48,7 +48,7 @@ export const budgetFields = (
   },
   {
     name: "limit",
-    label: "Limită lunară (RON)",
+    label: "Limită lunară (MDL)",
     pattern: moneyPattern,
     value: row ? (row.limit_minor / 100).toFixed(2) : "",
   },
@@ -80,13 +80,13 @@ export const holdingFields = (row?: HoldingRow): FieldSpec[] => [
   },
   {
     name: "cost_price",
-    label: "Cost mediu pe unitate (RON)",
+    label: "Cost mediu pe unitate (MDL)",
     pattern: moneyPattern,
     value: row ? (row.cost_price_minor / 100).toFixed(2) : "",
   },
   {
     name: "current_price",
-    label: "Preț introdus pe unitate (RON)",
+    label: "Preț introdus pe unitate (MDL)",
     pattern: moneyPattern,
     value: row ? (row.current_price_minor / 100).toFixed(2) : "",
   },

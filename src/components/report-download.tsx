@@ -13,7 +13,7 @@ export function ReportDownload({
   function download() {
     const rows = [
       [demo ? "DEMO — Date fictive" : "FinTrack — Tranzacții personale"],
-      ["Dată", "Descriere", "Categorie", "Plată", "Sumă RON"],
+      ["Dată", "Descriere", "Categorie", "Plată", "Sumă MDL"],
       ...transactions.map((t) => [
         t.date,
         t.name,

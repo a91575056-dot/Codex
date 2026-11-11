@@ -1,7 +1,7 @@
 # FinTrack 1.0
 
 Aplicație web de licență pentru finanțe personale, bugete, obiective de economisire
-și urmărirea unui portofoliu introdus manual. Interfață în română, monedă RON,
+și urmărirea unui portofoliu introdus manual. Interfață în română, monedă principală MDL și economii în EUR,
 fus orar de calcul Europe/Chisinau. Nu conectează bănci/brokeri și nu execută trading.
 
 ## Pornire rapidă
@@ -60,7 +60,7 @@ necomise prin comenzi Git destructive.
 | Dashboard            | Solduri, venituri, cheltuieli, bugetele lunii, portofoliu manual și cash flow            |
 | Tranzacții           | Creare, editare, ștergere cu confirmare, căutare și filtre                               |
 | Bugete               | Limite lunare pe categorii de cheltuieli, progres și depășiri calculate automat          |
-| Investiții           | Poziții manuale, cantitate fracționară, cost/preț în RON, alocare și rezultat nerealizat |
+| Investiții           | Poziții manuale, cantitate fracționară, cost/preț în MDL, alocare și rezultat nerealizat |
 | Obiective            | Ținte, termene, contribuții, scenarii salvate și comparație plan/rezultat                |
 | Laborator de decizii | Impactul reducerilor de cheltuieli, obiectiv și șoc de venit, formule explicabile        |
 | Analize              | Flux net, rata surplusului, distribuția cheltuielilor, cash flow și alocare              |
@@ -74,8 +74,8 @@ rămân în `/demo/*` și în modul fără configurare, fără salvare în contu
 
 ## Configurarea Supabase
 
-Proiectul FinTrack conectat a fost creat și are deja toate cele trei migrații aplicate.
-**Nu le rulați din nou acolo.** Pentru alt proiect, aplicați fișierele SQL o singură
+Proiectul FinTrack conectat are migrațiile de bază deja aplicate.
+**Nu le rulați din nou acolo.** Migrația MDL/EUR necesită aprobarea și aplicarea separată descrise în `docs/currencies.md`. Pentru alt proiect, aplicați fișierele SQL o singură
 dată, în ordinea din `supabase/migrations`, folosind SQL Editor. Migrațiile nu sunt
 idempotente și nu se execută automat la pornirea aplicației.
 
@@ -267,3 +267,22 @@ pentru a ascunde eroarea. Parola se introduce numai în aplicație, nu în chat.
 
 Formularul păstrează datele introduse la o eroare, doar în memoria paginii; nu
 stochează parola în localStorage și nu returnează detaliile brute ale furnizorului.
+
+## Monede: MDL și economii EUR
+
+Tranzacțiile, soldurile conturilor, bugetele, portofoliul manual, rapoartele CSV
+și laboratorul folosesc MDL. În Obiective alegeți MDL sau EUR la creare; fiecare
+contribuție este exprimată în moneda obiectivului. Totalurile economiilor sunt
+afișate separat. Nu există cursuri valutare, conversii sau adunare MDL + EUR.
+Moneda unui obiectiv existent nu poate fi schimbată. Scenariile bazate pe istoricul
+MDL sunt disponibile doar pentru obiective MDL.
+
+Înainte de publicarea acestei versiuni este necesară migrația
+`20261111093037_mdl_and_euro_savings.sql`. Aceasta corectează etichetele istorice
+RON în MDL **fără să schimbe numeric sumele**; nu reprezintă o conversie valutară.
+Nu o aplicați în producție până când proprietarul confirmă că datele vechi au fost
+introduse ca lei moldovenești. Pașii de review sunt în `docs/currencies.md`.
+
+Migrația MDL/EUR a fost aplicată în proiectul FinTrack conectat la 11 noiembrie 2026.
+Nu o reaplicați acolo; instrucțiunile de aprobare de mai sus se referă la alte
+proiecte cu date istorice. Nu sunt stocate în repository parolele conturilor personale.
