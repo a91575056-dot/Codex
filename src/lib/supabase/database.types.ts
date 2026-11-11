@@ -126,6 +126,30 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      configure_shortcut_income: {
+        Args: { p_device_id: string; p_enabled: boolean };
+        Returns: boolean;
+      };
+      shortcut_finance_options: {
+        Args: { p_token: string };
+        Returns: {
+          currency: "MDL";
+          categories: Record<string, string>;
+          income_categories: Record<string, string>;
+          income_enabled: boolean;
+        };
+      };
+      shortcut_income: {
+        Args: {
+          p_token: string;
+          p_request_id: string;
+          p_amount_minor: number;
+          p_payment_method: string;
+          p_category_id: string;
+          p_description: string;
+        };
+        Returns: ShortcutReceipt;
+      };
       post_recurring: {
         Args: {
           p_rule_id: string;

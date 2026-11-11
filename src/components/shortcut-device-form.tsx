@@ -1,6 +1,7 @@
 "use client";
 import { useActionState, useState } from "react";
 import {
+  setShortcutIncome,
   createShortcutDevice,
   revokeShortcutDevice,
   type DeviceState,
@@ -95,5 +96,45 @@ export function RevokeShortcutDevice({ id }: { id: string }) {
         </Button>
       </form>
     </details>
+  );
+}
+
+export function ShortcutIncomePermission({
+  id,
+  enabled,
+}: {
+  id: string;
+  enabled: boolean;
+}) {
+  const [state, action, pending] = useActionState(setShortcutIncome, {});
+  return (
+    <form action={action} className="form-grid">
+      <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="enabled" value={enabled ? "no" : "yes"} />
+      <p>
+        {enabled
+          ? "Acest telefon poate adăuga venituri și cheltuieli."
+          : "Acest telefon poate adăuga doar cheltuieli."}
+      </p>
+      {!enabled && (
+        <p>
+          Activarea permite adăugarea veniturilor în conturile Cash/Card alese
+          și creează categoriile lipsă Salariu, Bonus și Alte venituri.
+        </p>
+      )}
+      {state.error && (
+        <p role="alert" className="form-error">
+          {state.error}
+        </p>
+      )}
+      {state.success && <p role="status">{state.success}</p>}
+      <Button variant="outline" disabled={pending}>
+        {pending
+          ? "Se actualizează…"
+          : enabled
+            ? "Dezactivează veniturile"
+            : "Activează veniturile"}
+      </Button>
+    </form>
   );
 }

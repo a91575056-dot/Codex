@@ -19,7 +19,15 @@ export const shortcutExpenseSchema = z
     description: z.string().trim().max(160).default(""),
   })
   .strict();
+export const shortcutTransactionSchema = shortcutExpenseSchema
+  .extend({
+    kind: z.enum(["income", "expense"], {
+      error: "Alege Venit sau Cheltuială.",
+    }),
+  })
+  .strict();
 export type ShortcutDevice = {
+  allow_income: boolean;
   id: string;
   user_id: string;
   name: string;
@@ -41,6 +49,7 @@ export type DeviceView = Pick<
   | "created_at"
   | "expires_at"
   | "last_used_at"
+  | "allow_income"
 >;
 export type ShortcutReceipt = {
   transaction_id: string;

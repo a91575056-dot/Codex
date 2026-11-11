@@ -73,6 +73,32 @@ export async function revokeShortcutDevice(
   revalidatePath("/iphone");
   return {
     success:
-      "Acces revocat. Scurtătura de pe acel telefon nu mai poate trimite cheltuieli. Tranzacțiile existente se păstrează.",
+      "Acces revocat. Scurtătura de pe acel telefon nu mai poate trimite tranzacții. Tranzacțiile existente se păstrează.",
+  };
+}
+
+export async function setShortcutIncome(
+  _state: DeviceState,
+  form: FormData,
+): Promise<DeviceState> {
+  if (!supabaseConfig())
+    return { error: "Modul demo nu modifică dispozitive." };
+  const id = idSchema.safeParse(form.get("id"));
+  const enabled = form.get("enabled");
+  if (!id.success || !["yes", "no"].includes(String(enabled)))
+    return { error: "Alege telefonul și permisiunea." };
+  const { client } = await requireUser("/iphone");
+  const { error } = await client.rpc("configure_shortcut_income", {
+    p_device_id: id.data,
+    p_enabled: enabled === "yes",
+  });
+  if (error) return { error: "Permisiunea nu a putut fi actualizată." };
+  revalidatePath("/iphone");
+  revalidatePath("/settings");
+  return {
+    success:
+      enabled === "yes"
+        ? "Venituri activate. Categoriile Salariu, Bonus și Alte venituri sunt disponibile."
+        : "Venituri dezactivate. Cheltuielile rămân disponibile.",
   };
 }

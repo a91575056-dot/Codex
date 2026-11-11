@@ -67,6 +67,14 @@ export async function readShortcutJson(request: Request): Promise<unknown> {
   return JSON.parse(new TextDecoder().decode(bytes));
 }
 export function rpcError(error: { code?: string }) {
+  if (error.code === "42501")
+    return json(
+      {
+        error:
+          "Activează veniturile pentru acest telefon din FinTrack → iPhone și scurtături. Dacă telefonul nu îți aparține, reconectează-l din contul corect.",
+      },
+      403,
+    );
   if (error.code === "28000")
     return json(
       {

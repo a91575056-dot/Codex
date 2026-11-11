@@ -163,6 +163,16 @@ const server = createServer(async (req, res) => {
           "p_expected_updated_at",
         ],
         import_transactions: ["p_rows"],
+        configure_shortcut_income: ["p_device_id", "p_enabled"],
+        shortcut_finance_options: ["p_token"],
+        shortcut_income: [
+          "p_token",
+          "p_request_id",
+          "p_amount_minor",
+          "p_payment_method",
+          "p_category_id",
+          "p_description",
+        ],
         shortcut_options: ["p_token"],
         shortcut_expense: [
           "p_token",

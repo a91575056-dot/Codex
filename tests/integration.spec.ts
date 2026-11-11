@@ -492,6 +492,103 @@ test("native iPhone shortcut pairs once, saves without browser cookies, retries 
   await otherContext.close();
   await page.goto("/iphone");
   const device = card(page, "iPhone test nativ");
+  let financeOptions = await (
+    await request.post("/api/shortcut/finance-options", { headers })
+  ).json();
+  expect(financeOptions.income_enabled).toBe(false);
+  expect(financeOptions.income_categories).toEqual({});
+  const incomePayload = {
+    ...payload,
+    kind: "income",
+    request_id: "native-income-0001",
+    amount: "1250,50",
+    description: "Salariu din Shortcut",
+  };
+  expect(
+    (
+      await request.post("/api/shortcut/transactions", {
+        headers,
+        data: incomePayload,
+      })
+    ).status(),
+  ).toBe(403);
+  await device
+    .getByRole("button", { name: "Activează veniturile", exact: true })
+    .click();
+  await expect(
+    device.getByRole("button", {
+      name: "Dezactivează veniturile",
+      exact: true,
+    }),
+  ).toBeVisible();
+  financeOptions = await (
+    await request.post("/api/shortcut/finance-options", { headers })
+  ).json();
+  expect(financeOptions.income_enabled).toBe(true);
+  expect(financeOptions.income_categories.Bonus).toBeTruthy();
+  incomePayload.category_id = financeOptions.income_categories.Salariu;
+  response = await request.post("/api/shortcut/transactions", {
+    headers,
+    data: incomePayload,
+  });
+  expect(response.status()).toBe(201);
+  const incomeReceipt = await response.json();
+  expect(incomeReceipt.kind).toBe("income");
+  expect(incomeReceipt.amount_minor).toBe(125050);
+  expect(incomeReceipt.message).toContain("Venit salvat");
+  expect(response.headers()["cache-control"]).toContain("no-store");
+  expect(
+    (
+      await request.post("/api/shortcut/transactions", {
+        headers,
+        data: incomePayload,
+      })
+    ).status(),
+  ).toBe(200);
+  expect(
+    (
+      await request.post("/api/shortcut/transactions", {
+        headers,
+        data: { ...incomePayload, kind: "expense" },
+      })
+    ).status(),
+  ).toBe(422);
+  expect(
+    (
+      await request.post("/api/shortcut/transactions", {
+        headers,
+        data: { ...incomePayload, account_id: "forged" },
+      })
+    ).status(),
+  ).toBe(422);
+  // The unified expense endpoint shares idempotency with the original shortcut.
+  expect(
+    (
+      await request.post("/api/shortcut/transactions", {
+        headers,
+        data: { ...payload, kind: "expense" },
+      })
+    ).status(),
+  ).toBe(200);
+  await page.goto("/transactions");
+  await expect(
+    page.getByRole("heading", { name: "Salariu din Shortcut", exact: true }),
+  ).toHaveCount(1);
+  await page.goto("/iphone");
+  await device
+    .getByRole("button", { name: "Dezactivează veniturile", exact: true })
+    .click();
+  await expect(
+    device.getByRole("button", { name: "Activează veniturile", exact: true }),
+  ).toBeVisible();
+  expect(
+    (
+      await request.post("/api/shortcut/transactions", {
+        headers,
+        data: { ...incomePayload, request_id: "disabled-income-1" },
+      })
+    ).status(),
+  ).toBe(403);
   await device.getByText("Revocă accesul", { exact: true }).click();
   await device
     .getByLabel("Confirm revocarea accesului acestui telefon")

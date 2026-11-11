@@ -35,9 +35,9 @@ export function ShortcutGuide({
             </strong>
           </p>
           <p>
-            Permite doar adăugarea cheltuielilor și citirea listei categoriilor
-            de cheltuieli. Expiră după 90 de zile. Nu îl publica și nu distribui
-            scurtătura cu tokenul inclus.
+            Permite inițial doar cheltuieli și categoriile lor. Veniturile se
+            activează separat pentru telefon din această pagină. Expiră după 90
+            de zile. Nu îl publica și nu distribui scurtătura cu tokenul inclus.
           </p>
           <label>
             Tokenul telefonului
@@ -57,12 +57,85 @@ export function ShortcutGuide({
           </Button>
         </div>
       )}
+      <section className="demo-banner">
+        <h3>O singură scurtătură: Cheltuială sau Venit</h3>
+        <p>
+          Poți modifica scurtătura FinTrack existentă. Întâi activează
+          veniturile la telefonul tău, în lista de mai jos. Activarea adaugă
+          doar categoriile lipsă Salariu, Bonus și Alte venituri; nu
+          înregistrează bani.
+        </p>
+        <ol className="install-steps">
+          <li>
+            Păstrează primul <strong>Text</strong> cu tokenul. În primul bloc{" "}
+            <strong>Obține conținutul de la</strong>, schimbă doar adresa în{" "}
+            <code>{origin}/api/shortcut/finance-options</code>. Păstrează POST
+            și Authorization: Bearer urmat de spațiu și token.
+          </li>
+          <li>
+            După <strong>Obține dicționarul din intrare</strong>, salvează
+            dicționarul în variabila <code>Opțiuni</code>. Adaugă{" "}
+            <strong>Alege din meniu</strong>, cu întrebarea „Ce înregistrezi?”
+            și opțiunile <strong>Cheltuială</strong> și <strong>Venit</strong>.
+          </li>
+          <li>
+            În ramura Cheltuială: Text <code>expense</code> → Configurează
+            variabila <code>Tip</code>; apoi obține valoarea cheii{" "}
+            <code>categories</code> din <code>Opțiuni</code> → Configurează
+            variabila <code>Categorii</code>.
+          </li>
+          <li>
+            În ramura Venit: Text <code>income</code> → Configurează aceeași
+            variabilă <code>Tip</code>; apoi obține cheia{" "}
+            <code>income_categories</code> din <code>Opțiuni</code> →
+            Configurează aceeași variabilă <code>Categorii</code>. Dacă
+            dicționarul nu are valori, afișează „Activează veniturile pentru
+            telefon în FinTrack” și oprește scurtătura.
+          </li>
+          <li>
+            După <strong>Sfârșit meniu</strong>, folosește{" "}
+            <strong>Alege din listă</strong> cu dicționarul{" "}
+            <code>Categorii</code>. Alegerea directă din dicționar afișează
+            numele și returnează codul categoriei; salvează rezultatul ca{" "}
+            <code>CategorieID</code>. Nu aplica „Toate cheile” rezultatului
+            selectat.
+          </li>
+          <li>
+            Păstrează pașii existenți pentru sumă, cash/card, detalii și
+            CerereID. Schimbă întrebările în „Ce sumă în MDL?” și „Cash sau
+            card?”. Pentru un venit, card înseamnă încasare în contul ales
+            pentru card; cash înseamnă încasare în contul cash.
+          </li>
+          <li>
+            În ultimul bloc <strong>Obține conținutul de la</strong>, schimbă
+            adresa în <code>{origin}/api/shortcut/transactions</code>. Păstrează
+            POST, Authorization și cele cinci câmpuri JSON existente. Adaugă al
+            șaselea câmp, tip Text: <code>kind</code>, cu variabila{" "}
+            <code>Tip</code> (valoarea exactă expense sau income).
+          </li>
+          <li>
+            Șterge ultima <strong>Privire rapidă</strong>. Din rezultatul
+            ultimului bloc URL obține dicționarul, apoi cheia <code>error</code>
+            . <strong>Dacă</strong> error are o valoare, afișeaz-o prin{" "}
+            <strong>Afișează alertă</strong>. Altfel încheie scurtătura, fără
+            afișarea JSON-ului. Opțional poți afișa cheia <code>message</code>{" "}
+            printr-o notificare.
+          </li>
+        </ol>
+        <p>
+          La o eroare de conexiune verifică Tranzacții înainte de o nouă rulare.
+          O reîncercare trebuie să folosească același CerereID și același
+          conținut. Back Tap și automatizarea NFC pot continua să pornească
+          aceeași scurtătură FinTrack.
+        </p>
+      </section>
       <p>
         Configurarea se face o singură dată în aplicația Apple{" "}
         <strong>Scurtături / Shortcuts</strong>. După aceea, suma și selecțiile
         apar în dialogurile iPhone-ului, fără să deschidă browserul. Necesită
         internet și un iPhone compatibil cu Atingere spate.
       </p>
+      <h3>Varianta simplă existentă: doar cheltuieli</h3>
       <ol className="install-steps">
         <li>
           Creează scurtătura <strong>FinTrack — Cheltuială</strong>. Adaugă o

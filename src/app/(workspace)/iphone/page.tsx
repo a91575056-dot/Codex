@@ -7,6 +7,7 @@ import type { DeviceView } from "@/lib/shortcut";
 import { Heading, DemoNotice } from "@/components/finance-view";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
+  ShortcutIncomePermission,
   ShortcutDeviceForm,
   RevokeShortcutDevice,
 } from "@/components/shortcut-device-form";
@@ -18,7 +19,7 @@ export default async function IphonePage() {
       <>
         <Heading
           title="iPhone și scurtături"
-          description="Cheltuieli din dialogurile native Apple Shortcuts."
+          description="Venituri și cheltuieli din aceeași scurtătură Apple."
         />
         <DemoNotice />
         <p>
@@ -44,7 +45,7 @@ export default async function IphonePage() {
       client
         .from("shortcut_devices")
         .select(
-          "id,name,cash_account_id,card_account_id,created_at,expires_at,last_used_at",
+          "id,name,cash_account_id,card_account_id,created_at,expires_at,last_used_at,allow_income",
         )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
@@ -57,7 +58,7 @@ export default async function IphonePage() {
     <>
       <Heading
         title="iPhone și scurtături"
-        description="Introdu suma, alege Cash/Card și categoria în dialogurile iPhone-ului. Cheltuiala ajunge în același cont FinTrack."
+        description="Alege Venit sau Cheltuială, categoria, suma și Cash/Card în aceeași scurtătură FinTrack."
       />
       <p className="mb-6">
         <Link className="text-link" href="/install">
@@ -114,6 +115,10 @@ export default async function IphonePage() {
                   ? `Ultima utilizare: ${new Date(device.last_used_at).toLocaleString("ro-RO", { timeZone: "Europe/Chisinau" })}`
                   : "Încă neutilizat"}
               </p>
+              <ShortcutIncomePermission
+                id={device.id}
+                enabled={device.allow_income}
+              />
               <RevokeShortcutDevice id={device.id} />
             </CardContent>
           </Card>
