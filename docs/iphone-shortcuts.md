@@ -113,3 +113,17 @@ Migrația a fost aplicată în proiectul conectat la 11 noiembrie 2026 pentru
 finalizarea integrării iPhone cerute. Nu o reaplicați acolo. Au fost verificate
 RLS, accesul restrâns al rolului anon și revocarea accesului la schema privată.
 Testele nu au creat tranzacții sau dispozitive demo în contul personal.
+
+### Avertismentele intenționate ale linterului pentru RPC
+
+Supabase semnalează cele două RPC-uri ca SECURITY DEFINER executabile de anon și
+authenticated. Această expunere este intenționată pentru autentificarea limitată
+prin token de dispozitiv, verificată înaintea oricărei operații. Niciun rol client
+nu poate executa direct funcția privată. Schimbarea în SECURITY INVOKER sau revocarea
+EXECUTE fără o altă arhitectură de autentificare ar dezactiva Shortcuts. Nu acordați
+același model unor funcții care citesc solduri sau execută operații arbitrare.
+Decizia este acoperită prin teste cu token invalid, token expirat/revocat, alt
+utilizator, alt cont/categorie și parametri de scope modificați.
+Referințe de review:
+[anon SECURITY DEFINER](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable),
+[authenticated SECURITY DEFINER](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable).
