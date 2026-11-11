@@ -72,8 +72,12 @@ export function simulateDecision(
   base: DecisionBaseline,
   input: DecisionInputs,
 ) {
-  for (const n of [input.targetMinor, input.savedMinor, input.bufferMinor])
-    if (!Number.isSafeInteger(n) || n < 0 || n > 1000000000000)
+  for (const [n, limit] of [
+    [input.targetMinor, 1000000000000],
+    [input.savedMinor, Number.MAX_SAFE_INTEGER],
+    [input.bufferMinor, 1000000000000],
+  ])
+    if (!Number.isSafeInteger(n) || n < 0 || n > limit)
       throw Error("Sume invalide.");
   if (
     input.targetMinor <= 0 ||

@@ -180,6 +180,21 @@ Aplicația arată impactul marginal al fiecărei categorii și formulele folosit
 Modul conectat folosește ultimele trei luni încheiate din istoricul personal;
 `/demo/decision-lab` folosește agregate explicit fictive. Un istoric gol nu este
 înlocuit cu date demo. Scenariile nu modifică tranzacțiile și pot fi exportate local
-în JSON. Ipotezele nu persistă după închiderea paginii.
+în JSON. Simulările libere nu persistă după închiderea paginii; scenariile unui obiectiv pot fi salvate explicit pe server.
 
 [Model, exemplu verificabil, limite și evaluare pentru licență](docs/decision-lab.md).
+
+## Obiective de economisire și plan versus rezultat
+
+Meniul **Obiective** permite creare/editare/ștergere, contribuții datate și progres.
+Contribuțiile sunt economii înregistrate manual; nu mută bani și nu modifică soldul
+tranzacțiilor. „Simulează acest obiectiv” preia ținta și economiile în laborator.
+În modul conectat, poți salva un scenariu și compara ulterior planul original cu
+contribuțiile înregistrate. Modificarea țintei nu rescrie scenariile vechi.
+
+- Pagina personală: `/goals`; exemplul fictiv, doar pentru citire: `/demo/goals`.
+- Noua migrație: `supabase/migrations/20261111074234_savings_goals.sql`.
+- Migrația este deja aplicată proiectului FinTrack conectat; nu o rulați din nou acolo.
+- Pentru alt proiect Supabase, aplicați o singură dată, după migrația financiară inițială.
+
+[Flux, formule, securitate și limite](docs/savings-goals.md).

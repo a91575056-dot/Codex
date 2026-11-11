@@ -10,6 +10,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Heading } from "./finance-view";
+import { SaveScenarioForm } from "./goal-forms";
 import { money } from "@/lib/finance";
 import { simulateDecision, type DecisionBaseline } from "@/lib/decision-lab";
 const minor = (v: string) => {
@@ -24,7 +25,20 @@ const term = (months: number | null) =>
       ? "Obiectiv deja acoperit"
       : `${months} luni`;
 const subscribeReady = () => () => {};
-export function DecisionLab({ baseline }: { baseline: DecisionBaseline }) {
+export type LabGoal = {
+  id: string;
+  name: string;
+  targetMinor: number;
+  savedMinor: number;
+  dueOn: string;
+};
+export function DecisionLab({
+  baseline,
+  goal,
+}: {
+  baseline: DecisionBaseline;
+  goal?: LabGoal;
+}) {
   const ready = useSyncExternalStore(
     subscribeReady,
     () => true,
@@ -37,8 +51,8 @@ export function DecisionLab({ baseline }: { baseline: DecisionBaseline }) {
     [cuts, setCuts] = useState<Record<string, number>>({});
   const cutFor = (id: string) => (Object.hasOwn(cuts, id) ? cuts[id] : 0);
   const input = {
-    targetMinor: minor(target),
-    savedMinor: minor(saved),
+    targetMinor: goal?.targetMinor ?? minor(target),
+    savedMinor: goal?.savedMinor ?? minor(saved),
     bufferMinor: minor(buffer),
     shockPercent: shock,
     cuts,
@@ -87,6 +101,15 @@ export function DecisionLab({ baseline }: { baseline: DecisionBaseline }) {
         title="Laborator de decizii"
         description="Transformă o schimbare de obicei într-un termen pentru obiectivul tău."
       />
+      {goal && (
+        <div className="demo-banner">
+          <p>
+            <strong>{goal.name}</strong> · Termen dorit: {goal.dueOn}. Ținta și
+            economiile sunt preluate din obiectiv; le poți modifica în pagina
+            Obiective.
+          </p>
+        </div>
+      )}
       <div className="lab-intro">
         <span>
           <FlaskConical />
@@ -110,7 +133,8 @@ export function DecisionLab({ baseline }: { baseline: DecisionBaseline }) {
         <p className="empty-state" role="status">
           Nu există tranzacții în ultimele trei luni încheiate. Adaugă istoricul
           tău în Tranzacții sau explorează laboratorul din modul demo. Nu
-          folosim date fictive în contul personal.
+          folosim date fictive în contul personal. Salvarea scenariilor este
+          disponibilă după înregistrarea acestui istoric.
         </p>
       )}
       <div className="lab-layout">
@@ -124,7 +148,8 @@ export function DecisionLab({ baseline }: { baseline: DecisionBaseline }) {
                 Valoare obiectiv (RON)
                 <input
                   inputMode="decimal"
-                  value={target}
+                  value={goal ? (goal.targetMinor / 100).toFixed(2) : target}
+                  readOnly={!!goal}
                   onChange={(e) => setTarget(e.target.value)}
                 />
               </label>
@@ -132,7 +157,8 @@ export function DecisionLab({ baseline }: { baseline: DecisionBaseline }) {
                 Economii deja dedicate obiectivului (RON)
                 <input
                   inputMode="decimal"
-                  value={saved}
+                  value={goal ? (goal.savedMinor / 100).toFixed(2) : saved}
+                  readOnly={!!goal}
                   onChange={(e) => setSaved(e.target.value)}
                 />
               </label>
@@ -145,8 +171,9 @@ export function DecisionLab({ baseline }: { baseline: DecisionBaseline }) {
                 />
               </label>
               <small>
-                Valorile inițiale sunt ipoteze editabile, nu solduri preluate
-                din cont.
+                {goal
+                  ? "Economiile dedicate sunt contribuțiile înregistrate pentru acest obiectiv, nu soldul bancar."
+                  : "Valorile inițiale sunt ipoteze editabile, nu solduri preluate din cont."}
               </small>
             </CardContent>
           </Card>
@@ -354,14 +381,25 @@ export function DecisionLab({ baseline }: { baseline: DecisionBaseline }) {
                       <RotateCcw /> Resetează
                     </Button>
                   </div>
+                  {goal && !baseline.demo && (
+                    <SaveScenarioForm
+                      goalId={goal.id}
+                      targetMinor={goal.targetMinor}
+                      savedMinor={goal.savedMinor}
+                      bufferMinor={input.bufferMinor}
+                      shockPercent={shock}
+                      cuts={cuts}
+                      disabled={!result || !ready || !baseline.transactionCount}
+                    />
+                  )}
                 </CardContent>
               </Card>
             </>
           )}
           <p className="lab-privacy">
-            <ShieldCheck size={16} /> Scenariul se calculează în browser. Nu
-            salvăm ipotezele pe server; exportul conține agregate și alegerile
-            tale.
+            <ShieldCheck size={16} /> Scenariul se calculează în browser.
+            Ipotezele sunt păstrate pe server doar la salvarea unui scenariu
+            pentru un obiectiv. Exportul conține agregate și alegerile tale.
           </p>
         </div>
       </div>

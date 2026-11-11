@@ -59,9 +59,9 @@ Presupune că reducerile sunt realizabile și independente, că veniturile și
 cheltuielile rămân constante și că surplusul este alocat la sfârșitul fiecărei luni.
 Nu include inflație, randamente, dobânzi, incertitudine sau modificări ale prețurilor.
 Nu consideră automat o categorie esențială sau dispensabilă: utilizatorul decide.
-Nu modifică tranzacțiile, nu efectuează plăți și nu salvează ipotezele pe server.
+Nu modifică tranzacțiile și nu efectuează plăți. Simularea liberă nu persistă; în fluxul unui obiectiv conectat, utilizatorul poate alege salvarea unui scenariu pe server.
 Exportul JSON local include agregatele, ipotezele, formulele descriptive și rezultatele;
-nu include emailul sau lista tranzacțiilor individuale. Închiderea paginii pierde scenariul.
+nu include emailul sau lista tranzacțiilor individuale. Închiderea paginii pierde simularea nesalvată. [Scenariile obiectivelor](savings-goals.md) păstrează ipotezele și permit compararea cu progresul înregistrat.
 
 ## Evaluare propusă pentru licență — încă neefectuată
 

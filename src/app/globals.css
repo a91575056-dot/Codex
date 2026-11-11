@@ -1262,3 +1262,140 @@ footer {
     font-size: 25px;
   }
 }
+.goal-intro {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  border: 1px solid #d8e7dd;
+  background: #edf5f0;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  color: #56785f;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.goal-intro svg {
+  flex-shrink: 0;
+}
+.goal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+.goal-value {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+.goal-value strong {
+  font-size: 28px;
+  letter-spacing: -0.8px;
+}
+.goal-value span {
+  color: #7b9182;
+  font-size: 11px;
+}
+.goal-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #6a8773;
+  font-size: 11px;
+  margin: 10px 0 18px;
+}
+.goal-meta > span:last-child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.goal-detail {
+  border-top: 1px solid #e2ebe4;
+  margin-top: 18px;
+  padding-top: 12px;
+}
+.goal-detail > summary {
+  font-size: 12px;
+  color: #137d67;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+.goal-record {
+  padding: 14px 0;
+  border-top: 1px solid #eef2ee;
+}
+.goal-record > strong {
+  font-size: 13px;
+}
+.goal-record > span {
+  display: block;
+  font-size: 11px;
+  color: #728d7c;
+  margin-top: 6px;
+}
+.goal-plans {
+  margin: 24px 0;
+}
+.goal-plans > h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.goal-plan {
+  border: 1px solid #dce8e0;
+  border-radius: 10px;
+  background: #f7faf8;
+  padding: 18px;
+  margin-top: 14px;
+}
+.goal-plan > strong {
+  font-size: 13px;
+}
+.goal-plan > p {
+  font-size: 10px;
+  color: #6f8b79;
+  margin-top: 8px;
+  line-height: 1.8;
+}
+.goal-comparison {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+.goal-comparison span {
+  font-size: 9px;
+  color: #758d7c;
+  line-height: 1.8;
+}
+.goal-comparison b {
+  display: block;
+  font-size: 13px;
+  color: #31583e;
+}
+.goal-grid .delete-panel {
+  font-size: 12px;
+  margin-top: 15px;
+}
+.goal-grid .delete-panel > summary {
+  margin-bottom: 12px;
+}
+@media (max-width: 1100px) {
+  .goal-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .goal-comparison {
+    grid-template-columns: 1fr;
+  }
+  .goal-value strong {
+    font-size: 25px;
+  }
+}
+.goal-comparison b.negative {
+  color: #a44236;
+}

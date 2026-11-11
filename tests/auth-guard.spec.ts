@@ -6,6 +6,7 @@ test("configured app protects financial routes and exposes a separate read-only 
     "/",
     "/transactions",
     "/decision-lab",
+    "/goals",
     "/analytics",
     "/reports",
     "/settings",
