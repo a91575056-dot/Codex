@@ -5,6 +5,7 @@ test("configured app protects financial routes and exposes a separate read-only 
   for (const path of [
     "/",
     "/transactions",
+    "/decision-lab",
     "/analytics",
     "/reports",
     "/settings",

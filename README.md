@@ -171,3 +171,15 @@ npm ci
 
 Nu este necesară reclonarea. Salvați/commitați modificările locale înainte de schimbarea
 branch-ului. Git nu descarcă automat modificările de pe GitHub.
+
+## Laborator de decizii
+
+În meniul **Laborator de decizii** poți simula impactul reducerii unor cheltuieli
+asupra termenului unui obiectiv, apoi testa o scădere permanentă a venitului.
+Aplicația arată impactul marginal al fiecărei categorii și formulele folosite.
+Modul conectat folosește ultimele trei luni încheiate din istoricul personal;
+`/demo/decision-lab` folosește agregate explicit fictive. Un istoric gol nu este
+înlocuit cu date demo. Scenariile nu modifică tranzacțiile și pot fi exportate local
+în JSON. Ipotezele nu persistă după închiderea paginii.
+
+[Model, exemplu verificabil, limite și evaluare pentru licență](docs/decision-lab.md).

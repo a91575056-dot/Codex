@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   Landmark,
+  FlaskConical,
   LayoutDashboard,
   ArrowLeftRight,
   Wallet,
@@ -20,6 +21,7 @@ import { signOut } from "@/app/auth/actions";
 import { Button } from "./ui/button";
 const links = [
   ["/", "Panou de control", LayoutDashboard],
+  ["/decision-lab", "Laborator de decizii", FlaskConical],
   ["/transactions", "Tranzacții", ArrowLeftRight],
   ["/budgets", "Bugete", Wallet],
   ["/investments", "Investiții", ChartNoAxesCombined],

@@ -369,8 +369,8 @@ export function Dashboard({
           </p>
         </div>
         <Button asChild variant="outline">
-          <Link href={basePath + "/analytics"}>
-            Explorează analizele <ArrowRight />
+          <Link href={basePath + "/decision-lab"}>
+            Testează o decizie <ArrowRight />
           </Link>
         </Button>
       </div>

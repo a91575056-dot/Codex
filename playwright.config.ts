@@ -1,7 +1,7 @@
 import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests",
-  testMatch: "smoke.spec.ts",
+  testMatch: ["smoke.spec.ts", "decision-lab.spec.ts"],
   use: {
     baseURL: "http://127.0.0.1:3000",
     headless: true,
@@ -12,6 +12,10 @@ export default defineConfig({
   webServer: {
     command: "npm run dev -- --hostname 127.0.0.1",
     url: "http://127.0.0.1:3000",
+    env: {
+      NEXT_PUBLIC_SUPABASE_URL: "",
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "",
+    },
     reuseExistingServer: !process.env.CI,
   },
   reporter: "list",
