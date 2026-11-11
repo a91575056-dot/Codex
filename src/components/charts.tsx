@@ -1,4 +1,5 @@
 "use client";
+import { useId, useState } from "react";
 import {
   AreaChart,
   Area,
@@ -10,9 +11,19 @@ import {
   PieChart,
   Pie,
   Cell,
+  BarChart,
+  Bar,
 } from "recharts";
 import type { FinanceData } from "@/types/finance";
 import { money } from "@/lib/finance";
+const tooltipStyle = {
+  borderRadius: 8,
+  border: "1px solid var(--border)",
+  background: "var(--surface-elevated)",
+  color: "var(--text)",
+  fontSize: 12,
+  boxShadow: "0 6px 24px var(--shadow-color)",
+};
 export function CashChart({
   data,
   demo = true,
@@ -20,79 +31,112 @@ export function CashChart({
   data: FinanceData["cashFlow"];
   demo?: boolean;
 }) {
+  const [months, setMonths] = useState(6);
+  const id = useId().replace(/:/g, "");
   return (
-    <div
-      className="h-64 w-full"
-      role="img"
-      aria-label={
-        demo
-          ? "Flux de numerar fictiv în MDL, iunie–noiembrie 2026; valorile sunt disponibile sub grafic."
-          : "Flux de numerar în MDL pentru ultimele șase luni. Valorile sunt disponibile sub grafic."
-      }
-    >
-      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-        <AreaChart
-          data={data}
-          margin={{ top: 10, right: 8, left: -18, bottom: 0 }}
-        >
-          <defs>
-            <linearGradient id="cash-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#137d67" stopOpacity={0.2} />
-              <stop offset="100%" stopColor="#137d67" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid
-            vertical={false}
-            strokeDasharray="4 5"
-            stroke="#e6ece8"
-          />
-          <XAxis
-            dataKey="month"
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "#74877a", fontSize: 11 }}
-            dy={10}
-          />
-          <YAxis
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "#74877a", fontSize: 10 }}
-            tickFormatter={(v) => `${v / 1000}k`}
-          />
-          <Tooltip
-            formatter={(v) => money(Number(v))}
-            contentStyle={{ borderRadius: 12, border: "1px solid #e4eae7" }}
-          />
-          <Area
-            isAnimationActive={false}
-            type="monotone"
-            dataKey="income"
-            name="Venituri"
-            stroke="#137d67"
-            strokeWidth={3}
-            fill="url(#cash-fill)"
-          />
-          <Area
-            isAnimationActive={false}
-            type="monotone"
-            dataKey="expenses"
-            name="Cheltuieli"
-            stroke="#c8a369"
-            strokeWidth={2}
-            fill="transparent"
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
+    <>
+      <div className="chart-toolbar">
+        <span>{demo ? "Date demonstrative" : "Activitate înregistrată"}</span>
+        <div role="group" aria-label="Perioada graficului">
+          {[3, 6].map((n) => (
+            <button
+              key={n}
+              type="button"
+              aria-pressed={months === n}
+              onClick={() => setMonths(n)}
+            >
+              {n} luni
+            </button>
+          ))}
+        </div>
+      </div>
+      <div
+        className="chart-canvas"
+        role="img"
+        aria-label={`Venituri și cheltuieli în MDL, ultimele ${months} luni${demo ? ", date fictive" : ""}. Valorile sunt disponibile sub grafic.`}
+      >
+        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+          <AreaChart
+            data={data.slice(-months)}
+            margin={{ top: 12, right: 8, left: -15, bottom: 0 }}
+          >
+            <defs>
+              <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="0%"
+                  stopColor="var(--chart-1)"
+                  stopOpacity={0.16}
+                />
+                <stop
+                  offset="100%"
+                  stopColor="var(--chart-1)"
+                  stopOpacity={0}
+                />
+              </linearGradient>
+            </defs>
+            <CartesianGrid
+              vertical={false}
+              strokeDasharray="3 5"
+              stroke="var(--border)"
+            />
+            <XAxis
+              dataKey="month"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "var(--text-muted)", fontSize: 11 }}
+              dy={8}
+            />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "var(--text-muted)", fontSize: 10 }}
+              tickFormatter={(v) =>
+                Math.abs(v) >= 1000 ? `${v / 1000}k` : String(v)
+              }
+            />
+            <Tooltip
+              formatter={(v) => money(Number(v))}
+              contentStyle={tooltipStyle}
+              labelStyle={{ color: "var(--text)", marginBottom: 6 }}
+            />
+            <Area
+              isAnimationActive={false}
+              type="monotone"
+              dataKey="income"
+              name="Venituri"
+              stroke="var(--chart-1)"
+              strokeWidth={2.5}
+              fill={`url(#${id})`}
+            />
+            <Area
+              isAnimationActive={false}
+              type="monotone"
+              dataKey="expenses"
+              name="Cheltuieli"
+              stroke="var(--chart-4)"
+              strokeWidth={2}
+              strokeDasharray="5 3"
+              fill="transparent"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </>
   );
 }
 export function AllocationChart({ data }: { data: FinanceData["allocation"] }) {
+  if (!data.length)
+    return (
+      <p className="empty-state">
+        Nu există valori pozitive pentru distribuție.
+      </p>
+    );
   return (
     <>
       <div
         className="donut"
         role="img"
-        aria-label={data.map((d) => `${d.name} ${d.value}%`).join(", ")}
+        aria-label={data.map((d) => `${d.name}: ${d.value}%`).join(", ")}
       >
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <PieChart>
@@ -101,33 +145,156 @@ export function AllocationChart({ data }: { data: FinanceData["allocation"] }) {
               data={data}
               dataKey="value"
               innerRadius={65}
-              outerRadius={86}
-              paddingAngle={4}
-              stroke="none"
+              outerRadius={88}
+              paddingAngle={2}
+              stroke="var(--surface)"
+              strokeWidth={2}
             >
-              {data.map((d) => (
-                <Cell key={d.name} fill={d.color} />
+              {data.map((d, i) => (
+                <Cell
+                  key={d.name}
+                  fill={d.color || `var(--chart-${(i % 6) + 1})`}
+                />
               ))}
             </Pie>
-            <Tooltip formatter={(v) => `${v}%`} />
+            <Tooltip formatter={(v) => `${v}%`} contentStyle={tooltipStyle} />
           </PieChart>
         </ResponsiveContainer>
         <div className="donut-center">
           <strong>{data.length}</strong>
-          <span>
-            {data.length === 1 ? "clasă de active" : "clase de active"}
-          </span>
+          <span>categorii</span>
         </div>
       </div>
       <div className="allocation-legend">
-        {data.map((d) => (
+        {data.map((d, i) => (
           <div key={d.name}>
-            <i style={{ background: d.color }} />
-            {d.name}
+            <i
+              style={{ background: d.color || `var(--chart-${(i % 6) + 1})` }}
+            />
+            <span>{d.name}</span>
             <strong>{d.value}%</strong>
           </div>
         ))}
       </div>
     </>
+  );
+}
+export function ExpenseChart({
+  data,
+}: {
+  data: { name: string; amount: number }[];
+}) {
+  const total = data.reduce((s, d) => s + d.amount, 0);
+  if (!total)
+    return (
+      <p className="empty-state">
+        Nicio cheltuială înregistrată în luna curentă.
+      </p>
+    );
+  const rows = [...data].sort((a, b) => b.amount - a.amount);
+  const top = rows.slice(0, 5);
+  if (rows.length > 5)
+    top.push({
+      name: "Restul categoriilor",
+      amount: rows.slice(5).reduce((s, d) => s + d.amount, 0),
+    });
+  return (
+    <>
+      <div
+        className="donut"
+        role="img"
+        aria-label={rows.map((d) => `${d.name}: ${money(d.amount)}`).join(", ")}
+      >
+        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+          <PieChart>
+            <Pie
+              isAnimationActive={false}
+              data={top}
+              dataKey="amount"
+              innerRadius={65}
+              outerRadius={88}
+              paddingAngle={2}
+              stroke="var(--surface)"
+              strokeWidth={2}
+            >
+              {top.map((d, i) => (
+                <Cell key={d.name} fill={`var(--chart-${(i % 6) + 1})`} />
+              ))}
+            </Pie>
+            <Tooltip
+              formatter={(v) => money(Number(v))}
+              contentStyle={tooltipStyle}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="donut-center">
+          <strong>{money(total)}</strong>
+          <span>cheltuieli · MDL</span>
+        </div>
+      </div>
+      <div className="allocation-legend">
+        {top.map((d, i) => (
+          <div key={d.name}>
+            <i style={{ background: `var(--chart-${(i % 6) + 1})` }} />
+            <span>{d.name}</span>
+            <strong>{money(d.amount)}</strong>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+export function SavingsChart({ data }: { data: FinanceData["cashFlow"] }) {
+  return (
+    <div
+      className="chart-canvas"
+      role="img"
+      aria-label="Surplus lunar în MDL: venituri minus cheltuieli, fără a reprezenta economii transferate."
+    >
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+        <BarChart
+          data={data.map((d) => ({ ...d, net: d.income - d.expenses }))}
+          margin={{ left: -12, top: 12 }}
+        >
+          <CartesianGrid
+            vertical={false}
+            stroke="var(--border)"
+            strokeDasharray="3 5"
+          />
+          <XAxis
+            dataKey="month"
+            tick={{ fill: "var(--text-muted)", fontSize: 11 }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis
+            tick={{ fill: "var(--text-muted)", fontSize: 10 }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <Tooltip
+            formatter={(v) => money(Number(v))}
+            contentStyle={tooltipStyle}
+          />
+          <Bar
+            dataKey="net"
+            name="Surplus lunar"
+            radius={[4, 4, 0, 0]}
+            isAnimationActive={false}
+          >
+            {data.map((d, i) => (
+              <Cell
+                key={i}
+                fill={
+                  d.income - d.expenses >= 0
+                    ? "var(--chart-1)"
+                    : "var(--negative)"
+                }
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

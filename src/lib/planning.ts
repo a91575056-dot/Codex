@@ -24,12 +24,12 @@ export type HoldingRow = {
   created_at: string;
 };
 export const assetClasses = {
-  stocks: { label: "Acțiuni", color: "#137d67" },
-  etf: { label: "ETF-uri", color: "#79b7a2" },
-  bonds: { label: "Obligațiuni", color: "#bdcbbd" },
-  crypto: { label: "Criptoactive", color: "#b79bcb" },
-  cash: { label: "Numerar", color: "#d8b477" },
-  other: { label: "Alte active", color: "#8f9baf" },
+  stocks: { label: "Acțiuni", color: "var(--chart-1)" },
+  etf: { label: "ETF-uri", color: "var(--chart-2)" },
+  bonds: { label: "Obligațiuni", color: "var(--chart-3)" },
+  crypto: { label: "Criptoactive", color: "var(--chart-6)" },
+  cash: { label: "Numerar", color: "var(--chart-4)" },
+  other: { label: "Alte active", color: "var(--chart-5)" },
 } as const;
 export const resourceSchema = z.enum([
   "budget",

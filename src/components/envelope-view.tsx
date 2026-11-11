@@ -15,7 +15,7 @@ export function EnvelopeCards({
   accounts?: EnvelopeAccount[];
 }) {
   return (
-    <div className="goal-grid">
+    <div className="goal-grid envelope-grid">
       {balances.map((b) => (
         <Card key={b.id}>
           <CardHeader className="category-card-heading">

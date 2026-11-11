@@ -25,7 +25,7 @@ export function Heading({
   return (
     <div className="page-heading">
       <div>
-        <p className="eyebrow">PRIVIRE DE ANSAMBLU</p>
+        <p className="eyebrow">FINTRACK / SPAȚIUL TĂU</p>
         <h1>{title}</h1>
         <p className="subtitle">{description}</p>
       </div>
@@ -55,7 +55,7 @@ export function StatCard({
   change,
   icon: Icon,
   featured = false,
-  note = "față de luna trecută",
+  note = "sold și activitate în MDL",
   action,
 }: {
   label: string;
@@ -74,7 +74,9 @@ export function StatCard({
           <Icon size={18} />
         </span>
       </div>
-      <strong className="stat-value">{money(value)}</strong>
+      <strong className="stat-value">
+        {money(value).replace("\u00a0", " ")}
+      </strong>
       <div className="stat-bottom">
         <span>
           {change.includes("%") && <ArrowUpRight size={12} />}
@@ -96,26 +98,26 @@ export function Stats({ data }: { data: FinanceData }) {
       <StatCard
         label="Sold total"
         value={data.balance}
-        change="12,8%"
+        change="MDL"
         icon={Wallet}
         featured
       />
       <StatCard
         label="Venituri lunare"
         value={data.income}
-        change="5,0%"
+        change="MDL"
         icon={ArrowDownLeft}
       />
       <StatCard
         label="Cheltuieli lunare"
         value={data.expenses}
-        change="8,6%"
+        change="MDL"
         icon={ArrowUpRight}
       />
       <StatCard
         label="Valoare portofoliu"
         value={data.portfolio}
-        change="7,2%"
+        change="MDL"
         icon={TrendingUp}
         note="randament demo"
       />
@@ -138,7 +140,7 @@ export function Charts({
           <CardHeader className="section-heading">
             <div>
               <CardTitle>Flux de numerar</CardTitle>
-              <p>Venituri și cheltuieli în echilibru</p>
+              <p>Încasări și plăți înregistrate, în MDL</p>
             </div>
             <span className="period">
               {demo ? "Iun – Noi 2026" : "Ultimele 6 luni"}
@@ -147,11 +149,11 @@ export function Charts({
           <CardContent>
             <div className="chart-legend">
               <span>
-                <i style={{ background: "#137d67" }} />
+                <i style={{ background: "var(--chart-1)" }} />
                 Venituri
               </span>
               <span>
-                <i style={{ background: "#c8a369" }} />
+                <i style={{ background: "var(--chart-4)" }} />
                 Cheltuieli
               </span>
             </div>
@@ -189,7 +191,7 @@ export function Charts({
           <CardHeader>
             <CardTitle>Alocarea investițiilor</CardTitle>
             <p className="section-description">
-              Diversificare pentru viitorul tău
+              Ponderea valorilor introduse manual
             </p>
           </CardHeader>
           <CardContent>
@@ -238,7 +240,7 @@ export function Transactions({
       </CardHeader>
       <CardContent>
         <div className="table-scroll">
-          <table>
+          <table className="recent-transactions-table">
             <thead>
               <tr>
                 <th>Tranzacție</th>
@@ -328,8 +330,12 @@ export function Budgets({
                     width: `${Math.min(100, (b.spent / b.limit) * 100)}%`,
                     background:
                       b.spent > b.limit
-                        ? "#a44236"
-                        : ["#137d67", "#7c9cad", "#c8a369"][i % 3],
+                        ? "var(--negative)"
+                        : [
+                            "var(--chart-1)",
+                            "var(--chart-2)",
+                            "var(--chart-4)",
+                          ][i % 3],
                   }}
                 />
               </div>
@@ -359,7 +365,7 @@ export function Dashboard({
   return (
     <>
       <Heading
-        title="Bună, Alex 👋"
+        title="Bună, Alex"
         description="Iată cum arată finanțele tale astăzi."
         home
       />

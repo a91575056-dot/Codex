@@ -22,10 +22,10 @@ const demo: FinanceData = {
     { month: "Noi", income: 12500, expenses: 6840 },
   ],
   allocation: [
-    { name: "Acțiuni", value: 55, color: "#137d67" },
-    { name: "ETF-uri", value: 25, color: "#79b7a2" },
-    { name: "Obligațiuni", value: 15, color: "#c7ddd2" },
-    { name: "Numerar", value: 5, color: "#d8b477" },
+    { name: "Acțiuni", value: 55, color: "var(--chart-1)" },
+    { name: "ETF-uri", value: 25, color: "var(--chart-2)" },
+    { name: "Obligațiuni", value: 15, color: "var(--chart-3)" },
+    { name: "Numerar", value: 5, color: "var(--chart-4)" },
   ],
   budgets: [
     { name: "Alimente", spent: 1240, limit: 1800 },

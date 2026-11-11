@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Modal } from "./ui/modal";
 import { useActionState, useState } from "react";
 import {
   saveTransaction,
@@ -209,8 +210,12 @@ export function TransactionForm({
 export function DeleteTransaction({ id }: { id: string }) {
   const [state, action, pending] = useActionState(deleteTransaction, {});
   return (
-    <details className="delete-panel">
-      <summary>Șterge tranzacția</summary>
+    <Modal
+      trigger="Șterge tranzacția"
+      title="Șterge tranzacția?"
+      description="Înregistrarea va fi eliminată definitiv din cont și din calculele asociate."
+      danger
+    >
       <form action={action} className="form-grid">
         <input type="hidden" name="id" value={id} />
         <p>Această acțiune șterge definitiv tranzacția.</p>
@@ -224,10 +229,10 @@ export function DeleteTransaction({ id }: { id: string }) {
           </p>
         )}
         {state.success && <p role="status">{state.success}</p>}
-        <Button disabled={pending}>
+        <Button variant="danger" disabled={pending}>
           {pending ? "Se șterge…" : "Șterge definitiv"}
         </Button>
       </form>
-    </details>
+    </Modal>
   );
 }

@@ -8,7 +8,7 @@ import { connection } from "next/server";
 import { supabaseConfig } from "@/lib/supabase/config";
 import { getLedger } from "@/lib/supabase/repository";
 import { getPlanning } from "@/lib/supabase/planning-repository";
-import { budgetProgress, monthSchema } from "@/lib/planning";
+import { budgetProgress, monthSchema, safeTotal } from "@/lib/planning";
 import { todayISO } from "@/lib/goals";
 import { money } from "@/lib/finance";
 import { budgetFields } from "@/lib/form-fields";
@@ -43,6 +43,14 @@ export default async function BudgetsPage({
   const budgets = planning.budgets.filter((b) =>
     b.month_start.startsWith(month),
   );
+  const progress = budgets.map((b) =>
+    budgetProgress(
+      b,
+      transactionsInCurrency(ledger.accounts, ledger.transactions),
+    ),
+  );
+  const totalLimits = safeTotal(budgets.map((b) => b.limit_minor));
+  const totalSpent = safeTotal(progress.map((p) => p.spent));
   const names = new Map(ledger.categories.map((c) => [c.id, c.name]));
   return (
     <>
@@ -114,6 +122,23 @@ export default async function BudgetsPage({
         </label>
         <Button>Afișează</Button>
       </form>
+      <div className="stats-grid report-metrics">
+        {[
+          { label: "Limite stabilite", value: totalLimits },
+          { label: "Cheltuit în aceste categorii", value: totalSpent },
+          { label: "Rămas în limite", value: totalLimits - totalSpent },
+        ].map((c) => (
+          <Card key={c.label} className="stat-card">
+            <span className="stat-top">{c.label}</span>
+            <strong className={`stat-value ${c.value < 0 ? "negative" : ""}`}>
+              {money(c.value / 100)}
+            </strong>
+            <small className="text-muted-foreground">
+              {month} · MDL · bugete manuale
+            </small>
+          </Card>
+        ))}
+      </div>
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Adaugă un buget</CardTitle>
@@ -166,7 +191,7 @@ export default async function BudgetsPage({
                   <div
                     style={{
                       width: `${Math.min(100, p.percent)}%`,
-                      background: p.over ? "#a44236" : "#137d67",
+                      background: p.over ? "var(--negative)" : "var(--chart-1)",
                     }}
                   />
                 </div>

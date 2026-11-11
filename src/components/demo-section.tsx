@@ -1,3 +1,4 @@
+import { ThemeControl, CurrencyPreference } from "./theme-control";
 import { notFound } from "next/navigation";
 import {
   Heading,
@@ -71,6 +72,13 @@ export async function DemoSection({
             <CardTitle>Despre acest spațiu</CardTitle>
           </CardHeader>
           <CardContent className="settings-content">
+            <div className="theme-settings">
+              <h3>Aspectul aplicației</h3>
+              <ThemeControl />
+            </div>
+            <div className="form-grid mt-6">
+              <CurrencyPreference />
+            </div>
             <dl>
               <div>
                 <dt>Profil</dt>
@@ -78,7 +86,7 @@ export async function DemoSection({
               </div>
               <div>
                 <dt>Monedă</dt>
-                <dd>Leu românesc (MDL)</dd>
+                <dd>Leu moldovenesc (MDL)</dd>
               </div>
               <div>
                 <dt>Limbă</dt>

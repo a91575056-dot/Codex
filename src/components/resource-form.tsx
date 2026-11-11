@@ -2,6 +2,7 @@
 import { useActionState, useEffect, useRef, useId } from "react";
 import { saveResource, deleteResource } from "@/app/(workspace)/manage/actions";
 import type { Resource } from "@/lib/planning";
+import { Modal } from "./ui/modal";
 import { Button } from "./ui/button";
 export interface FieldSpec {
   name: string;
@@ -110,8 +111,12 @@ export function DeleteResource({
     {},
   );
   return (
-    <details className="delete-panel">
-      <summary>Șterge înregistrarea</summary>
+    <Modal
+      trigger="Șterge înregistrarea"
+      title="Șterge înregistrarea?"
+      description="Această acțiune elimină definitiv înregistrarea. Datele asociate pot împiedica ștergerea."
+      danger
+    >
       <form action={action} className="form-grid">
         <input name="id" type="hidden" value={id} />
         <p>
@@ -128,8 +133,10 @@ export function DeleteResource({
           </p>
         )}
         {state.success && <p role="status">{state.success}</p>}
-        <Button disabled={pending}>Șterge definitiv</Button>
+        <Button variant="danger" disabled={pending}>
+          Șterge definitiv
+        </Button>
       </form>
-    </details>
+    </Modal>
   );
 }

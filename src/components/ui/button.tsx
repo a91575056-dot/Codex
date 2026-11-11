@@ -7,8 +7,10 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-white hover:bg-primary/90",
-        outline: "border border-border bg-white hover:bg-muted",
+        default: "button-primary",
+        outline: "button-outline",
+        ghost: "button-ghost",
+        danger: "button-danger",
       },
       size: { default: "h-10 px-4", icon: "size-10" },
     },
@@ -27,6 +29,8 @@ function Button({
   return (
     <Comp
       data-slot="button"
+      data-variant={variant || "default"}
+      data-size={size || "default"}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />

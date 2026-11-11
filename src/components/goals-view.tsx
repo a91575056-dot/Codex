@@ -110,7 +110,7 @@ export function GoalsView({
                   <div
                     style={{
                       width: `${progress.percent}%`,
-                      background: "#137d67",
+                      background: "var(--chart-1)",
                     }}
                   />
                 </div>

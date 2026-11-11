@@ -1,3 +1,5 @@
+import { ExpenseChart, SavingsChart } from "@/components/charts";
+import { ChartCard } from "@/components/financial-ui";
 import { transactionsInCurrency } from "@/lib/currency";
 import { supabaseConfig } from "@/lib/supabase/config";
 import { getLedger, getUserFinance } from "@/lib/supabase/repository";
@@ -26,7 +28,21 @@ export default async function AnalyticsPage() {
         description="Indicatori în MDL, calculați până astăzi. Conturile EUR sunt separate; raportul în EUR este disponibil în Rapoarte."
       />
       <ConnectedStats data={data} />
-      <Charts data={data} only="cash" demo={false} />
+      <div className="dashboard-charts">
+        <Charts data={data} only="cash" demo={false} />
+        <ChartCard
+          title="Cheltuieli pe categorii"
+          description="Luna curentă · MDL"
+        >
+          <ExpenseChart data={data.expenseDistribution || []} />
+        </ChartCard>
+      </div>
+      <ChartCard
+        title="Evoluția surplusului lunar"
+        description="Venituri minus cheltuieli; nu reprezintă economii transferate"
+      >
+        <SavingsChart data={data.cashFlow} />
+      </ChartCard>
       <div className="bottom-grid mt-6">
         <Card>
           <CardHeader>

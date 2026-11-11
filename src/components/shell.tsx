@@ -17,28 +17,32 @@ import {
   FileText,
   Settings,
   ShieldCheck,
+  ChevronRight,
   ArrowUpRight,
   Menu,
   X,
 } from "lucide-react";
 import { signOut } from "@/app/auth/actions";
 import { Button } from "./ui/button";
+import { ThemeControl } from "./theme-control";
+import { Fragment } from "react";
 import { PullToRefresh } from "./pull-to-refresh";
 const links = [
-  ["/", "Panou de control", LayoutDashboard],
-  ["/goals", "Obiective", Target],
-  ["/decision-lab", "Laborator de decizii", FlaskConical],
-  ["/quick-expense", "Cheltuială rapidă", PlusCircle],
-  ["/transactions", "Tranzacții", ArrowLeftRight],
-  ["/transfers", "Transferuri", ArrowLeftRight],
-  ["/debts", "Datorii de primit", Wallet],
-  ["/recurring", "Recurente", Repeat],
-  ["/import", "Import CSV", Upload],
-  ["/budgets", "Bugete", Wallet],
-  ["/investments", "Investiții", ChartNoAxesCombined],
-  ["/analytics", "Analize", ChartPie],
-  ["/reports", "Rapoarte", FileText],
-  ["/settings", "Setări", Settings],
+  ["/", "Panou de control", LayoutDashboard, "General"],
+  ["/transactions", "Tranzacții", ArrowLeftRight, "General"],
+  ["/budgets", "Bugete", Wallet, "General"],
+  ["/investments", "Investiții", ChartNoAxesCombined, "Planificare"],
+  ["/goals", "Obiective", Target, "Planificare"],
+  ["/debts", "Datorii de primit", Wallet, "Planificare"],
+  ["/recurring", "Recurente", Repeat, "Planificare"],
+  ["/transfers", "Transferuri", ArrowLeftRight, "Planificare"],
+  ["/analytics", "Analize", ChartPie, "Perspective"],
+  ["/reports", "Rapoarte", FileText, "Perspective"],
+  ["/decision-lab", "Laborator de decizii", FlaskConical, "Perspective"],
+  ["/quick-expense", "Cheltuială rapidă", PlusCircle, "Instrumente"],
+  ["/import", "Import CSV", Upload, "Instrumente"],
+  ["/iphone", "iPhone și scurtături", ShieldCheck, "Instrumente"],
+  ["/settings", "Setări", Settings, "Instrumente"],
 ] as const;
 export function Shell({
   children,
@@ -122,9 +126,11 @@ export function Shell({
     const keyboard = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
       if (event.key !== "Tab") return;
-      const items = sidebar.current?.querySelectorAll<HTMLElement>(
-        "a[href], button:not([disabled])",
-      );
+      const items = Array.from(
+        sidebar.current?.querySelectorAll<HTMLElement>(
+          "a[href], button:not([disabled])",
+        ) ?? [],
+      ).filter((item) => item.getClientRects().length > 0);
       if (!items?.length) return;
       const first = items[0],
         last = items[items.length - 1];
@@ -142,7 +148,7 @@ export function Shell({
       if (content) content.inert = false;
       if (tabs) tabs.inert = false;
       document.removeEventListener("keydown", keyboard);
-      trigger?.focus();
+      trigger?.focus({ preventScroll: true });
     };
   }, [open]);
   const home = prefix || "/";
@@ -157,17 +163,20 @@ export function Shell({
         <Link href={prefix || "/"} className="brand">
           <Landmark /> FinTrack.
         </Link>
-        <Button
-          ref={menuButton}
-          variant="outline"
-          size="icon"
-          aria-label={open ? "Închide meniul" : "Deschide meniul"}
-          aria-expanded={open}
-          aria-controls="sidebar"
-          onClick={() => setOpen(!open)}
-        >
-          {open ? <X /> : <Menu />}
-        </Button>
+        <div className="mobile-bar-actions">
+          <ThemeControl />
+          <Button
+            ref={menuButton}
+            variant="outline"
+            size="icon"
+            aria-label={open ? "Închide meniul" : "Deschide meniul"}
+            aria-expanded={open}
+            aria-controls="sidebar"
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <X /> : <Menu />}
+          </Button>
+        </div>
       </div>
       {open && (
         <button
@@ -198,54 +207,80 @@ export function Shell({
           FinTrack<span className="brand-dot">.</span>
         </Link>
         <p className="gesture-hint">Glisează spre stânga pentru a închide</p>
-        <p className="nav-label">SPAȚIUL TĂU FINANCIAR</p>
         <nav aria-label="Navigare principală">
-          {links.map(([href, label, Icon]) => (
-            <Link
-              key={href}
-              href={
-                [
-                  "/quick-expense",
-                  "/transfers",
-                  "/debts",
-                  "/recurring",
-                  "/import",
-                ].includes(href)
-                  ? href
-                  : prefix + (href === "/" ? "" : href) || "/"
-              }
-              aria-current={
-                path === (prefix + (href === "/" ? "" : href) || "/")
-                  ? "page"
-                  : undefined
-              }
-              onClick={(event) => {
-                if (
-                  href === "/" &&
-                  !event.ctrlKey &&
-                  !event.metaKey &&
-                  !event.shiftKey &&
-                  !event.altKey
-                ) {
-                  event.preventDefault();
-                  if (
-                    window.location.pathname === home &&
-                    !window.location.search &&
-                    !window.location.hash
-                  ) {
-                    window.scrollTo(0, 0);
-                    window.location.reload();
-                  } else window.location.assign(home);
-                } else setOpen(false);
-              }}
-              className={`nav-link ${path === (prefix + (href === "/" ? "" : href) || "/") ? "active" : ""}`}
-            >
-              <Icon size={19} />
-              {label}
-              {path === (prefix + (href === "/" ? "" : href) || "/") && (
-                <span className="active-dot" />
+          {links.map(([href, label, Icon, group], index) => (
+            <Fragment key={href}>
+              {(index === 0 || group !== links[index - 1][3]) && (
+                <p className="nav-label">{group}</p>
               )}
-            </Link>
+              <Link
+                key={href}
+                href={
+                  [
+                    "/quick-expense",
+                    "/transfers",
+                    "/debts",
+                    "/recurring",
+                    "/import",
+                    "/iphone",
+                  ].includes(href)
+                    ? href
+                    : prefix + (href === "/" ? "" : href) || "/"
+                }
+                aria-current={
+                  path ===
+                  ([
+                    "/quick-expense",
+                    "/transfers",
+                    "/debts",
+                    "/recurring",
+                    "/import",
+                    "/iphone",
+                  ].includes(href)
+                    ? href
+                    : prefix + (href === "/" ? "" : href) || "/")
+                    ? "page"
+                    : undefined
+                }
+                onClick={(event) => {
+                  if (
+                    href === "/" &&
+                    !event.ctrlKey &&
+                    !event.metaKey &&
+                    !event.shiftKey &&
+                    !event.altKey
+                  ) {
+                    event.preventDefault();
+                    if (
+                      window.location.pathname === home &&
+                      !window.location.search &&
+                      !window.location.hash
+                    ) {
+                      window.history.scrollRestoration = "manual";
+                      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+                      window.location.reload();
+                    } else window.location.assign(home);
+                  } else setOpen(false);
+                }}
+                className={`nav-link ${path === (["/quick-expense", "/transfers", "/debts", "/recurring", "/import", "/iphone"].includes(href) ? href : prefix + (href === "/" ? "" : href) || "/") ? "active" : ""}`}
+              >
+                <Icon size={19} />
+                {label}
+                {path ===
+                  ([
+                    "/quick-expense",
+                    "/transfers",
+                    "/debts",
+                    "/recurring",
+                    "/import",
+                    "/iphone",
+                  ].includes(href)
+                    ? href
+                    : prefix + (href === "/" ? "" : href) || "/") && (
+                  <span className="active-dot" />
+                )}
+              </Link>
+            </Fragment>
           ))}
         </nav>
         <div className="sidebar-bottom">
@@ -265,7 +300,16 @@ export function Shell({
             </Link>
           </div>
           <div className="profile">
-            <span className="avatar">{demo ? "AD" : "CP"}</span>
+            <span className="avatar">
+              {demo
+                ? "AD"
+                : (profileName || "Cont personal")
+                    .split(" ")
+                    .slice(0, 2)
+                    .map((w) => w[0])
+                    .join("")
+                    .toUpperCase()}
+            </span>
             <div>
               <strong>
                 {demo ? "Alex Demo" : profileName || "Cont personal"}
@@ -280,19 +324,32 @@ export function Shell({
       </aside>
       <div ref={background} className="main-shell">
         <header className="topbar">
-          <span>Finanțele tale, în perspectivă.</span>
-          <span className="demo-pill">
-            <i /> {demo ? "Mod demonstrativ" : "Cont autentificat"}
-          </span>
-        </header>
-        {!demo && (
-          <div className="session-bar">
-            <Link href="/demo">Explorează DEMO separat</Link>
-            <form action={signOut}>
-              <Button variant="outline">Deconectare</Button>
-            </form>
+          <div className="breadcrumb">
+            <span>Spațiul {demo ? "demonstrativ" : "personal"}</span>
+            <ChevronRight size={14} />
+            <strong>
+              {links.find(
+                ([href]) =>
+                  path === (prefix + (href === "/" ? "" : href) || "/") ||
+                  path === href,
+              )?.[1] || "FinTrack"}
+            </strong>
           </div>
-        )}
+          <div className="topbar-actions">
+            <span className="demo-pill">
+              <i /> {demo ? "Mod demonstrativ" : "Cont autentificat"}
+            </span>
+            <ThemeControl />
+            {!demo && (
+              <div className="session-bar">
+                <Link href="/demo">Explorează DEMO separat</Link>
+                <form action={signOut}>
+                  <Button variant="outline">Deconectare</Button>
+                </form>
+              </div>
+            )}
+          </div>
+        </header>
         <main id="main" tabIndex={-1}>
           {children}
         </main>
@@ -322,7 +379,8 @@ export function Shell({
               !window.location.search &&
               !window.location.hash
             ) {
-              window.scrollTo(0, 0);
+              window.history.scrollRestoration = "manual";
+              window.scrollTo({ top: 0, left: 0, behavior: "instant" });
               window.location.reload();
             } else window.location.assign(home);
           }}

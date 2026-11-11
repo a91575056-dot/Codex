@@ -51,6 +51,9 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
   ) {
     await page.goto("/transactions");
     const f = card(page, "Adaugă o tranzacție");
+    await f
+      .getByRole("button", { name: "Adaugă o tranzacție", exact: true })
+      .click();
     await f.getByLabel("Descriere", { exact: true }).fill(description);
     await f
       .getByRole("combobox", { name: "Tip", exact: true })
@@ -88,6 +91,9 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
   await expect(page.getByText("Buget depășit", { exact: true })).toBeVisible();
   await page.goto("/investments");
   form = card(page, "Înregistrează un activ");
+  await form
+    .getByRole("button", { name: "Adaugă investiție", exact: true })
+    .click();
   await form.getByLabel("Numele activului").fill("ETF educație");
   await form.getByLabel("Cantitate", { exact: true }).fill("2,5");
   await form.getByLabel("Cost mediu pe unitate (MDL)").fill("100");
@@ -96,12 +102,22 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
   await expect(
     page.getByRole("heading", { name: "ETF educație", exact: true }),
   ).toBeVisible();
-  const position = card(page, "ETF educație");
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Închide dialogul" })
+    .click();
+  const position = page.locator(".holding-row").filter({
+    has: page.getByRole("heading", { name: "ETF educație", exact: true }),
+  });
   await position
     .getByText("Actualizează poziția sau prețul", { exact: true })
     .click();
   await position.getByLabel("Preț introdus pe unitate (MDL)").fill("130");
   await position.getByRole("button", { name: "Salvează modificările" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Închide dialogul" })
+    .click();
   await expect(position.getByText("325 MDL", { exact: true })).toBeVisible();
   await page.goto("/goals");
   form = card(page, "Un obiectiv nou");
@@ -144,7 +160,9 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
   expect(csv).not.toContain("Venit istoric");
   await page.goto("/");
   await expect(page.getByText("5.899,5 MDL", { exact: true })).toBeVisible();
-  await expect(page.getByText("325 MDL", { exact: true })).toBeVisible();
+  await expect(
+    page.locator(".stats-grid").getByText("325 MDL", { exact: true }),
+  ).toBeVisible();
   await page.screenshot({
     path: "artifacts/connected-dashboard.png",
     fullPage: true,
@@ -162,6 +180,7 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
   }
   await context.close();
   await page.goto("/investments");
+  await position.getByRole("button", { name: "Actualizează poziția" }).click();
   await position.getByText("Șterge înregistrarea", { exact: true }).click();
   await position.getByLabel("Confirm ștergerea").check();
   await position.getByRole("button", { name: "Șterge definitiv" }).click();
@@ -645,6 +664,9 @@ test("dashboard exposes income and every feature; opening balance stays distinct
   await expect(
     page.getByText(/Acesta nu se numără ca venit lunar/),
   ).toBeVisible();
+  await page
+    .getByText("Toate instrumentele financiare", { exact: true })
+    .click();
   const tools = page.getByRole("region", { name: "Ce vrei să gestionezi?" });
   for (const href of [
     "/settings",
@@ -996,6 +1018,9 @@ test("EUR accounts keep separate totals and receivables settle into history", as
   await expect(card(page, "Economii euro")).toContainText("500 EUR");
   await page.goto("/transactions");
   const entry = card(page, "Adaugă o tranzacție");
+  await entry
+    .getByRole("button", { name: "Adaugă o tranzacție", exact: true })
+    .click();
   await entry.getByLabel("Descriere", { exact: true }).fill("Salariu în euro");
   await entry
     .getByRole("combobox", { name: "Tip", exact: true })
@@ -1112,6 +1137,9 @@ test("automatic budgets allocate salaries, carry balances, reserve investments a
   ) {
     await page.goto("/transactions");
     const form = card(page, "Adaugă o tranzacție");
+    await form
+      .getByRole("button", { name: "Adaugă o tranzacție", exact: true })
+      .click();
     await form.getByLabel("Descriere", { exact: true }).fill(description);
     await form
       .getByRole("combobox", { name: "Tip", exact: true })
@@ -1183,11 +1211,9 @@ test("automatic budgets allocate salaries, carry balances, reserve investments a
     caret: "initial",
     fullPage: true,
   });
-  const investment = section
-    .locator("[data-slot=card]")
-    .filter({
-      has: page.getByRole("heading", { name: "Investiții", exact: true }),
-    });
+  const investment = section.locator("[data-slot=card]").filter({
+    has: page.getByRole("heading", { name: "Investiții", exact: true }),
+  });
   await investment
     .getByText("Am investit suma disponibilă", { exact: true })
     .click();
@@ -1214,4 +1240,99 @@ test("automatic budgets allocate salaries, carry balances, reserve investments a
   await entry("income", "Venit după investiție", "1000", "Alte venituri");
   await page.goto("/");
   await expect(investment.locator(".stat-value")).toHaveText("150 MDL");
+});
+
+test("redesign: connected responsive layouts and persistent themes", async ({
+  page,
+}) => {
+  test.setTimeout(240000);
+  await login(page, "a@fintrack.invalid");
+  for (const theme of ["light", "dark"]) {
+    await page.evaluate((value) => {
+      localStorage.setItem("fintrack.theme", value);
+    }, theme);
+    for (const width of [375, 768, 1440]) {
+      await page.setViewportSize({ width, height: 960 });
+      for (const route of [
+        "/",
+        "/transactions",
+        "/investments",
+        "/budgets",
+        "/analytics",
+        "/reports",
+        "/settings",
+      ]) {
+        await page.goto(route);
+        await page.waitForLoadState("networkidle");
+        await page.evaluate(() => document.fonts.ready);
+        await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+        await expect(page.locator("main")).toBeVisible();
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+          `${route} ${theme} ${width}`,
+        ).toBe(true);
+        await page.screenshot({
+          path: `artifacts/redesign-${route.slice(1) || "dashboard"}-${theme}-${width}.png`,
+          fullPage: true,
+          caret: "initial",
+        });
+      }
+    }
+  }
+  await page
+    .getByRole("button", { name: "Temă luminoasă", exact: true })
+    .filter({ visible: true })
+    .first()
+    .click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+  await page
+    .getByRole("button", { name: "Tema dispozitivului", exact: true })
+    .filter({ visible: true })
+    .first()
+    .click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.getByLabel("Moneda implicită a rapoartelor").selectOption("EUR");
+  await page.goto("/reports");
+  await expect(page.getByLabel("Moneda raportului")).toHaveValue("EUR");
+  await page.goto("/transactions");
+  await page
+    .getByRole("button", { name: "Adaugă o tranzacție", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Adaugă o tranzacție", exact: true }),
+  ).toBeFocused();
+  await page.setViewportSize({ width: 320, height: 780 });
+  for (const route of [
+    "/",
+    "/transactions",
+    "/investments",
+    "/budgets",
+    "/analytics",
+    "/reports",
+    "/settings",
+    "/debts",
+    "/recurring",
+    "/transfers",
+    "/import",
+    "/iphone",
+    "/goals",
+    "/decision-lab",
+    "/quick-expense",
+  ]) {
+    await page.goto(route);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      `320px ${route}`,
+    ).toBe(true);
+  }
 });

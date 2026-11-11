@@ -1,3 +1,4 @@
+import { ThemeControl, CurrencyPreference } from "@/components/theme-control";
 import { getEnvelopes } from "@/lib/supabase/envelope-repository";
 import { EnvelopeConfig, StartEnvelopes } from "@/components/envelope-forms";
 import { ProfileNameForm } from "@/components/profile-name-form";
@@ -23,6 +24,13 @@ export default async function SettingsPage() {
         title="Setări"
         description="Conturi în MDL și EUR, cu solduri separate. Categorii distincte pentru venituri și cheltuieli."
       />
+      <nav className="settings-nav" aria-label="Secțiunile setărilor">
+        <a href="#profile-settings">Profil</a>
+        <a href="#appearance-settings">Aspect</a>
+        <a href="#budget-percentages">Procente</a>
+        <a href="#account-settings">Conturi</a>
+        <a href="#category-settings">Categorii</a>
+      </nav>
       <div className="demo-banner">
         <p>
           Cont: {ledger.user.email} · Fus orar pentru calcule: Europe/Chisinau.
@@ -44,12 +52,29 @@ export default async function SettingsPage() {
           Schimbă parola contului
         </Link>
       </p>
-      <Card className="mb-6">
+      <Card id="profile-settings" className="mb-6">
         <CardHeader>
           <CardTitle>Profilul tău</CardTitle>
         </CardHeader>
         <CardContent>
           <ProfileNameForm name={profileName(ledger.user)} />
+        </CardContent>
+      </Card>
+      <Card id="appearance-settings" className="mb-6">
+        <CardHeader>
+          <CardTitle>Preferințe de afișare</CardTitle>
+        </CardHeader>
+        <CardContent className="form-grid">
+          <div className="theme-settings">
+            <div>
+              <h3>Aspectul aplicației</h3>
+              <p className="lab-help">
+                Luminos, întunecat sau după dispozitiv.
+              </p>
+            </div>
+            <ThemeControl />
+          </div>
+          <CurrencyPreference />
         </CardContent>
       </Card>
       <section id="budget-percentages" className="mb-8">
@@ -100,7 +125,9 @@ export default async function SettingsPage() {
           </CardContent>
         </Card>
       </div>
-      <h2 className="overview-heading">Conturile tale</h2>
+      <h2 id="account-settings" className="overview-heading">
+        Conturile tale
+      </h2>
       <div className="goal-grid mb-8">
         {ledger.accounts.map((a) => {
           const balance = accountBalance(
@@ -131,7 +158,9 @@ export default async function SettingsPage() {
           );
         })}
       </div>
-      <h2 className="overview-heading">Categorii de venituri și cheltuieli</h2>
+      <h2 id="category-settings" className="overview-heading">
+        Categorii de venituri și cheltuieli
+      </h2>
       <div className="goal-grid">
         {ledger.categories.map((c) => (
           <Card key={c.id}>

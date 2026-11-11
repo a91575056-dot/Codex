@@ -1,3 +1,5 @@
+import { financialReport } from "@/lib/reports";
+import { currentMonth } from "@/lib/finance-calculations";
 import { getEnvelopes } from "./envelope-repository";
 import { envelopeBalances } from "@/lib/envelopes";
 import { transactionsInCurrency } from "@/lib/currency";
@@ -108,6 +110,28 @@ export async function getUserFinance() {
         date: r.next_due_on,
         amount: ((r.kind === "income" ? 1 : -1) * r.amount_minor) / 100,
       })),
+    expenseDistribution: financialReport(
+      transactionsInCurrency(ledger.accounts, ledger.transactions),
+      ledger.categories,
+      currentMonth() + "-01",
+      todayISO(),
+    )
+      .categories.filter((c) => c.kind === "expense" && c.total > 0)
+      .map((c) => ({ name: c.name, amount: c.total / 100 })),
+    portfolioDetails: {
+      cost: portfolio.cost / 100,
+      profit: portfolio.profit / 100,
+      percent: portfolio.percent,
+      positions: portfolio.positions.map((h) => ({
+        id: h.id,
+        name: h.name,
+        symbol: h.symbol,
+        assetClass: h.asset_class,
+        value: h.value / 100,
+        profit: h.profit / 100,
+        priceOn: h.price_on,
+      })),
+    },
     portfolio: portfolio.value / 100,
     allocation: portfolio.allocation,
     budgets: planning.budgets

@@ -1,3 +1,5 @@
+import { FinancialAmount } from "@/components/financial-ui";
+import { cookies } from "next/headers";
 import { transactionsInCurrency } from "@/lib/currency";
 import { connection } from "next/server";
 import { supabaseConfig } from "@/lib/supabase/config";
@@ -23,7 +25,8 @@ export default async function ReportsPage({
     return <DemoSection params={Promise.resolve({ section: "reports" })} />;
   await connection();
   const params = await searchParams;
-  const currency = params.currency === "EUR" ? "EUR" : "MDL";
+  const preference = (await cookies()).get("fintrack-report-currency")?.value;
+  const currency = (params.currency || preference) === "EUR" ? "EUR" : "MDL";
   const defaults = { from: todayISO().slice(0, 7) + "-01", to: todayISO() };
   const parsed = reportRangeSchema.safeParse({
     from: params.from || defaults.from,
@@ -37,6 +40,22 @@ export default async function ReportsPage({
     range.from,
     range.to,
   );
+  const monthly = Array.from(
+    new Set(report.rows.map((t) => t.occurred_on.slice(0, 7))),
+  )
+    .sort()
+    .map((month) => {
+      const [year, m] = month.split("-").map(Number);
+      return {
+        month,
+        ...financialReport(
+          report.rows,
+          ledger.categories,
+          month + "-01",
+          new Date(Date.UTC(year, m, 0)).toISOString().slice(0, 10),
+        ),
+      };
+    });
   const names = new Map(ledger.categories.map((c) => [c.id, c.name]));
   const portfolio = portfolioSummary(planning.holdings);
   return (
@@ -73,7 +92,7 @@ export default async function ReportsPage({
         {range.from} — {range.to}. {report.rows.length} tranzacții. Dacă
         selectezi date viitoare, raportul include și înregistrările respective.
       </p>
-      <div className="stats-grid">
+      <div className="stats-grid report-metrics">
         {[
           { label: "Venituri în interval", value: report.income },
           { label: "Cheltuieli în interval", value: report.expenses },
@@ -104,6 +123,57 @@ export default async function ReportsPage({
         />
         <PrintReport />
       </div>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Sinteză lunară</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {!monthly.length ? (
+            <p className="empty-state">
+              Nu există activitate în perioada aleasă.
+            </p>
+          ) : (
+            <div className="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Lună</th>
+                    <th className="text-right">Venituri</th>
+                    <th className="text-right">Cheltuieli</th>
+                    <th className="text-right">Flux net</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {monthly.map((m) => (
+                    <tr key={m.month}>
+                      <td>{m.month}</td>
+                      <td className="amount">
+                        <FinancialAmount
+                          value={m.income / 100}
+                          currency={currency}
+                        />
+                      </td>
+                      <td className="amount">
+                        <FinancialAmount
+                          value={m.expenses / 100}
+                          currency={currency}
+                        />
+                      </td>
+                      <td className="amount">
+                        <FinancialAmount
+                          value={m.net / 100}
+                          currency={currency}
+                          signed
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Distribuție pe categorii</CardTitle>

@@ -6,7 +6,7 @@ test("dashboard, all navigation destinations and demo export", async ({
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Bună, Alex 👋" }),
+    page.getByRole("heading", { name: "Bună, Alex" }),
   ).toBeVisible();
   await expect(page.locator(".recharts-surface").first()).toBeVisible();
   const sections = [

@@ -67,7 +67,7 @@ test("mobile menu supports swipes, keyboard dismissal and quick navigation", asy
     menu.getByRole("button", { name: "Închide meniul" }),
   ).toBeFocused();
   await page.keyboard.press("Shift+Tab");
-  await expect(menu.locator("a").last()).toBeFocused();
+  await expect(menu.locator("a:visible").last()).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(menu).not.toBeVisible();
   await expect(page.locator(".main-shell")).not.toHaveAttribute("inert", "");

@@ -6,8 +6,8 @@ export default function ErrorPage({ reset }: { reset: () => void }) {
     <main className="auth-shell form-grid">
       <h1>Conexiunea nu este disponibilă</h1>
       <p role="alert">
-        Nu am putut încărca această pagină. Verifică setările Supabase și
-        conexiunea, apoi încearcă din nou.
+        Nu am putut încărca această pagină. Verifică conexiunea, apoi încearcă
+        din nou.
       </p>
       <Button onClick={reset}>Încearcă din nou</Button>
       <Link href="/demo" className="text-link">
