@@ -1771,3 +1771,82 @@ footer {
   overflow-y: auto;
   overscroll-behavior: contain;
 }
+
+/* Thumb-friendly mobile navigation; safe areas keep controls above the home indicator. */
+.mobile-tabs,
+.drawer-close,
+.gesture-hint {
+  display: none;
+}
+@media (max-width: 640px) {
+  .mobile-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 30;
+    background: #fff;
+    border-top: 1px solid #e3ebe5;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  }
+  .mobile-tabs a,
+  .mobile-tabs button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 52px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: #52675e;
+    font: inherit;
+    font-size: 11px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .mobile-tabs [aria-current="page"] {
+    background: #edf6f1;
+    color: #137d67;
+    font-weight: 700;
+  }
+  .mobile-tabs .capture-tab {
+    color: #137d67;
+  }
+  .main-shell {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+  .drawer-close {
+    display: flex;
+    position: absolute;
+    right: 10px;
+    top: 8px;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 12px;
+    background: #edf6f1;
+    color: #137d67;
+    cursor: pointer;
+  }
+  .sidebar {
+    padding-top: 60px;
+    overscroll-behavior: contain;
+  }
+  .gesture-hint {
+    display: block;
+    color: #52675e;
+    font-size: 11px;
+    margin: 12px 0 0;
+  }
+}
+@media print {
+  .mobile-tabs,
+  .drawer-close,
+  .gesture-hint {
+    display: none;
+  }
+}

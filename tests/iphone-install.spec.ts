@@ -41,3 +41,55 @@ test("PWA advertises standalone installation and demo quick capture cannot save"
     ).status(),
   ).toBe(503);
 });
+
+test("mobile menu supports swipes, keyboard dismissal and quick navigation", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/demo");
+  const menu = page.locator("#sidebar");
+  const swipe = async (x: number, y: number, endX: number, endY: number) => {
+    await page
+      .locator("main")
+      .dispatchEvent("touchstart", {
+        touches: [{ identifier: 1, clientX: x, clientY: y }],
+      });
+    await page.locator("main").dispatchEvent("touchend", {
+      changedTouches: [{ identifier: 1, clientX: endX, clientY: endY }],
+    });
+  };
+  await swipe(25, 200, 30, 500);
+  await expect(menu).not.toBeVisible();
+  await swipe(180, 200, 320, 200);
+  await expect(menu).not.toBeVisible();
+  await swipe(25, 200, 170, 210);
+  await expect(menu).toBeVisible();
+  await expect(page.locator(".main-shell")).toHaveAttribute("inert", "");
+  await expect(
+    menu.getByRole("button", { name: "Închide meniul" }),
+  ).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(menu.locator("a").last()).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(menu).not.toBeVisible();
+  await expect(page.locator(".main-shell")).not.toHaveAttribute("inert", "");
+  await page
+    .locator(".mobile-tabs")
+    .getByRole("button", { name: "Deschide meniul" })
+    .click();
+  await swipe(200, 220, 50, 225);
+  await expect(menu).not.toBeVisible();
+  await page
+    .locator(".mobile-tabs")
+    .getByRole("link", { name: "Tranzacții" })
+    .click();
+  await expect(page).toHaveURL(/\/demo\/transactions$/);
+  await expect(
+    page.locator(".mobile-tabs").getByRole("link", { name: "Tranzacții" }),
+  ).toHaveAttribute("aria-current", "page");
+  await expect(page.locator(".mobile-tabs")).toHaveCSS("position", "fixed");
+  await page.screenshot({
+    path: "artifacts/mobile-navigation.png",
+    fullPage: true,
+  });
+});

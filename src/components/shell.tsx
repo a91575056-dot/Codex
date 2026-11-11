@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Landmark,
   Repeat,
@@ -53,6 +53,98 @@ export function Shell({
 }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  const sidebar = useRef<HTMLElement>(null);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const background = useRef<HTMLDivElement>(null);
+  const bottomBar = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 640px)");
+    let start: { x: number; y: number; time: number } | null = null;
+    const begin = (event: TouchEvent) => {
+      start = null;
+      if (!media.matches || event.touches.length !== 1) return;
+      const target = event.target as HTMLElement;
+      if (
+        target.closest(
+          "input, textarea, select, [contenteditable], [data-no-swipe]",
+        )
+      )
+        return;
+      const touch = event.touches[0];
+      // Leave the outermost edge to Safari's system back gesture.
+      if (!open && (touch.clientX < 16 || touch.clientX > 40)) return;
+      start = { x: touch.clientX, y: touch.clientY, time: Date.now() };
+    };
+    const end = (event: TouchEvent) => {
+      if (!start || event.changedTouches.length !== 1) return;
+      const touch = event.changedTouches[0];
+      const dx = touch.clientX - start.x;
+      const dy = touch.clientY - start.y;
+      if (
+        Date.now() - start.time < 700 &&
+        Math.abs(dx) > 70 &&
+        Math.abs(dx) > Math.abs(dy) * 2
+      ) {
+        if (open && dx < 0) setOpen(false);
+        if (!open && dx > 0) setOpen(true);
+      }
+      start = null;
+    };
+    const cancel = () => {
+      start = null;
+    };
+    const resize = () => {
+      if (!media.matches) setOpen(false);
+    };
+    document.addEventListener("touchstart", begin, { passive: true });
+    document.addEventListener("touchend", end, { passive: true });
+    document.addEventListener("touchcancel", cancel);
+    media.addEventListener("change", resize);
+    return () => {
+      document.removeEventListener("touchstart", begin);
+      document.removeEventListener("touchend", end);
+      document.removeEventListener("touchcancel", cancel);
+      media.removeEventListener("change", resize);
+    };
+  }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const content = background.current;
+    const tabs = bottomBar.current;
+    const trigger = menuButton.current;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    if (content) content.inert = true;
+    if (tabs) tabs.inert = true;
+    sidebar.current?.querySelector<HTMLElement>("button")?.focus();
+    const keyboard = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+      if (event.key !== "Tab") return;
+      const items = sidebar.current?.querySelectorAll<HTMLElement>(
+        "a[href], button:not([disabled])",
+      );
+      if (!items?.length) return;
+      const first = items[0],
+        last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", keyboard);
+    return () => {
+      document.body.style.overflow = previous;
+      if (content) content.inert = false;
+      if (tabs) tabs.inert = false;
+      document.removeEventListener("keydown", keyboard);
+      trigger?.focus();
+    };
+  }, [open]);
+  const home = prefix || "/";
+  const transactions = `${prefix}/transactions`;
   return (
     <>
       <a className="skip-link" href="#main">
@@ -63,6 +155,7 @@ export function Shell({
           <Landmark /> FinTrack.
         </Link>
         <Button
+          ref={menuButton}
           variant="outline"
           size="icon"
           aria-label={open ? "Închide meniul" : "Deschide meniul"}
@@ -80,13 +173,28 @@ export function Shell({
           onClick={() => setOpen(false)}
         />
       )}
-      <aside id="sidebar" className={`sidebar ${open ? "open" : ""}`}>
+      <aside
+        ref={sidebar}
+        id="sidebar"
+        className={`sidebar ${open ? "open" : ""}`}
+        role={open ? "dialog" : undefined}
+        aria-modal={open || undefined}
+        aria-label="Meniul FinTrack"
+      >
+        <button
+          className="drawer-close"
+          aria-label="Închide meniul"
+          onClick={() => setOpen(false)}
+        >
+          <X size={20} />
+        </button>
         <Link href={prefix || "/"} className="brand">
           <span className="brand-icon">
             <Landmark size={23} />
           </span>
           FinTrack<span className="brand-dot">.</span>
         </Link>
+        <p className="gesture-hint">Glisează spre stânga pentru a închide</p>
         <p className="nav-label">SPAȚIUL TĂU FINANCIAR</p>
         <nav aria-label="Navigare principală">
           {links.map(([href, label, Icon]) => (
@@ -148,7 +256,7 @@ export function Shell({
           </div>
         </div>
       </aside>
-      <div className="main-shell">
+      <div ref={background} className="main-shell">
         <header className="topbar">
           <span>Finanțele tale, în perspectivă.</span>
           <span className="demo-pill">
@@ -174,6 +282,36 @@ export function Shell({
           </span>
         </footer>
       </div>
+      <nav ref={bottomBar} className="mobile-tabs" aria-label="Acces rapid">
+        <Link href={home} aria-current={path === home ? "page" : undefined}>
+          <LayoutDashboard size={21} />
+          <span>Panou</span>
+        </Link>
+        <Link
+          href={transactions}
+          aria-current={path === transactions ? "page" : undefined}
+        >
+          <ArrowLeftRight size={21} />
+          <span>Tranzacții</span>
+        </Link>
+        <Link
+          href="/quick-expense"
+          className="capture-tab"
+          aria-current={path === "/quick-expense" ? "page" : undefined}
+        >
+          <PlusCircle size={23} />
+          <span>Cheltuială</span>
+        </Link>
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="Deschide meniul"
+          aria-expanded={open}
+          aria-controls="sidebar"
+        >
+          <Menu size={21} />
+          <span>Meniu</span>
+        </button>
+      </nav>
     </>
   );
 }
