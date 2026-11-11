@@ -34,6 +34,11 @@ export default async function SettingsPage() {
         </Link>
       </p>
       <p className="mb-6">
+        <Link className="text-link" href="/iphone">
+          iPhone: cheltuieli fără browser și telefoane conectate
+        </Link>
+      </p>
+      <p className="mb-6">
         <Link className="text-link" href="/auth/update-password">
           Schimbă parola contului
         </Link>

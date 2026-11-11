@@ -1,3 +1,4 @@
+import type { ShortcutDevice, ShortcutReceipt } from "@/lib/shortcut";
 import type { BudgetRow, HoldingRow } from "@/lib/planning";
 import type { Goal, Contribution, Scenario } from "@/lib/goals";
 // Local types matching the committed migration. Regenerate with Supabase CLI after applying it.
@@ -37,6 +38,14 @@ type Table<Row, Required extends keyof Row> = {
 export type Database = {
   public: {
     Tables: {
+      shortcut_devices: Table<
+        ShortcutDevice,
+        | "user_id"
+        | "name"
+        | "token_hash"
+        | "cash_account_id"
+        | "card_account_id"
+      >;
       budgets: Table<
         BudgetRow,
         "user_id" | "category_id" | "month_start" | "limit_minor"
@@ -83,7 +92,23 @@ export type Database = {
       >;
     };
     Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    Functions: {
+      shortcut_options: {
+        Args: { p_token: string };
+        Returns: { currency: "MDL"; categories: Record<string, string> };
+      };
+      shortcut_expense: {
+        Args: {
+          p_token: string;
+          p_request_id: string;
+          p_amount_minor: number;
+          p_payment_method: string;
+          p_category_id: string;
+          p_description: string;
+        };
+        Returns: ShortcutReceipt;
+      };
+    };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };
   };

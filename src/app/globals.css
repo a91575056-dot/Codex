@@ -1625,3 +1625,29 @@ footer {
 .quick-shell {
   padding-top: calc(24px + env(safe-area-inset-top));
 }
+
+.shortcut-guide {
+  min-width: 0;
+}
+.shortcut-guide code {
+  overflow-wrap: anywhere;
+  font-size: 0.88em;
+}
+.shortcut-guide .table-wrap {
+  overflow-x: auto;
+}
+.shortcut-guide table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.shortcut-guide th,
+.shortcut-guide td {
+  padding: 0.65rem;
+  border-bottom: 1px solid var(--border, #dce5e0);
+}
+.shortcut-guide caption {
+  text-align: left;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}

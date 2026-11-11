@@ -75,6 +75,7 @@ async function body(req: IncomingMessage) {
   return s ? JSON.parse(s) : {};
 }
 const tables = new Set([
+  "shortcut_devices",
   "accounts",
   "categories",
   "transactions",
@@ -147,6 +148,45 @@ const server = createServer(async (req, res) => {
     if (url.pathname === "/auth/v1/logout") return reply(res, 200, {});
     if (["/auth/v1/recover", "/auth/v1/resend"].includes(url.pathname))
       return reply(res, 200, {});
+    if (url.pathname.startsWith("/rest/v1/rpc/")) {
+      const rpc = url.pathname.split("/").at(-1);
+      const allowed: Record<string, string[]> = {
+        shortcut_options: ["p_token"],
+        shortcut_expense: [
+          "p_token",
+          "p_request_id",
+          "p_amount_minor",
+          "p_payment_method",
+          "p_category_id",
+          "p_description",
+        ],
+      };
+      if (!rpc || !allowed[rpc] || req.method !== "POST")
+        return reply(res, 404, { message: "Unsupported RPC" });
+      const args = await body(req);
+      return await serial(async () => {
+        await db.exec("reset role");
+        await db.query("select set_config('request.jwt.claim.sub',$1,false)", [
+          user?.id || "",
+        ]);
+        await db.exec(user ? "set role authenticated" : "set role anon");
+        try {
+          const values = allowed[rpc].map((key) => args[key]);
+          const result = await db.query<{ result: unknown }>(
+            "select public." +
+              rpc +
+              "(" +
+              values.map((_, i) => "$" + (i + 1)).join(",") +
+              ") as result",
+            values,
+          );
+          return reply(res, 200, result.rows[0].result);
+        } catch (e) {
+          const error = e as { code?: string; message?: string };
+          return reply(res, 400, { code: error.code, message: error.message });
+        }
+      });
+    }
     if (!url.pathname.startsWith("/rest/v1/"))
       return reply(res, 404, { message: "Unsupported fixture endpoint" });
     const table = url.pathname.split("/").at(-1)!;

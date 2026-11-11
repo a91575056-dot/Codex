@@ -45,7 +45,7 @@ Verificarea de securitate Supabase nu raportează probleme la momentul validări
 - Efectuarea emailurilor și validarea reală Supabase Auth necesită verificare cu un
   cont confirmat și setările de URL/email ale mediului țintă. Testele locale nu
   pretind verificarea unui serviciu real de email sau a semnăturilor JWT Supabase.
-- O singură monedă (RON). Nu există transferuri între conturi, import bancar,
+- Monedă principală MDL și obiective de economisire EUR separate, fără conversii automate. Nu există transferuri între conturi, import bancar,
   contabilitate fiscală, retrageri automate sau prețuri în timp real.
 - Portofoliul este un inventar manual, fără registru de ordine executate, dividende,
   comisioane ori randament ponderat în timp. Valoarea nu se adună automat la numerar.

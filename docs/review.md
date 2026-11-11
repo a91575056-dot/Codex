@@ -1,3 +1,5 @@
+> Document istoric al etapei 2. Starea actuală: [auditul cerințelor](requirements-audit.md). Bugetele și portofoliul manual sunt acum funcționale în contul autentificat.
+
 # Review — etapa 2: Supabase și tranzacții
 
 Branch: `feat/supabase-transactions`, pornit din `work`.

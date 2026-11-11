@@ -25,4 +25,19 @@ test("PWA advertises standalone installation and demo quick capture cannot save"
   await expect(
     page.getByText("Date fictive — nu este contul tău personal"),
   ).toBeVisible();
+  await page.goto("/iphone");
+  await expect(
+    page.getByRole("heading", { name: "iPhone și scurtături" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Conectează telefonul", exact: true }),
+  ).toHaveCount(0);
+  expect((await request.post("/api/shortcut/options")).status()).toBe(401);
+  expect(
+    (
+      await request.post("/api/shortcut/options", {
+        headers: { Authorization: "Bearer ft_sc_" + "a".repeat(64) },
+      })
+    ).status(),
+  ).toBe(503);
 });

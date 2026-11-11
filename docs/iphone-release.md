@@ -7,7 +7,7 @@
 - Teste: bani/validare, preferințe izolate, profil, flux mobil Cash/Card/reîncercare,
   manifest/pictograme/demo și protecția rutelor. Supabase Auth este simulat în
   integrare; SQL/RLS rulează local în PGlite.
-- Necesită internet. Fără sincronizare offline sau dialoguri native Shortcuts.
+- Necesită internet. Dialogurile native Shortcuts sunt documentate și conectate la API în `iphone-shortcuts.md`; sincronizarea offline nu este implementată.
 - Instalarea pe un iPhone fizic, confirmarea emailului și autentificarea pe domeniul
   public trebuie verificate manual. Migrațiile existente trebuie reconciliate cu
   istoricul proiectului înaintea unui `supabase db push`; nu se reaplică orbește.

@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { Copy } from "lucide-react";
 import { Button } from "./ui/button";
@@ -21,6 +22,12 @@ export function IphoneSetup() {
   return (
     <details className="iphone-setup">
       <summary>Configurează cele 3 atingeri pe iPhone</summary>
+      <p>
+        <Link className="text-link" href="/iphone">
+          Configurează dialogurile native Shortcuts, fără browser
+        </Link>
+      </p>
+      <p>Alternativ, pașii de mai jos deschid formularul web.</p>
       <ol>
         <li>
           După publicare, deschide această pagină pe iPhone și conectează-te în

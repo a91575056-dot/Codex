@@ -337,3 +337,182 @@ test("EUR savings use their own currency and stay separate from the MDL ledger",
   await page.goto("/reports");
   await expect(page.getByText("125,5 EUR", { exact: true })).toHaveCount(0);
 });
+
+test("native iPhone shortcut pairs once, saves without browser cookies, retries safely and can be revoked", async ({
+  page,
+  request,
+  browser,
+}) => {
+  await login(page, "a@fintrack.invalid");
+  await page.goto("/settings");
+  const account = card(page, "Adaugă un cont");
+  await account.getByLabel("Numele contului").fill("Cash Shortcut");
+  await account.getByRole("button", { name: "Adaugă înregistrarea" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Cash Shortcut", exact: true }),
+  ).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/iphone");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.getByLabel("Numele telefonului").fill("iPhone test nativ");
+  await page
+    .getByLabel("Cont pentru Cash")
+    .selectOption({ label: "Cash Shortcut · MDL" });
+  await page
+    .getByLabel("Cont pentru Card")
+    .selectOption({ label: "Cont personal · MDL" });
+  await page
+    .getByRole("button", { name: "Conectează telefonul", exact: true })
+    .click();
+  const secretInput = page.getByLabel("Tokenul telefonului", { exact: true });
+  await expect(secretInput).toHaveValue(/^ft_sc_[a-f0-9]{64}$/);
+  const token = await secretInput.inputValue();
+  const headers = { Authorization: "Bearer " + token };
+  await page
+    .getByRole("button", { name: "Am copiat — ascunde tokenul" })
+    .click();
+  await expect(secretInput).toHaveCount(0);
+  await page.reload();
+  await expect(secretInput).toHaveCount(0);
+  let response = await request.post("/api/shortcut/options");
+  expect(response.status()).toBe(401);
+  expect(response.headers()["cache-control"]).toContain("no-store");
+  response = await request.post("/api/shortcut/options", { headers });
+  expect(response.status()).toBe(200);
+  const options = await response.json();
+  expect(options.currency).toBe("MDL");
+  expect(options.categories.Salariu).toBeUndefined();
+  const payload = {
+    request_id: "native-expense-0001",
+    amount: "37,25",
+    payment_method: "cash",
+    category_id: options.categories.Alimente,
+    description: "Cheltuială Shortcut Cash",
+  };
+  response = await request.post("/api/shortcut/expenses", {
+    headers,
+    data: payload,
+  });
+  expect(response.status()).toBe(201);
+  const saved = await response.json();
+  expect(saved.amount_minor).toBe(3725);
+  expect(saved.replayed).toBe(false);
+  response = await request.post("/api/shortcut/expenses", {
+    headers,
+    data: payload,
+  });
+  expect(response.status()).toBe(200);
+  expect((await response.json()).transaction_id).toBe(saved.transaction_id);
+  expect(
+    (
+      await request.post("/api/shortcut/expenses", {
+        headers,
+        data: { ...payload, amount: "99" },
+      })
+    ).status(),
+  ).toBe(409);
+  expect(
+    (
+      await request.post("/api/shortcut/expenses", {
+        headers,
+        data: { ...payload, amount: "1.234" },
+      })
+    ).status(),
+  ).toBe(422);
+  expect(
+    (
+      await request.post("/api/shortcut/expenses", {
+        headers,
+        data: { ...payload, user_id: "forged" },
+      })
+    ).status(),
+  ).toBe(422);
+  expect(
+    (
+      await request.post("/api/shortcut/expenses", {
+        headers: { ...headers, "content-type": "application/json" },
+        data: Buffer.from("{"),
+      })
+    ).status(),
+  ).toBe(400);
+  expect(
+    (
+      await request.post("/api/shortcut/expenses", {
+        headers: { ...headers, "content-type": "text/plain" },
+        data: "hello",
+      })
+    ).status(),
+  ).toBe(415);
+  expect(
+    (
+      await request.post("/api/shortcut/expenses", {
+        headers,
+        data: { ...payload, description: "x".repeat(9000) },
+      })
+    ).status(),
+  ).toBe(413);
+  expect((await request.get("/api/shortcut/expenses")).status()).toBe(405);
+  response = await request.post("/api/shortcut/expenses", {
+    headers,
+    data: {
+      ...payload,
+      request_id: "native-expense-0002",
+      amount: 10.5,
+      payment_method: "card",
+      description: "Cheltuială Shortcut Card",
+    },
+  });
+  expect(response.status()).toBe(201);
+  await page.goto("/transactions");
+  await expect(
+    page.getByRole("heading", {
+      name: "Cheltuială Shortcut Cash",
+      exact: true,
+    }),
+  ).toHaveCount(1);
+  const cash = page.locator(".ledger-item").filter({
+    has: page.getByRole("heading", {
+      name: "Cheltuială Shortcut Cash",
+      exact: true,
+    }),
+  });
+  await expect(cash).toContainText("Cash Shortcut");
+  await expect(cash).toContainText("37,25 MDL");
+  const otherContext = await browser.newContext();
+  const other = await otherContext.newPage();
+  await login(other, "b@fintrack.invalid");
+  await other.goto("/iphone");
+  await expect(
+    other.getByRole("heading", { name: "iPhone test nativ", exact: true }),
+  ).toHaveCount(0);
+  await otherContext.close();
+  await page.goto("/iphone");
+  const device = card(page, "iPhone test nativ");
+  await device.getByText("Revocă accesul", { exact: true }).click();
+  await device
+    .getByLabel("Confirm revocarea accesului acestui telefon")
+    .check();
+  await device
+    .getByRole("button", { name: "Revocă telefonul", exact: true })
+    .click();
+  await expect(device).toHaveCount(0);
+  expect(
+    (await request.post("/api/shortcut/options", { headers })).status(),
+  ).toBe(401);
+  expect(
+    (
+      await request.post("/api/shortcut/expenses", { headers, data: payload })
+    ).status(),
+  ).toBe(401);
+  await page.goto("/transactions");
+  await expect(
+    page.getByRole("heading", {
+      name: "Cheltuială Shortcut Cash",
+      exact: true,
+    }),
+  ).toHaveCount(1);
+});

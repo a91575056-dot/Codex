@@ -230,9 +230,12 @@ local, separat pentru fiecare utilizator. Metoda tranzacțiilor istorice rămân
 „Nespecificat”. Migrația necesară este
 `supabase/migrations/20261111084659_quick_expense_payment_method.sql`.
 
-Opțional, o comandă Apple Shortcuts poate deschide adresa formularului prin
-Atingere spate de trei ori. Aceasta poate deschide Safari; dialogurile native
-Shortcuts pentru introducerea sumei nu sunt implementate în această etapă.
+În **Setări → iPhone: cheltuieli fără browser** (`/iphone`) puteți conecta un telefon
+și configura Apple Shortcuts cu dialoguri native pentru sumă, Cash/Card, categorie
+și detalii. Datele sunt trimise direct în FinTrack; nu se deschide formularul web.
+Tokenul privat al telefonului este afișat o singură dată, expiră după 90 de zile și
+poate fi revocat din aceeași pagină. Instrucțiuni și contract API: `docs/iphone-shortcuts.md`.
+Alternativ, vechea scurtătură URL poate deschide formularul web prin Back Tap.
 
 ### Publicare pe Netlify
 
@@ -286,3 +289,13 @@ introduse ca lei moldovenești. Pașii de review sunt în `docs/currencies.md`.
 Migrația MDL/EUR a fost aplicată în proiectul FinTrack conectat la 11 noiembrie 2026.
 Nu o reaplicați acolo; instrucțiunile de aprobare de mai sus se referă la alte
 proiecte cu date istorice. Nu sunt stocate în repository parolele conturilor personale.
+
+
+## Cerințe verificate și comparație
+
+Vezi `docs/requirements-audit.md` pentru corespondența dintre cerințe, cod, teste,
+comparația cu YNAB/Wallet/Spendee și limitele care necesită configurare externă.
+Pentru Shortcuts, aplicați numai noua migrație `20261111095516_iphone_shortcut_devices.sql`
+în proiectul corect înainte de publicare. Aceasta păstrează tranzacțiile existente
+și adaugă dispozitivele cu RLS și operațiile limitate prin token. Nu sunt necesare
+variabile noi sau chei service_role. Datele fictive și testele rămân separate de conturi.

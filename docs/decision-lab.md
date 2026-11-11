@@ -45,11 +45,11 @@ neliniar. Un impact de zero luni poate ascunde economii reale sub pragul unei lu
 
 ## Exemplu reproductibil
 
-Venit 7.000 RON, cheltuieli 5.600 RON, marjă 200 RON, obiectiv 10.000 RON,
-economii dedicate 1.000 RON. Contribuție actuală: 1.200 RON → 8 luni.
-Reducerea cu 50% a categoriei Timp liber (900 RON/lună) adaugă 450 RON:
-planul ajunge la 1.650 RON/lună → 6 luni. Impact marginal: 2 luni.
-Cu venit redus permanent cu 20%, contribuția devine 250 RON → 36 luni.
+Venit 7.000 MDL, cheltuieli 5.600 MDL, marjă 200 MDL, obiectiv 10.000 MDL,
+economii dedicate 1.000 MDL. Contribuție actuală: 1.200 MDL → 8 luni.
+Reducerea cu 50% a categoriei Timp liber (900 MDL/lună) adaugă 450 MDL:
+planul ajunge la 1.650 MDL/lună → 6 luni. Impact marginal: 2 luni.
+Cu venit redus permanent cu 20%, contribuția devine 250 MDL → 36 luni.
 Aceste rezultate sunt verificate automat în testele unitare și în browser.
 
 ## Limite
