@@ -1,5 +1,5 @@
 "use client";
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import {
   saveGoal,
   addContribution,
@@ -26,9 +26,17 @@ function Messages({ state }: { state: { error?: string; success?: string } }) {
 }
 export function GoalForm({ goal }: { goal?: Goal }) {
   const [state, action, pending] = useActionState(saveGoal, {});
+  const [currency, setCurrency] = useState<"MDL" | "EUR">(
+    goal?.currency || "MDL",
+  );
   const ref = useRef<HTMLFormElement>(null);
   useEffect(() => {
-    if (state.success && !goal) ref.current?.reset();
+    if (state.success && !goal) {
+      for (const name of ["name", "target", "due_on"]) {
+        const field = ref.current?.elements.namedItem(name);
+        if (field instanceof HTMLInputElement) field.value = "";
+      }
+    }
   }, [state, goal]);
   return (
     <form ref={ref} action={action} className="form-grid">
@@ -43,9 +51,29 @@ export function GoalForm({ goal }: { goal?: Goal }) {
           placeholder="Fond de urgență"
         />
       </label>
+      <label>
+        Moneda obiectivului
+        {goal ? (
+          <>
+            <input type="hidden" name="currency" value={goal.currency} />
+            <span>
+              {goal.currency} · moneda se păstrează pentru întregul istoric
+            </span>
+          </>
+        ) : (
+          <select
+            name="currency"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as "MDL" | "EUR")}
+          >
+            <option value="MDL">MDL · Leu moldovenesc</option>
+            <option value="EUR">EUR · Euro</option>
+          </select>
+        )}
+      </label>
       <div className="form-columns">
         <label>
-          Suma țintă (RON)
+          Suma țintă ({currency})
           <input
             name="target"
             inputMode="decimal"
@@ -77,7 +105,13 @@ export function GoalForm({ goal }: { goal?: Goal }) {
     </form>
   );
 }
-export function ContributionForm({ goalId }: { goalId: string }) {
+export function ContributionForm({
+  goalId,
+  currency = "MDL",
+}: {
+  goalId: string;
+  currency?: "MDL" | "EUR";
+}) {
   const [state, action, pending] = useActionState(addContribution, {});
   const ref = useRef<HTMLFormElement>(null);
   useEffect(() => {
@@ -88,7 +122,7 @@ export function ContributionForm({ goalId }: { goalId: string }) {
       <input name="goal_id" type="hidden" value={goalId} />
       <div className="form-columns">
         <label>
-          Contribuție (RON)
+          Contribuție ({currency})
           <input
             name="amount"
             inputMode="decimal"

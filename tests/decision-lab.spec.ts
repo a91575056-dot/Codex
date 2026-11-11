@@ -31,11 +31,11 @@ test("decision lab recalculates, explains, exports and resets a hypothetical dec
   expect(report.result.stressMonths).toBe(36);
   await page.getByRole("button", { name: "Resetează" }).click();
   await expect(page.getByTestId("lab-gain")).toHaveText("0 luni câștigate");
-  await page.getByLabel("Valoare obiectiv (RON)").fill("abc");
+  await page.getByLabel("Valoare obiectiv (MDL)").fill("abc");
   await expect(
     page.getByRole("alert").filter({ hasText: "Introdu sume" }),
   ).toBeVisible();
-  await page.getByLabel("Valoare obiectiv (RON)").fill("10000");
+  await page.getByLabel("Valoare obiectiv (MDL)").fill("10000");
   await page.setViewportSize({ width: 390, height: 844 });
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({

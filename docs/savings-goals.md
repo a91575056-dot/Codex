@@ -2,7 +2,7 @@
 
 ## Flux implementat
 
-1. `/goals`: creați un obiectiv cu nume, sumă țintă în RON și termen dorit.
+1. `/goals`: creați un obiectiv cu nume, sumă țintă în MDL și termen dorit.
 2. Înregistrați contribuții cu sumă, dată (până astăzi) și notă opțională.
 3. Progresul se calculează din contribuțiile acelui obiectiv. Depășirea țintei este
    permisă; bara de progres se oprește la 100%, iar suma reală rămâne afișată.
@@ -53,9 +53,9 @@ schimbarea țintei și folosește ținta originală pentru comparație. Contribu
 corectate sau înregistrate retroactiv schimbă progresul real; comparația nu este
 un audit bancar și nu dovedește că o reducere de cheltuieli a cauzat economisirea.
 
-Exemplu demo fixat la 11 noiembrie 2026: plan salvat la 11 august cu 1.000 RON
-inițiali și 1.650 RON/lună. După trei intervale, planul cere 5.950 RON. Evidența
-fictivă arată 5.500 RON: diferență −450 RON.
+Exemplu demo fixat la 11 noiembrie 2026: plan salvat la 11 august cu 1.000 MDL
+inițiali și 1.650 MDL/lună. După trei intervale, planul cere 5.950 MDL. Evidența
+fictivă arată 5.500 MDL: diferență −450 MDL.
 
 ## Securitate și migrație
 

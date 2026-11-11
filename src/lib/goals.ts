@@ -6,7 +6,7 @@ export type Goal = {
   name: string;
   target_minor: number;
   due_on: string;
-  currency: "RON";
+  currency: "MDL" | "EUR";
   created_at: string;
 };
 export type Contribution = {
@@ -57,6 +57,7 @@ const amount = z
     z.number().int().min(1, "Suma trebuie să fie pozitivă.").max(1000000000000),
   );
 export const goalSchema = z.object({
+  currency: z.enum(["MDL", "EUR"]).default("MDL"),
   id: z.union([z.uuid(), z.literal("")]).optional(),
   name: z.string().trim().min(1, "Numele este obligatoriu.").max(100),
   target: amount,

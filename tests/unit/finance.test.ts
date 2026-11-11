@@ -84,7 +84,7 @@ test("calculates month totals and balance without demo data, excludes future ent
         id: "b",
         user_id: "a",
         name: "Cont",
-        currency: "RON",
+        currency: "MDL",
         opening_balance_minor: 1000,
         created_at: "",
       },

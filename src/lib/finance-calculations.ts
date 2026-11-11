@@ -60,7 +60,7 @@ export function calculateFinance(
     }
   }
   const names = new Map(categories.map((c) => [c.id, c.name]));
-  function asRON(minor: bigint) {
+  function asMDL(minor: bigint) {
     if (
       minor > BigInt(Number.MAX_SAFE_INTEGER) ||
       minor < -BigInt(Number.MAX_SAFE_INTEGER)
@@ -69,16 +69,16 @@ export function calculateFinance(
     return Number(minor) / 100;
   }
   return {
-    balance: asRON(balanceMinor),
-    income: asRON(incomeMinor),
-    expenses: asRON(expenseMinor),
+    balance: asMDL(balanceMinor),
+    income: asMDL(incomeMinor),
+    expenses: asMDL(expenseMinor),
     portfolio: 0,
     budgets: [],
     allocation: [],
     cashFlow: cashFlow.map((b) => ({
       month: b.month,
-      income: asRON(b.income),
-      expenses: asRON(b.expenses),
+      income: asMDL(b.income),
+      expenses: asMDL(b.expenses),
     })),
     transactions: rows.map((t) => ({
       id: t.id,
@@ -86,7 +86,7 @@ export function calculateFinance(
       category: names.get(t.category_id) || "Categorie indisponibilă",
       date: t.occurred_on,
       paymentMethod: t.payment_method,
-      amount: asRON(
+      amount: asMDL(
         t.kind === "income" ? BigInt(t.amount_minor) : -BigInt(t.amount_minor),
       ),
     })),

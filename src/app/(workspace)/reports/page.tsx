@@ -107,7 +107,7 @@ export default async function ReportsPage({
                     <th>Categorie</th>
                     <th>Tip</th>
                     <th>Înregistrări</th>
-                    <th>Total RON</th>
+                    <th>Total MDL</th>
                   </tr>
                 </thead>
                 <tbody>

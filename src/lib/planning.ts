@@ -20,7 +20,7 @@ export type HoldingRow = {
   cost_price_minor: number;
   current_price_minor: number;
   price_on: string;
-  currency: "RON";
+  currency: "MDL";
   created_at: string;
 };
 export const assetClasses = {

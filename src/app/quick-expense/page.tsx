@@ -16,7 +16,7 @@ export default async function QuickExpensePage() {
             id: "00000000-0000-4000-8000-000000000010",
             user_id: "demo",
             name: "Cont demonstrativ",
-            currency: "RON" as const,
+            currency: "MDL" as const,
             opening_balance_minor: 0,
             created_at: "",
           },

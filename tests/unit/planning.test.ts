@@ -54,7 +54,7 @@ const holding: HoldingRow = {
   cost_price_minor: 10000,
   current_price_minor: 12000,
   price_on: "2026-11-10",
-  currency: "RON",
+  currency: "MDL",
   created_at: "",
 };
 test("budgets include only category expenses in selected month up to today", () => {

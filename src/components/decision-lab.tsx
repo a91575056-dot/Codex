@@ -145,7 +145,7 @@ export function DecisionLab({
             </CardHeader>
             <CardContent className="form-grid">
               <label>
-                Valoare obiectiv (RON)
+                Valoare obiectiv (MDL)
                 <input
                   inputMode="decimal"
                   value={goal ? (goal.targetMinor / 100).toFixed(2) : target}
@@ -154,7 +154,7 @@ export function DecisionLab({
                 />
               </label>
               <label>
-                Economii deja dedicate obiectivului (RON)
+                Economii deja dedicate obiectivului (MDL)
                 <input
                   inputMode="decimal"
                   value={goal ? (goal.savedMinor / 100).toFixed(2) : saved}
@@ -163,7 +163,7 @@ export function DecisionLab({
                 />
               </label>
               <label>
-                Marjă lunară păstrată, nealocată obiectivului (RON)
+                Marjă lunară păstrată, nealocată obiectivului (MDL)
                 <input
                   inputMode="decimal"
                   value={buffer}
