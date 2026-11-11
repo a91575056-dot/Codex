@@ -1,3 +1,7 @@
+import { getEnvelopes } from "@/lib/supabase/envelope-repository";
+import { envelopeBalances } from "@/lib/envelopes";
+import { StartEnvelopes, EnvelopeConfig } from "@/components/envelope-forms";
+import { EnvelopeCards } from "@/components/envelope-view";
 import { transactionsInCurrency } from "@/lib/currency";
 import { connection } from "next/server";
 import { supabaseConfig } from "@/lib/supabase/config";
@@ -24,7 +28,17 @@ export default async function BudgetsPage({
   const params = await searchParams;
   const parsed = monthSchema.safeParse(params.month || todayISO().slice(0, 7));
   const month = parsed.success ? parsed.data : todayISO().slice(0, 7);
-  const [ledger, planning] = await Promise.all([getLedger(), getPlanning()]);
+  const [ledger, planning, envelopes] = await Promise.all([
+    getLedger(),
+    getPlanning(),
+    getEnvelopes(),
+  ]);
+  const balances = envelopeBalances(
+    envelopes,
+    ledger.accounts,
+    ledger.categories,
+    ledger.transactions,
+  );
   const budgets = planning.budgets.filter((b) =>
     b.month_start.startsWith(month),
   );
@@ -33,8 +47,59 @@ export default async function BudgetsPage({
     <>
       <Heading
         title="Bugete"
-        description="Limite lunare pe categorii, calculate din cheltuielile înregistrate."
+        description="Împarte veniturile automat și urmărește banii disponibili în fiecare buget."
       />
+      <section id="automatic-budgets" className="mb-8">
+        <h2 className="overview-heading">Bugete automate din venituri</h2>
+        <p className="lab-help mb-4">
+          Salariul, bonusurile și celelalte venituri noi se împart automat după
+          procente. Banii necheltuiți se păstrează și se adună cu alocările
+          următoare, inclusiv peste schimbarea lunii. Nu se mută bani între
+          conturi și nu se cumpără investiții automat.
+        </p>
+        {envelopes.plans.map((plan) => (
+          <section
+            key={plan.id}
+            className="mb-8"
+            aria-label={`Bugete automate ${plan.currency}`}
+          >
+            <h3 className="overview-heading">
+              {plan.currency} · {plan.enabled ? "Activ" : "În pauză"} · din{" "}
+              {plan.start_on}
+            </h3>
+            <EnvelopeCards
+              balances={balances.filter((b) => b.plan_id === plan.id)}
+            />
+            <details className="goal-detail">
+              <summary>Modifică procentele pentru {plan.currency}</summary>
+              <EnvelopeConfig
+                plan={plan}
+                rules={envelopes.rules.filter((r) => r.plan_id === plan.id)}
+                names={Object.fromEntries(
+                  ledger.categories.map((c) => [c.id, c.name]),
+                )}
+              />
+            </details>
+          </section>
+        ))}
+        <StartEnvelopes
+          currencies={(["MDL", "EUR"] as const).filter(
+            (c) => !envelopes.plans.some((p) => p.currency === c),
+          )}
+        />
+        <p className="lab-help mt-4">
+          Cheltuielile se scad din bugetul categoriei lor; categoriile fără
+          regulă separată intră în Alte cheltuieli. Sumele rezervate pentru
+          investiții și urgențe scad doar când înregistrezi o cheltuială în
+          categoria respectivă. Aceste alocări nu se adaugă la soldul conturilor
+          sau la valoarea portofoliului.
+        </p>
+      </section>
+      <h2 className="overview-heading">Limite lunare manuale în MDL</h2>
+      <p className="lab-help mb-4">
+        Limitele de mai jos sunt opționale și independente de bugetele automate.
+        Nu se alimentează din venit și nu se adună cu alocările de mai sus.
+      </p>
       {!parsed.success && (
         <p role="alert" className="form-error">
           Luna selectată este invalidă. Se afișează luna curentă.

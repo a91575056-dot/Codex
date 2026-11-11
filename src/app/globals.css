@@ -1934,3 +1934,15 @@ footer {
   white-space: pre-wrap;
   margin: 12px 0;
 }
+
+.envelope-percent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 16px;
+}
+#automatic-budgets {
+  scroll-margin-top: 24px;
+}
+.negative {
+  color: #a44236;
+}

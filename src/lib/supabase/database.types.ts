@@ -1,4 +1,9 @@
 import type {
+  EnvelopePlan,
+  EnvelopeRule,
+  EnvelopeFunding,
+} from "@/lib/envelopes";
+import type {
   Transfer,
   RecurringRule,
   RecurringOccurrence,
@@ -46,6 +51,17 @@ type Table<Row, Required extends keyof Row> = {
 export type Database = {
   public: {
     Tables: {
+      envelope_plans: Table<EnvelopePlan, "user_id" | "currency">;
+      envelope_rules: Table<
+        EnvelopeRule,
+        | "user_id"
+        | "plan_id"
+        | "category_id"
+        | "envelope_kind"
+        | "basis_points"
+        | "sort_order"
+      >;
+      envelope_funding: Table<EnvelopeFunding, keyof EnvelopeFunding>;
       receivables: Table<
         Receivable,
         | "id"
@@ -136,6 +152,15 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      start_envelopes: { Args: { p_currency: string }; Returns: string };
+      configure_envelopes: {
+        Args: {
+          p_plan_id: string;
+          p_enabled: boolean;
+          p_rules: { id: string; basis_points: number }[];
+        };
+        Returns: boolean;
+      };
       configure_shortcut_income: {
         Args: { p_device_id: string; p_enabled: boolean };
         Returns: boolean;

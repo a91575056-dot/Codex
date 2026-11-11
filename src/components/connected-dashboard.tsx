@@ -1,3 +1,4 @@
+import { DashboardEnvelopes } from "./envelope-view";
 import { money } from "@/lib/finance";
 import Link from "next/link";
 import {
@@ -99,6 +100,7 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
           </Link>
         </section>
       )}
+      <DashboardEnvelopes balances={data.envelopes || []} />
       {!data.transactions.length && (
         <section
           className="dashboard-onboarding"

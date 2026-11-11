@@ -17,6 +17,7 @@ for (const name of (await readdir("supabase/migrations"))
   .sort())
   await db.exec(await readFile("supabase/migrations/" + name, "utf8"));
 const users = [
+  { id: "00000000-0000-4000-8000-000000000006", email: "f@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000005", email: "e@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000004", email: "d@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000003", email: "c@fintrack.invalid" },
@@ -78,6 +79,9 @@ async function body(req: IncomingMessage) {
   return s ? JSON.parse(s) : {};
 }
 const tables = new Set([
+  "envelope_plans",
+  "envelope_rules",
+  "envelope_funding",
   "receivables",
   "transfers",
   "recurring_rules",
@@ -158,6 +162,8 @@ const server = createServer(async (req, res) => {
     if (url.pathname.startsWith("/rest/v1/rpc/")) {
       const rpc = url.pathname.split("/").at(-1);
       const allowed: Record<string, string[]> = {
+        start_envelopes: ["p_currency"],
+        configure_envelopes: ["p_plan_id", "p_enabled", "p_rules"],
         post_recurring: [
           "p_rule_id",
           "p_due_on",

@@ -1084,3 +1084,102 @@ test("EUR accounts keep separate totals and receivables settle into history", as
     page.getByRole("region", { name: "Conturi în euro" }),
   ).toContainText("620 EUR");
 });
+
+test("automatic budgets allocate salaries, carry balances, reserve investments and emergency funds", async ({
+  page,
+}) => {
+  await login(page, "f@fintrack.invalid");
+  await page.goto("/budgets");
+  await page.getByLabel("Moneda bugetelor automate").selectOption("MDL");
+  await page
+    .getByLabel("Activez împărțirea automată", { exact: false })
+    .check();
+  await page
+    .getByRole("button", { name: "Activează bugetele automate" })
+    .click();
+  const auto = page.getByRole("region", { name: "Bugete automate MDL" });
+  await expect(auto).toBeVisible();
+  const budget = (name: string) =>
+    auto
+      .locator("[data-slot=card]")
+      .filter({ has: page.getByRole("heading", { name, exact: true }) });
+  await expect(budget("Fond de urgență")).toContainText("0 MDL");
+  async function entry(
+    kind: "income" | "expense",
+    description: string,
+    amount: string,
+    category: string,
+  ) {
+    await page.goto("/transactions");
+    const form = card(page, "Adaugă o tranzacție");
+    await form.getByLabel("Descriere", { exact: true }).fill(description);
+    await form
+      .getByRole("combobox", { name: "Tip", exact: true })
+      .selectOption(kind);
+    await form.getByLabel("Sumă (MDL)").fill(amount);
+    await form
+      .getByRole("combobox", { name: "Categorie", exact: true })
+      .selectOption({ label: category });
+    await form.getByRole("button", { name: "Adaugă tranzacția" }).click();
+    await expect(form.getByRole("status")).toContainText("adăugată");
+  }
+  await entry("income", "Salariu auto", "10000", "Salariu");
+  await page.goto("/budgets");
+  await expect(budget("Alimente")).toContainText("2.500 MDL");
+  await expect(budget("Investiții")).toContainText("1.500 MDL");
+  await expect(budget("Fond de urgență")).toContainText("1.000 MDL");
+  await entry("expense", "Cumpărături", "500", "Alimente");
+  await entry("income", "Bonus auto", "2000", "Alte venituri");
+  await page.goto("/budgets");
+  await expect(budget("Alimente").locator(".stat-value")).toHaveText(
+    "2.500 MDL",
+  );
+  await expect(budget("Investiții").locator(".stat-value")).toHaveText(
+    "1.800 MDL",
+  );
+  await expect(budget("Fond de urgență").locator(".stat-value")).toHaveText(
+    "1.200 MDL",
+  );
+  await auto
+    .getByText("Modifică procentele pentru MDL", { exact: true })
+    .click();
+  await auto.getByLabel("Alimente (%)", { exact: true }).fill("30");
+  await auto.getByLabel("Locuință (%)", { exact: true }).fill("20");
+  await auto.getByRole("button", { name: "Salvează procentele" }).click();
+  await expect(auto.getByRole("status")).toContainText("Plan salvat");
+  await expect(budget("Alimente").locator(".stat-value")).toHaveText(
+    "2.500 MDL",
+  );
+  await entry("income", "Încasare nouă", "1000", "Alte venituri");
+  await page.goto("/budgets");
+  await expect(budget("Alimente").locator(".stat-value")).toHaveText(
+    "2.800 MDL",
+  );
+  await expect(budget("Locuință").locator(".stat-value")).toHaveText(
+    "3.200 MDL",
+  );
+  await auto
+    .getByText("Modifică procentele pentru MDL", { exact: true })
+    .click();
+  await auto.getByLabel("Împărțirea veniturilor noi").selectOption("false");
+  await auto.getByRole("button", { name: "Salvează procentele" }).click();
+  await expect(auto).toContainText("În pauză");
+  await entry("income", "Venit în pauză", "500", "Alte venituri");
+  await page.goto("/");
+  const section = page.getByRole("region", {
+    name: "Alocările veniturilor tale",
+  });
+  await expect(section).toContainText("2.800 MDL");
+  await expect(section).toContainText("1.950 MDL");
+  await expect(page.locator(".stats-grid")).toContainText("13.000 MDL");
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: "artifacts/automatic-budgets-mobile.png",
+    fullPage: true,
+  });
+});

@@ -1,3 +1,5 @@
+import { getEnvelopes } from "./envelope-repository";
+import { envelopeBalances } from "@/lib/envelopes";
 import { transactionsInCurrency } from "@/lib/currency";
 import type { Transfer } from "@/lib/operations";
 import { getRecurringRules } from "./operations-repository";
@@ -57,10 +59,11 @@ export async function getLedger(next = "/") {
   return { accounts: a, categories: c, transactions, transfers, user };
 }
 export async function getUserFinance() {
-  const [ledger, planning, recurring] = await Promise.all([
+  const [ledger, planning, recurring, envelopes] = await Promise.all([
     getLedger(),
     getPlanning(),
     getRecurringRules(),
+    getEnvelopes(),
   ]);
   const data = calculateFinance(
     ledger.accounts,
@@ -78,6 +81,12 @@ export async function getUserFinance() {
   const names = new Map(ledger.categories.map((c) => [c.id, c.name]));
   return {
     ...data,
+    envelopes: envelopeBalances(
+      envelopes,
+      ledger.accounts,
+      ledger.categories,
+      ledger.transactions,
+    ),
     transactions: [...data.transactions, ...euro.transactions].sort(
       (a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id),
     ),

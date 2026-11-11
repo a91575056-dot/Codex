@@ -9,6 +9,7 @@ export interface Transaction {
   paymentMethod?: "unspecified" | "cash" | "card";
 }
 export interface FinanceData {
+  envelopes?: import("@/lib/envelopes").EnvelopeBalance[];
   euro?: { balance: number; income: number; expenses: number };
   upcoming?: {
     id: string;
