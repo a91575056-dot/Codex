@@ -1,5 +1,16 @@
 import Link from "next/link";
-import { Wallet, ArrowDownLeft, ArrowUpRight, TrendingUp } from "lucide-react";
+import {
+  Wallet,
+  ArrowDownLeft,
+  ArrowUpRight,
+  TrendingUp,
+  Target,
+  ChartPie,
+  FileText,
+  FlaskConical,
+  Smartphone,
+  ArrowRight,
+} from "lucide-react";
 import {
   Heading,
   StatCard,
@@ -19,6 +30,7 @@ export function ConnectedStats({ data }: { data: FinanceData }) {
         note="toate conturile · până astăzi"
         icon={Wallet}
         featured
+        action={{ href: "/settings", label: "Gestionează conturile" }}
       />
       <StatCard
         label="Venituri lunare"
@@ -26,6 +38,10 @@ export function ConnectedStats({ data }: { data: FinanceData }) {
         change="MDL"
         note="luna curentă · până astăzi"
         icon={ArrowDownLeft}
+        action={{
+          href: "/transactions?create=income#transaction-form",
+          label: "Înregistrează un venit",
+        }}
       />
       <StatCard
         label="Cheltuieli lunare"
@@ -33,6 +49,7 @@ export function ConnectedStats({ data }: { data: FinanceData }) {
         change="MDL"
         note="luna curentă · până astăzi"
         icon={ArrowUpRight}
+        action={{ href: "/quick-expense", label: "Cheltuială rapidă" }}
       />
       <StatCard
         label="Valoare portofoliu"
@@ -40,6 +57,7 @@ export function ConnectedStats({ data }: { data: FinanceData }) {
         change="MDL"
         note="evaluări introduse manual"
         icon={TrendingUp}
+        action={{ href: "/investments", label: "Adaugă o investiție" }}
       />
     </div>
   );
@@ -53,16 +71,111 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
       />
       <div className="lab-actions mb-6">
         <Button asChild>
-          <Link href="/quick-expense">Cheltuială rapidă</Link>
+          <Link href="/transactions?create=income#transaction-form">
+            <ArrowDownLeft /> Adaugă venit
+          </Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/transactions?create=expense#transaction-form">
+            <ArrowUpRight /> Adaugă cheltuială
+          </Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/transactions">Toate tranzacțiile</Link>
         </Button>
       </div>
       <ConnectedStats data={data} />
       {!data.transactions.length && (
-        <p className="empty-state" role="status">
-          Încă nu ai tranzacții. Adaugă primul venit sau prima cheltuială pentru
-          a începe.
-        </p>
+        <section
+          className="dashboard-onboarding"
+          aria-labelledby="first-transaction-title"
+        >
+          <h2 id="first-transaction-title">
+            Începe cu primul venit sau prima cheltuială
+          </h2>
+          <p>
+            Soldul inițial arată banii pe care îi aveai deja în conturi. Acesta
+            nu se numără ca venit lunar. Pentru salariu, freelancing sau alte
+            încasări, adaugă un venit cu data încasării.
+          </p>
+          <Link
+            className="text-link"
+            href="/transactions?create=income#transaction-form"
+          >
+            Înregistrează primul venit <ArrowRight size={16} />
+          </Link>
+        </section>
       )}
+      <section
+        className="dashboard-tools"
+        aria-labelledby="dashboard-tools-title"
+      >
+        <h2 id="dashboard-tools-title" className="overview-heading">
+          Ce vrei să gestionezi?
+        </h2>
+        <div className="dashboard-tools-grid">
+          {[
+            {
+              href: "/settings",
+              title: "Conturi și solduri",
+              description: "Adaugă numerar, carduri și soldurile inițiale.",
+              icon: Wallet,
+            },
+            {
+              href: "/budgets",
+              title: "Bugete lunare",
+              description: "Stabilește limite de cheltuieli pe categorii.",
+              icon: ChartPie,
+            },
+            {
+              href: "/goals",
+              title: "Economii MDL și EUR",
+              description: "Creează obiective și înregistrează contribuții.",
+              icon: Target,
+            },
+            {
+              href: "/investments",
+              title: "Portofoliu de investiții",
+              description: "Adaugă active, cantități și prețuri manuale.",
+              icon: TrendingUp,
+            },
+            {
+              href: "/analytics",
+              title: "Analize financiare",
+              description:
+                "Vezi distribuția cheltuielilor și fluxul de numerar.",
+              icon: ChartPie,
+            },
+            {
+              href: "/reports",
+              title: "Rapoarte și export",
+              description: "Alege perioada și descarcă raportul CSV sau PDF.",
+              icon: FileText,
+            },
+            {
+              href: "/decision-lab",
+              title: "Laborator de decizii",
+              description: "Simulează economii și schimbări ale venitului.",
+              icon: FlaskConical,
+            },
+            {
+              href: "/iphone",
+              title: "iPhone și scurtături",
+              description: "Configurează înregistrarea plăților fără browser.",
+              icon: Smartphone,
+            },
+          ].map(({ href, title, description, icon: Icon }) => (
+            <Link key={href} href={href} className="dashboard-tool">
+              <Icon size={21} aria-hidden="true" />
+              <span>
+                <strong>{title}</strong>
+                <small>{description}</small>
+              </span>
+              <ArrowRight size={17} aria-hidden="true" />
+            </Link>
+          ))}
+        </div>
+      </section>
       <Charts data={data} only="cash" demo={false} />
       <div className="bottom-grid mt-6">
         <Transactions

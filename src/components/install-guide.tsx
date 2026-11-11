@@ -31,10 +31,7 @@ export function InstallGuide() {
         <div className="quick-form mt-6">
           <Smartphone size={30} />
           <ol className="install-steps">
-            <li>
-              Publică FinTrack pe o adresă HTTPS, apoi deschide adresa pe iPhone
-              în Safari.
-            </li>
+            <li>Deschide adresa FinTrack pe iPhone în Safari.</li>
             <li>
               Apasă{" "}
               <strong>
@@ -57,9 +54,10 @@ export function InstallGuide() {
             </li>
           </ol>
           <p className="quick-hint">
-            Ulterior, iconița deschide formularul de cheltuieli într-o fereastră
-            proprie. Salvarea cere internet și un cont personal autentificat. Nu
-            colectează automat plăți și nu salvează tranzacții offline.
+            Ulterior, iconița deschide panoul complet într-o fereastră proprie,
+            cu acces la venituri, cheltuieli și toate secțiunile. Salvarea cere
+            internet și un cont personal autentificat. Nu colectează automat
+            plăți și nu salvează tranzacții offline.
           </p>
         </div>
       )}

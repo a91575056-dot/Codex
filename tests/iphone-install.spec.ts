@@ -7,7 +7,7 @@ test("PWA advertises standalone installation and demo quick capture cannot save"
   expect(manifest.ok()).toBe(true);
   const value = await manifest.json();
   expect(value.display).toBe("standalone");
-  expect(value.start_url).toContain("/quick-expense");
+  expect(value.start_url).toBe("/?source=homescreen");
   for (const icon of value.icons) {
     expect((await request.get(icon.src)).ok()).toBe(true);
   }

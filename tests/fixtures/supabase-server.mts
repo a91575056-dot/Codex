@@ -17,6 +17,7 @@ for (const name of (await readdir("supabase/migrations"))
   .sort())
   await db.exec(await readFile("supabase/migrations/" + name, "utf8"));
 const users = [
+  { id: "00000000-0000-4000-8000-000000000003", email: "c@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000001", email: "a@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000002", email: "b@fintrack.invalid" },
 ];

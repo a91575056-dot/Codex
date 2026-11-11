@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "FinTrack",
     description: "Înregistrează cheltuieli, urmărește bugete și obiective.",
     lang: "ro",
-    start_url: "/quick-expense?source=homescreen",
+    start_url: "/?source=homescreen",
     scope: "/",
     display: "standalone",
     background_color: "#f7f9f8",
@@ -16,6 +16,11 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: "/icons/fintrack-512.png", sizes: "512x512", type: "image/png" },
     ],
     shortcuts: [
+      {
+        name: "Adaugă venit",
+        short_name: "Venit",
+        url: "/transactions?create=income#transaction-form",
+      },
       {
         name: "Cheltuială rapidă",
         url: "/quick-expense",

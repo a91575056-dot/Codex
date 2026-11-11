@@ -56,6 +56,7 @@ export function StatCard({
   icon: Icon,
   featured = false,
   note = "față de luna trecută",
+  action,
 }: {
   label: string;
   value: number;
@@ -63,6 +64,7 @@ export function StatCard({
   icon: typeof Wallet;
   featured?: boolean;
   note?: string;
+  action?: { href: string; label: string };
 }) {
   return (
     <Card className={`stat-card ${featured ? "featured" : ""}`}>
@@ -80,6 +82,11 @@ export function StatCard({
         </span>
         <small>{note}</small>
       </div>
+      {action && (
+        <Link className="stat-action" href={action.href}>
+          {action.label} <ArrowRight size={14} />
+        </Link>
+      )}
     </Card>
   );
 }

@@ -30,6 +30,7 @@ export default async function TransactionPage({
     );
   const ledger = await getLedger();
   const params = await searchParams;
+  const initialKind = params.create === "income" ? "income" : "expense";
   const parsed = filterSchema.safeParse(params);
   const filters = parsed.success ? parsed.data : null;
   const names = new Map(ledger.categories.map((c) => [c.id, c.name]));
@@ -53,7 +54,7 @@ export default async function TransactionPage({
         title="Tranzacții"
         description="Adaugă și gestionează veniturile și cheltuielile tale."
       />
-      <Card className="mb-6">
+      <Card id="transaction-form" className="mb-6 transaction-entry">
         <CardHeader>
           <CardTitle>Adaugă o tranzacție</CardTitle>
         </CardHeader>
@@ -64,6 +65,8 @@ export default async function TransactionPage({
             </p>
           ) : (
             <TransactionForm
+              key={initialKind}
+              initialKind={initialKind}
               accounts={ledger.accounts}
               categories={ledger.categories}
             />

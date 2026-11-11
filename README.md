@@ -218,7 +218,7 @@ verificările automate; documentația de review este în `docs/release-v1.md`.
 
 FinTrack se instalează ca aplicație web (PWA), după publicare pe un domeniu HTTPS.
 În Safari deschideți `/install`, apoi Partajare → Adăugați pe ecranul principal →
-Deschideți ca aplicație web. Pictograma pornește formularul `/quick-expense`.
+Deschideți ca aplicație web. Pictograma pornește panoul complet, cu acces la venituri, cheltuieli și toate secțiunile. Formularul `/quick-expense` rămâne disponibil separat.
 Nu este un fișier IPA și nu se instalează din Descărcări. Necesită internet;
 nu păstrează în cache paginile financiare pentru utilizare offline.
 
@@ -299,3 +299,13 @@ Pentru Shortcuts, aplicați numai noua migrație `20261111095516_iphone_shortcut
 în proiectul corect înainte de publicare. Aceasta păstrează tranzacțiile existente
 și adaugă dispozitivele cu RLS și operațiile limitate prin token. Nu sunt necesare
 variabile noi sau chei service_role. Datele fictive și testele rămân separate de conturi.
+
+## Înregistrarea veniturilor
+
+Din panoul principal, **Adaugă venit** deschide formularul de tranzacție cu tipul
+Venit selectat. Completează descrierea (de exemplu Salariu), suma în MDL, contul,
+categoria și data încasării, apoi salvează. Venitul actualizează soldul și totalul
+lunii datei alese; înregistrările viitoare intră în calcule când ajunge acea dată.
+Soldurile inițiale se configurează în Setări și nu reprezintă venituri ale lunii.
+Panoul oferă acces direct și la bugete, economii MDL/EUR, investiții manuale,
+analize, rapoarte, laborator și configurarea iPhone.

@@ -516,3 +516,148 @@ test("native iPhone shortcut pairs once, saves without browser cookies, retries 
     }),
   ).toHaveCount(1);
 });
+
+test("dashboard exposes income and every feature; opening balance stays distinct from earned income", async ({
+  page,
+}) => {
+  await login(page, "c@fintrack.invalid");
+  await page.goto("/settings");
+  const initial = card(page, "Cont personal");
+  await initial
+    .getByText("Modifică numele sau soldul inițial", { exact: true })
+    .click();
+  await initial.getByLabel("Sold inițial (MDL)").fill("10000");
+  await initial
+    .getByRole("button", { name: "Salvează modificările", exact: true })
+    .click();
+  await expect(initial.getByText("10.000 MDL", { exact: true })).toBeVisible();
+  await page.goto("/");
+  const incomeStat = page
+    .locator(".stat-card")
+    .filter({ hasText: "Venituri lunare" });
+  const balanceStat = page
+    .locator(".stat-card")
+    .filter({ hasText: "Sold total" });
+  await expect(incomeStat.locator(".stat-value")).toHaveText("0 MDL");
+  await expect(balanceStat.locator(".stat-value")).toHaveText("10.000 MDL");
+  await expect(
+    page.getByRole("heading", {
+      name: "Începe cu primul venit sau prima cheltuială",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/Acesta nu se numără ca venit lunar/),
+  ).toBeVisible();
+  const tools = page.getByRole("region", { name: "Ce vrei să gestionezi?" });
+  for (const href of [
+    "/settings",
+    "/budgets",
+    "/goals",
+    "/investments",
+    "/analytics",
+    "/reports",
+    "/decision-lab",
+    "/iphone",
+  ]) {
+    await expect(tools.locator(`a[href="${href}"]`)).toBeVisible();
+  }
+  await page.getByRole("link", { name: "Adaugă venit", exact: true }).click();
+  await expect(page).toHaveURL(/create=income#transaction-form/);
+  let form = card(page, "Adaugă o tranzacție");
+  await expect(
+    form.getByRole("combobox", { name: "Tip", exact: true }),
+  ).toHaveValue("income");
+  await expect(
+    form
+      .getByRole("combobox", { name: "Categorie", exact: true })
+      .locator("option"),
+  ).toContainText(["Selectează categoria", "Alte venituri", "Salariu"]);
+  await form.getByLabel("Descriere", { exact: true }).fill("Salariu din panou");
+  await form.getByLabel("Sumă (MDL)").fill("2500");
+  await form
+    .getByRole("combobox", { name: "Categorie", exact: true })
+    .selectOption({ label: "Salariu" });
+  await form
+    .getByRole("button", { name: "Adaugă tranzacția", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Salariu din panou", exact: true }),
+  ).toBeVisible();
+  await expect(form.getByLabel("Descriere", { exact: true })).toHaveValue("");
+  await expect(
+    form.getByRole("combobox", { name: "Tip", exact: true }),
+  ).toHaveValue("income");
+  await form.getByLabel("Descriere", { exact: true }).fill("Al doilea venit");
+  await form.getByLabel("Sumă (MDL)").fill("500");
+  await form
+    .getByRole("combobox", { name: "Categorie", exact: true })
+    .selectOption({ label: "Alte venituri" });
+  await form
+    .getByRole("button", { name: "Adaugă tranzacția", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Al doilea venit", exact: true }),
+  ).toBeVisible();
+  await page.goto("/");
+  await expect(incomeStat.locator(".stat-value")).toHaveText("3.000 MDL");
+  await expect(balanceStat.locator(".stat-value")).toHaveText("13.000 MDL");
+  await expect(
+    page.getByRole("heading", {
+      name: "Începe cu primul venit sau prima cheltuială",
+    }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("link", { name: "Adaugă cheltuială", exact: true })
+    .click();
+  form = card(page, "Adaugă o tranzacție");
+  await expect(
+    form.getByRole("combobox", { name: "Tip", exact: true }),
+  ).toHaveValue("expense");
+  await expect(
+    form
+      .getByRole("combobox", { name: "Categorie", exact: true })
+      .locator("option"),
+  ).not.toContainText(["Salariu"]);
+  await form
+    .getByLabel("Descriere", { exact: true })
+    .fill("Plată invalidă păstrată");
+  await form.getByLabel("Sumă (MDL)").fill("0");
+  await form
+    .getByRole("combobox", { name: "Categorie", exact: true })
+    .selectOption({ label: "Alimente" });
+  await form
+    .getByRole("button", { name: "Adaugă tranzacția", exact: true })
+    .click();
+  await expect(form.locator(".form-error[role=alert]")).toContainText(
+    "mai mare decât zero",
+  );
+  await expect(form.getByLabel("Descriere", { exact: true })).toHaveValue(
+    "Plată invalidă păstrată",
+  );
+  await expect(form.getByLabel("Sumă (MDL)")).toHaveValue("0");
+  await expect(
+    form.getByRole("combobox", { name: "Tip", exact: true }),
+  ).toHaveValue("expense");
+  await page.goto("/");
+  await expect(
+    page.getByRole("heading", { name: "Finanțele tale", exact: true }),
+  ).toBeVisible();
+  await expect(balanceStat.locator(".stat-value")).toHaveText("13.000 MDL");
+  await page.screenshot({
+    path: "artifacts/dashboard-actions-desktop.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(
+    page.getByRole("link", { name: "Adaugă venit", exact: true }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: "artifacts/dashboard-actions-mobile.png",
+    fullPage: true,
+  });
+});
