@@ -1,4 +1,5 @@
 "use server";
+import { authErrorMessage } from "@/lib/auth/errors";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseConfig } from "@/lib/supabase/config";
@@ -36,8 +37,10 @@ export async function authenticate(
     });
     if (error)
       return {
-        error:
+        error: authErrorMessage(
+          error,
           "Înregistrarea nu a reușit. Verifică datele sau încearcă din nou mai târziu.",
+        ),
       };
     return {
       message:
@@ -47,8 +50,10 @@ export async function authenticate(
   const { error } = await client.auth.signInWithPassword(parsed.data);
   if (error)
     return {
-      error:
+      error: authErrorMessage(
+        error,
         "Conectarea nu a reușit. Verifică emailul, parola și confirmarea adresei.",
+      ),
     };
   redirect(safeNext(form.get("next")));
 }
@@ -87,7 +92,10 @@ export async function authEmailAction(
         });
   if (result.error)
     return {
-      error: "Cererea nu a putut fi trimisă. Încearcă din nou mai târziu.",
+      error: authErrorMessage(
+        result.error,
+        "Cererea nu a putut fi trimisă. Încearcă din nou mai târziu.",
+      ),
     };
   return {
     message:

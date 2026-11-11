@@ -278,3 +278,25 @@ test("iPhone quick expense uses a personal profile, records cash/card, retries i
   expect(csv).toContain("Card");
   expect(csv).not.toContain("Curs de programare");
 });
+
+test("signup explains the provider email limit and retains entered values", async ({
+  page,
+}) => {
+  await page.goto("/auth/register");
+  await page.getByLabel("Numele tău").fill("Cont test");
+  await page
+    .getByLabel("Email", { exact: true })
+    .fill("rate-limit@fintrack.invalid");
+  await page.getByLabel("Parolă", { exact: true }).fill("FixturePassword2026!");
+  await page.getByRole("button", { name: "Creează cont", exact: true }).click();
+  await expect(page.locator(".form-error[role=alert]")).toContainText(
+    "limita de trimitere a emailurilor",
+  );
+  await expect(page.getByLabel("Numele tău")).toHaveValue("Cont test");
+  await expect(page.getByLabel("Email", { exact: true })).toHaveValue(
+    "rate-limit@fintrack.invalid",
+  );
+  await expect(page.getByLabel("Parolă", { exact: true })).toHaveValue(
+    "FixturePassword2026!",
+  );
+});

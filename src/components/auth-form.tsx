@@ -1,5 +1,5 @@
 "use client";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { authenticate } from "@/app/auth/actions";
 import { Button } from "./ui/button";
@@ -10,6 +10,9 @@ export function AuthForm({
   mode: "login" | "register";
   next?: string;
 }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [state, action, pending] = useActionState(
     authenticate.bind(null, mode),
     {},
@@ -22,6 +25,8 @@ export function AuthForm({
           Numele tău
           <input
             name="display_name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             autoComplete="name"
             maxLength={80}
             required
@@ -33,6 +38,8 @@ export function AuthForm({
         Email
         <input
           name="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           type="email"
           autoComplete="email"
           maxLength={254}
@@ -45,6 +52,8 @@ export function AuthForm({
           id="password"
           aria-describedby="password-help"
           name="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           type="password"
           minLength={8}
           maxLength={128}

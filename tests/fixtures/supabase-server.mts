@@ -111,6 +111,12 @@ const server = createServer(async (req, res) => {
     if (url.pathname === "/health") return reply(res, 200, { ready: true });
     const bearer = req.headers.authorization?.replace(/^Bearer /, "");
     const user = bearer ? tokens.get(bearer) : undefined;
+    if (url.pathname === "/auth/v1/signup") {
+      return reply(res, 429, {
+        code: "over_email_send_rate_limit",
+        msg: "email rate limit exceeded",
+      });
+    }
     if (url.pathname === "/auth/v1/token") {
       const data = await body(req);
       const found = users.find((u) => u.email === data.email);

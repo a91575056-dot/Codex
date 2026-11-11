@@ -253,3 +253,17 @@ npx netlify-cli deploy --prod --site a112f59d-ed1f-4599-9e8a-8669f08f7a39
 public și adăugați URL-urile de callback și recuperare descrise mai sus pentru
 acel domeniu. Verificați întâi finalizarea deploy-ului: crearea proiectului Netlify
 nu publică automat codul. Instalarea pe un iPhone fizic necesită verificare manuală.
+
+## Eroare la înregistrare: limita emailurilor
+
+Dacă Supabase întoarce `over_email_send_rate_limit` / `email rate limit exceeded`
+(HTTP 429), serviciul a atins limita de trimitere. Înregistrarea poate fi respinsă
+înainte de crearea utilizatorului. Așteptați reînnoirea limitei înainte de o nouă
+încercare. Ștergerea conturilor nu resetează limita. Serviciul implicit este pentru
+încercări și poate restricționa destinatarii la membrii echipei Supabase; pentru
+înregistrări publice configurați SMTP propriu în Authentication, conform
+https://supabase.com/docs/guides/auth/auth-smtp . Nu dezactivați confirmarea emailului
+pentru a ascunde eroarea. Parola se introduce numai în aplicație, nu în chat.
+
+Formularul păstrează datele introduse la o eroare, doar în memoria paginii; nu
+stochează parola în localStorage și nu returnează detaliile brute ale furnizorului.
