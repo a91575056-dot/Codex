@@ -88,3 +88,34 @@ Testele SQL locale acoperă procente, bani exacți, snapshoturi, corecturi, ște
 pauză/reluare, MDL/EUR, RLS, granturi și idempotenta scurtăturii. Testele browser
 verifică salariu + cheltuială + bonus, editarea procentelor fără redistribuire,
 pauza și afișarea pe panoul mobil. Datele reale nu sunt folosite.
+
+## Confirmarea investiției și configurarea din Setări
+
+Migrație suplimentară locală: `20261111150854_confirm_investment_envelope.sql`.
+Procentele și pauza/reluarea planului sunt acum în Setări → Procentele bugetelor
+automate, separat pentru fiecare monedă; Bugete și Panou au linkuri directe.
+
+Pe cardul Investiții, dacă disponibilul este pozitiv, „Am investit suma
+disponibilă” cere alegerea unui cont propriu în aceeași monedă și confirmarea
+că investiția a fost efectuată și nu a fost deja înregistrată. Se creează o
+cheltuială reală în registrul FinTrack pentru exact suma disponibilă afișată,
+în categoria asociată regulii. Aceasta scade atât numerarul contului ales, cât
+și disponibilul bugetului de investiții. Următorul venit eligibil alimentează
+bugetul din nou cu procentul curent. Nu se resetează procentele și nu se pierd
+înregistrările istorice. Funcționează și în pauză pentru suma deja alocată.
+
+Operația nu execută o investiție sau un transfer în afara aplicației. Poziția
+și evaluarea portofoliului se introduc separat. Dacă investiția a fost deja
+adăugată în Tranzacții, nu se confirmă încă o dată din card; ambele acțiuni ar
+reprezenta două înregistrări contabile distincte. Ștergerea/corectarea cheltuielii
+din registru recalculează și disponibilul bugetului.
+
+RPC-ul `confirm_envelope_investment` este SECURITY INVOKER, EXECUTE numai pentru
+utilizatori autentificați. Verifică proprietarul regulii/planului/contului și tipul
+investment, moneda, suma pozitivă și request_id UUID. Blochează rândul planului
+folosit și de alimentarea veniturilor, recalculează suma pe server și refuză un
+disponibil modificat față de cel confirmat. O încasare nouă sosită între afișare și
+confirmare nu este consumată automat fără verificarea sumei noi. Același request_id
+returnează tranzacția existentă, inclusiv după o încasare ulterioară, fără să consume
+banii noi. Un request_id reutilizat cu alte date este respins. Nu există o comandă
+care setează arbitrar disponibilul la zero sau care șterge alocările.

@@ -1,8 +1,19 @@
+import { randomUUID } from "node:crypto";
+import {
+  InvestEnvelopeForm,
+  type EnvelopeAccount,
+} from "./invest-envelope-form";
 import Link from "next/link";
 import type { EnvelopeBalance } from "@/lib/envelopes";
 import { money } from "@/lib/finance";
 import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
-export function EnvelopeCards({ balances }: { balances: EnvelopeBalance[] }) {
+export function EnvelopeCards({
+  balances,
+  accounts = [],
+}: {
+  balances: EnvelopeBalance[];
+  accounts?: EnvelopeAccount[];
+}) {
   return (
     <div className="goal-grid">
       {balances.map((b) => (
@@ -29,6 +40,21 @@ export function EnvelopeCards({ balances }: { balances: EnvelopeBalance[] }) {
                   : "Cheltuit"}
               : {money(b.spent / 100, b.currency)}
             </p>
+            {b.kind === "investment" && b.available > 0 && (
+              <InvestEnvelopeForm
+                key={`${b.id}:${b.available}:${b.spent}`}
+                ruleId={b.id}
+                amount={b.available}
+                currency={b.currency}
+                accounts={accounts}
+                requestId={randomUUID()}
+              />
+            )}
+            {b.kind === "investment" && b.available === 0 && (
+              <p className="lab-help">
+                Bugetul se alimentează la următoarea încasare.
+              </p>
+            )}
             {b.available < 0 && (
               <p className="form-error">
                 Depășire: următoarele alocări vor acoperi mai întâi această
@@ -48,8 +74,10 @@ export function EnvelopeCards({ balances }: { balances: EnvelopeBalance[] }) {
 }
 export function DashboardEnvelopes({
   balances,
+  accounts = [],
 }: {
   balances: EnvelopeBalance[];
+  accounts?: EnvelopeAccount[];
 }) {
   return (
     <section className="dashboard-tools" aria-labelledby="envelopes-title">
@@ -67,11 +95,11 @@ export function DashboardEnvelopes({
             Banii necheltuiți se reportează. MDL și EUR rămân separat; sumele
             rezervate sunt deja incluse în soldul conturilor.
           </p>
-          <EnvelopeCards balances={balances} />
+          <EnvelopeCards balances={balances} accounts={accounts} />
         </>
       )}
-      <Link className="text-link" href="/budgets#automatic-budgets">
-        Gestionează bugetele automate
+      <Link className="text-link" href="/settings#budget-percentages">
+        Setează procentele bugetelor
       </Link>
     </section>
   );

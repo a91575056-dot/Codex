@@ -100,7 +100,10 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
           </Link>
         </section>
       )}
-      <DashboardEnvelopes balances={data.envelopes || []} />
+      <DashboardEnvelopes
+        balances={data.envelopes || []}
+        accounts={data.envelopeAccounts || []}
+      />
       {!data.transactions.length && (
         <section
           className="dashboard-onboarding"

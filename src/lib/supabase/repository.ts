@@ -81,6 +81,11 @@ export async function getUserFinance() {
   const names = new Map(ledger.categories.map((c) => [c.id, c.name]));
   return {
     ...data,
+    envelopeAccounts: ledger.accounts.map((a) => ({
+      id: a.id,
+      name: a.name,
+      currency: a.currency,
+    })),
     envelopes: envelopeBalances(
       envelopes,
       ledger.accounts,

@@ -352,7 +352,50 @@ test("SQL funds every income atomically once, freezes old ratios, handles edits,
     assert.equal((await funding(imported)).length, 7);
     await db.query("select public.import_transactions($1)", [importRows]);
     assert.equal((await funding(imported)).length, 7);
+    const investId = "00000000-0000-4000-8000-000000000003";
+    const confirm = (
+      expected: number,
+      requestId = investId,
+      accountId = account,
+      ruleId = rules[4].id,
+    ) =>
+      db.query<{
+        v: { transaction_id: string; replayed: boolean; amount_minor: number };
+      }>("select public.confirm_envelope_investment($1,$2,$3,$4) v", [
+        ruleId,
+        accountId,
+        requestId,
+        expected,
+      ]);
+    await assert.rejects(confirm(7500, investId, euro), /moneda/);
+    await assert.rejects(
+      confirm(7500, investId, account, rules[0].id),
+      /indisponibil/,
+    );
+    const confirmation = (await confirm(7500)).rows[0].v;
+    assert.equal(confirmation.amount_minor, 7500);
+    assert.equal(confirmation.replayed, false);
+    assert.equal((await confirm(7500)).rows[0].v.replayed, true);
+    const newIncome = (await add(10000)).rows[0].id;
+    assert.equal((await funding(newIncome))[4].amount_minor, 1500);
+    assert.equal((await confirm(7500)).rows[0].v.replayed, true);
+    await assert.rejects(
+      confirm(7500, "00000000-0000-4000-8000-000000000004"),
+      /Disponibilul/,
+    );
+    await confirm(1500, "00000000-0000-4000-8000-000000000004");
+    assert.equal(
+      (
+        await db.query(
+          "select id from public.transactions where description='Investiție confirmată din buget'",
+        )
+      ).rows.length,
+      2,
+    );
+    await as();
+    await assert.rejects(confirm(7500), /permission denied/);
     await as(b);
+    await assert.rejects(confirm(7500), /indisponibil/);
     assert.equal(
       (await db.query("select * from public.envelope_funding")).rows.length,
       0,

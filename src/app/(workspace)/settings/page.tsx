@@ -1,3 +1,5 @@
+import { getEnvelopes } from "@/lib/supabase/envelope-repository";
+import { EnvelopeConfig, StartEnvelopes } from "@/components/envelope-forms";
 import { ProfileNameForm } from "@/components/profile-name-form";
 import { profileName } from "@/lib/auth/validation";
 import Link from "next/link";
@@ -14,7 +16,7 @@ export const instant = false;
 export default async function SettingsPage() {
   if (!supabaseConfig())
     return <DemoSection params={Promise.resolve({ section: "settings" })} />;
-  const ledger = await getLedger();
+  const [ledger, envelopes] = await Promise.all([getLedger(), getEnvelopes()]);
   return (
     <>
       <Heading
@@ -50,6 +52,36 @@ export default async function SettingsPage() {
           <ProfileNameForm name={profileName(ledger.user)} />
         </CardContent>
       </Card>
+      <section id="budget-percentages" className="mb-8">
+        <h2 className="overview-heading">Procentele bugetelor automate</h2>
+        <p className="lab-help mb-4">
+          Configurează cum se împart salariul, bonusurile și celelalte venituri
+          noi. Procentele trebuie să totalizeze 100%. Alocările existente se
+          păstrează.
+        </p>
+        {envelopes.plans.map((plan) => (
+          <Card key={plan.id} className="mb-6">
+            <CardHeader>
+              <CardTitle>Procente {plan.currency}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <EnvelopeConfig
+                key={plan.id}
+                plan={plan}
+                rules={envelopes.rules.filter((r) => r.plan_id === plan.id)}
+                names={Object.fromEntries(
+                  ledger.categories.map((c) => [c.id, c.name]),
+                )}
+              />
+            </CardContent>
+          </Card>
+        ))}
+        <StartEnvelopes
+          currencies={(["MDL", "EUR"] as const).filter(
+            (c) => !envelopes.plans.some((p) => p.currency === c),
+          )}
+        />
+      </section>
       <div className="bottom-grid">
         <Card>
           <CardHeader>

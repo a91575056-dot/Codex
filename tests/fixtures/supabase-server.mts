@@ -162,6 +162,12 @@ const server = createServer(async (req, res) => {
     if (url.pathname.startsWith("/rest/v1/rpc/")) {
       const rpc = url.pathname.split("/").at(-1);
       const allowed: Record<string, string[]> = {
+        confirm_envelope_investment: [
+          "p_rule_id",
+          "p_account_id",
+          "p_request_id",
+          "p_expected_available",
+        ],
         start_envelopes: ["p_currency"],
         configure_envelopes: ["p_plan_id", "p_enabled", "p_rules"],
         post_recurring: [

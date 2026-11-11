@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { getEnvelopes } from "@/lib/supabase/envelope-repository";
 import { envelopeBalances } from "@/lib/envelopes";
-import { StartEnvelopes, EnvelopeConfig } from "@/components/envelope-forms";
+import { StartEnvelopes } from "@/components/envelope-forms";
 import { EnvelopeCards } from "@/components/envelope-view";
 import { transactionsInCurrency } from "@/lib/currency";
 import { connection } from "next/server";
@@ -69,17 +70,11 @@ export default async function BudgetsPage({
             </h3>
             <EnvelopeCards
               balances={balances.filter((b) => b.plan_id === plan.id)}
+              accounts={ledger.accounts}
             />
-            <details className="goal-detail">
-              <summary>Modifică procentele pentru {plan.currency}</summary>
-              <EnvelopeConfig
-                plan={plan}
-                rules={envelopes.rules.filter((r) => r.plan_id === plan.id)}
-                names={Object.fromEntries(
-                  ledger.categories.map((c) => [c.id, c.name]),
-                )}
-              />
-            </details>
+            <Link className="text-link" href="/settings#budget-percentages">
+              Modifică procentele pentru {plan.currency} în Setări
+            </Link>
           </section>
         ))}
         <StartEnvelopes

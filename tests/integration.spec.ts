@@ -1140,13 +1140,13 @@ test("automatic budgets allocate salaries, carry balances, reserve investments a
   await expect(budget("Fond de urgență").locator(".stat-value")).toHaveText(
     "1.200 MDL",
   );
-  await auto
-    .getByText("Modifică procentele pentru MDL", { exact: true })
-    .click();
-  await auto.getByLabel("Alimente (%)", { exact: true }).fill("30");
-  await auto.getByLabel("Locuință (%)", { exact: true }).fill("20");
-  await auto.getByRole("button", { name: "Salvează procentele" }).click();
-  await expect(auto.getByRole("status")).toContainText("Plan salvat");
+  await page.goto("/settings#budget-percentages");
+  const config = card(page, "Procente MDL");
+  await config.getByLabel("Alimente (%)", { exact: true }).fill("30");
+  await config.getByLabel("Locuință (%)", { exact: true }).fill("20");
+  await config.getByRole("button", { name: "Salvează procentele" }).click();
+  await expect(config.getByRole("status")).toContainText("Plan salvat");
+  await page.goto("/budgets");
   await expect(budget("Alimente").locator(".stat-value")).toHaveText(
     "2.500 MDL",
   );
@@ -1158,11 +1158,11 @@ test("automatic budgets allocate salaries, carry balances, reserve investments a
   await expect(budget("Locuință").locator(".stat-value")).toHaveText(
     "3.200 MDL",
   );
-  await auto
-    .getByText("Modifică procentele pentru MDL", { exact: true })
-    .click();
-  await auto.getByLabel("Împărțirea veniturilor noi").selectOption("false");
-  await auto.getByRole("button", { name: "Salvează procentele" }).click();
+  await page.goto("/settings#budget-percentages");
+  await config.getByLabel("Împărțirea veniturilor noi").selectOption("false");
+  await config.getByRole("button", { name: "Salvează procentele" }).click();
+  await expect(config.getByRole("status")).toContainText("Plan salvat");
+  await page.goto("/budgets");
   await expect(auto).toContainText("În pauză");
   await entry("income", "Venit în pauză", "500", "Alte venituri");
   await page.goto("/");
@@ -1180,6 +1180,38 @@ test("automatic budgets allocate salaries, carry balances, reserve investments a
   ).toBe(true);
   await page.screenshot({
     path: "artifacts/automatic-budgets-mobile.png",
+    caret: "initial",
     fullPage: true,
   });
+  const investment = section
+    .locator("[data-slot=card]")
+    .filter({
+      has: page.getByRole("heading", { name: "Investiții", exact: true }),
+    });
+  await investment
+    .getByText("Am investit suma disponibilă", { exact: true })
+    .click();
+  await investment
+    .getByLabel("Contul din care ai investit")
+    .selectOption({ label: "Cont personal · MDL" });
+  await investment
+    .getByLabel("Confirm că am investit", { exact: false })
+    .check();
+  await investment.getByRole("button", { name: "Confirmă investiția" }).click();
+  await expect(investment.locator(".stat-value")).toHaveText("0 MDL");
+  await expect(page.locator(".stats-grid")).toContainText("11.050 MDL");
+  await page.goto("/transactions");
+  await expect(
+    page.getByRole("heading", {
+      name: "Investiție confirmată din buget",
+      exact: true,
+    }),
+  ).toHaveCount(1);
+  await page.goto("/settings#budget-percentages");
+  await config.getByLabel("Împărțirea veniturilor noi").selectOption("true");
+  await config.getByRole("button", { name: "Salvează procentele" }).click();
+  await expect(config.getByRole("status")).toContainText("Plan salvat");
+  await entry("income", "Venit după investiție", "1000", "Alte venituri");
+  await page.goto("/");
+  await expect(investment.locator(".stat-value")).toHaveText("150 MDL");
 });

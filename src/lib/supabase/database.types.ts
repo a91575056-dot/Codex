@@ -152,6 +152,20 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      confirm_envelope_investment: {
+        Args: {
+          p_rule_id: string;
+          p_account_id: string;
+          p_request_id: string;
+          p_expected_available: number;
+        };
+        Returns: {
+          transaction_id: string;
+          amount_minor: number;
+          currency: "MDL" | "EUR";
+          replayed: boolean;
+        };
+      };
       start_envelopes: { Args: { p_currency: string }; Returns: string };
       configure_envelopes: {
         Args: {
