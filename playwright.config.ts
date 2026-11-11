@@ -6,6 +6,7 @@ export default defineConfig({
     "decision-lab.spec.ts",
     "goals.spec.ts",
     "recovery.spec.ts",
+    "iphone-install.spec.ts",
   ],
   use: {
     baseURL: "http://127.0.0.1:3000",

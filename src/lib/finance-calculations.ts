@@ -85,6 +85,7 @@ export function calculateFinance(
       name: t.description,
       category: names.get(t.category_id) || "Categorie indisponibilă",
       date: t.occurred_on,
+      paymentMethod: t.payment_method,
       amount: asRON(
         t.kind === "income" ? BigInt(t.amount_minor) : -BigInt(t.amount_minor),
       ),

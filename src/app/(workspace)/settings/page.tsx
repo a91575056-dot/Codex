@@ -1,3 +1,5 @@
+import { ProfileNameForm } from "@/components/profile-name-form";
+import { profileName } from "@/lib/auth/validation";
 import Link from "next/link";
 import { supabaseConfig } from "@/lib/supabase/config";
 import { getLedger } from "@/lib/supabase/repository";
@@ -27,10 +29,23 @@ export default async function SettingsPage() {
         </p>
       </div>
       <p className="mb-6">
+        <Link className="text-link" href="/install">
+          Instalează FinTrack pe iPhone
+        </Link>
+      </p>
+      <p className="mb-6">
         <Link className="text-link" href="/auth/update-password">
           Schimbă parola contului
         </Link>
       </p>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Profilul tău</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ProfileNameForm name={profileName(ledger.user)} />
+        </CardContent>
+      </Card>
       <div className="bottom-grid">
         <Card>
           <CardHeader>

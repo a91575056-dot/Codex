@@ -2,7 +2,13 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseConfig } from "@/lib/supabase/config";
-import { credentialsSchema, safeNext } from "@/lib/auth/validation";
+import { revalidatePath } from "next/cache";
+import { requireUser } from "@/lib/auth/session";
+import {
+  credentialsSchema,
+  safeNext,
+  displayNameSchema,
+} from "@/lib/auth/validation";
 export type AuthState = { error?: string; message?: string };
 export async function authenticate(
   mode: "login" | "register",
@@ -18,10 +24,13 @@ export async function authenticate(
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const client = await createClient();
   if (mode === "register") {
+    const name = displayNameSchema.safeParse(form.get("display_name"));
+    if (!name.success) return { error: name.error.issues[0].message };
     const origin = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     const { error } = await client.auth.signUp({
       ...parsed.data,
       options: {
+        data: { display_name: name.data },
         emailRedirectTo: new URL("/auth/callback", origin).toString(),
       },
     });
@@ -108,4 +117,20 @@ export async function updatePassword(
         "Parola nu a putut fi actualizată. Folosește un link nou de recuperare și încearcă din nou.",
     };
   return { message: "Parola a fost actualizată. Poți reveni la aplicație." };
+}
+
+export async function updateDisplayName(
+  _state: AuthState,
+  form: FormData,
+): Promise<AuthState> {
+  if (!supabaseConfig()) return { error: "Modul demo nu modifică profiluri." };
+  const parsed = displayNameSchema.safeParse(form.get("display_name"));
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const { client } = await requireUser();
+  const { error } = await client.auth.updateUser({
+    data: { display_name: parsed.data },
+  });
+  if (error) return { error: "Numele nu a putut fi salvat." };
+  revalidatePath("/", "layout");
+  return { message: "Numele profilului a fost actualizat." };
 }

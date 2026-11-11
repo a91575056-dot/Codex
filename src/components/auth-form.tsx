@@ -17,6 +17,18 @@ export function AuthForm({
   return (
     <form action={action} className="form-grid">
       <input type="hidden" name="next" value={next} />
+      {mode === "register" && (
+        <label>
+          Numele tău
+          <input
+            name="display_name"
+            autoComplete="name"
+            maxLength={80}
+            required
+            placeholder="De exemplu: Dionis"
+          />
+        </label>
+      )}
       <label>
         Email
         <input

@@ -174,3 +174,107 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
   await expect(page).toHaveURL("/auth/login");
   expect(errors).toEqual([]);
 });
+
+test("iPhone quick expense uses a personal profile, records cash/card, retries idempotently and remembers accounts", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await login(page, "b@fintrack.invalid");
+  await page.goto("/settings");
+  let f = card(page, "Profilul tău");
+  await f.getByLabel("Nume afișat").fill("Dionis");
+  await f.getByRole("button", { name: "Salvează numele" }).click();
+  await expect(f.getByRole("status")).toHaveText(
+    "Numele profilului a fost actualizat.",
+  );
+  f = card(page, "Adaugă un cont");
+  await f.getByLabel("Numele contului").fill("Portofel Dionis");
+  await f.getByRole("button", { name: "Adaugă înregistrarea" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Portofel Dionis", exact: true }),
+  ).toBeVisible();
+  await page.goto("/quick-expense");
+  await expect(page.getByText(/Cont personal: Dionis/)).toBeVisible();
+  await page.getByRole("button", { name: "Cash", exact: true }).click();
+  await page
+    .getByRole("combobox", { name: "Din ce cont?" })
+    .selectOption({ label: "Portofel Dionis" });
+  await page
+    .getByRole("combobox", { name: "Pe ce ai cheltuit?" })
+    .selectOption({ label: "Alimente" });
+  await page.getByLabel("Suma cheltuită (RON)").fill("25,50");
+  await page.getByLabel("Detalii (opțional)").fill("Cafea rapidă Cash");
+  const request = await page.locator("input[name=request_id]").inputValue();
+  await page.getByRole("button", { name: "Salvează cheltuiala" }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Salvat:" }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Suma cheltuită (RON)")).toHaveValue("");
+  await page
+    .getByRole("combobox", { name: "Pe ce ai cheltuit?" })
+    .selectOption({ label: "Alimente" });
+  await page.getByLabel("Suma cheltuită (RON)").fill("25,50");
+  await page.getByLabel("Detalii (opțional)").fill("Cafea rapidă Cash");
+  await page.locator("input[name=request_id]").evaluate((element, value) => {
+    (element as HTMLInputElement).value = value;
+  }, request);
+  await page.getByRole("button", { name: "Salvează cheltuiala" }).click();
+  await expect(
+    page.getByRole("button", { name: "Salvează cheltuiala" }),
+  ).toBeEnabled();
+  await expect(page.getByLabel("Suma cheltuită (RON)")).toHaveValue("");
+  await page.goto("/transactions");
+  await expect(
+    page.getByRole("heading", { name: "Cafea rapidă Cash", exact: true }),
+  ).toHaveCount(1);
+  await expect(
+    page
+      .locator(".ledger-item")
+      .filter({ has: page.getByRole("heading", { name: "Cafea rapidă Cash" }) })
+      .getByText(/Cash/)
+      .first(),
+  ).toBeVisible();
+  await page.goto("/quick-expense");
+  await page.getByRole("button", { name: "Card", exact: true }).click();
+  await page
+    .getByRole("combobox", { name: "Din ce cont?" })
+    .selectOption({ label: "Cont personal" });
+  await page
+    .getByRole("combobox", { name: "Pe ce ai cheltuit?" })
+    .selectOption({ label: "Alimente" });
+  await page.getByLabel("Suma cheltuită (RON)").fill("10");
+  await page.getByLabel("Detalii (opțional)").fill("Plată rapidă Card");
+  await page.getByRole("button", { name: "Salvează cheltuiala" }).click();
+  await expect(page.getByLabel("Suma cheltuită (RON)")).toHaveValue("");
+  await page.reload();
+  await expect(
+    page
+      .getByRole("combobox", { name: "Din ce cont?" })
+      .locator("option:checked"),
+  ).toHaveText("Cont personal");
+  await page.getByRole("button", { name: "Cash", exact: true }).click();
+  await expect(
+    page
+      .getByRole("combobox", { name: "Din ce cont?" })
+      .locator("option:checked"),
+  ).toHaveText("Portofel Dionis");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: "artifacts/iphone-quick-expense.png",
+    fullPage: true,
+  });
+  await page.goto("/reports");
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Descarcă raportul CSV" }).click();
+  const file = await downloadPromise;
+  const stream = await file.createReadStream();
+  let csv = "";
+  for await (const chunk of stream!) csv += chunk.toString();
+  expect(csv).toContain("Cash");
+  expect(csv).toContain("Card");
+  expect(csv).not.toContain("Curs de programare");
+});

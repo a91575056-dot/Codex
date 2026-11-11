@@ -1,4 +1,5 @@
 "use client";
+import { paymentLabels } from "@/lib/payment";
 import { Download } from "lucide-react";
 import { Button } from "./ui/button";
 import type { Transaction } from "@/types/finance";
@@ -12,8 +13,14 @@ export function ReportDownload({
   function download() {
     const rows = [
       [demo ? "DEMO — Date fictive" : "FinTrack — Tranzacții personale"],
-      ["Dată", "Descriere", "Categorie", "Sumă RON"],
-      ...transactions.map((t) => [t.date, t.name, t.category, t.amount]),
+      ["Dată", "Descriere", "Categorie", "Plată", "Sumă RON"],
+      ...transactions.map((t) => [
+        t.date,
+        t.name,
+        t.category,
+        paymentLabels[t.paymentMethod || "unspecified"],
+        t.amount,
+      ]),
     ];
     const csv =
       "\uFEFF" +

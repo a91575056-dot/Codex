@@ -101,6 +101,17 @@ export function TransactionForm({
           </select>
         </label>
         <label>
+          Metoda de plată
+          <select
+            name="payment_method"
+            defaultValue={transaction?.payment_method || "unspecified"}
+          >
+            <option value="unspecified">Nespecificat</option>
+            <option value="cash">Cash</option>
+            <option value="card">Card</option>
+          </select>
+        </label>
+        <label>
           Dată
           <input
             type="date"

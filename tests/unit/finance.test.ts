@@ -72,6 +72,7 @@ test("calculates month totals and balance without demo data, excludes future ent
     account_id: "b",
     category_id: "c",
     description: "Test",
+    payment_method: "unspecified",
     kind,
     amount_minor,
     occurred_on,

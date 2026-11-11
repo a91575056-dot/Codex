@@ -6,6 +6,9 @@ export const transactionSchema = z.object({
   kind: z.enum(["income", "expense"], {
     error: "Selectează tipul tranzacției.",
   }),
+  payment_method: z
+    .enum(["unspecified", "cash", "card"])
+    .default("unspecified"),
   description: z
     .string()
     .trim()

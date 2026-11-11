@@ -22,3 +22,15 @@ export function safeNext(value: unknown) {
     return "/";
   }
 }
+
+export const displayNameSchema = z
+  .string()
+  .trim()
+  .min(1, "Introdu numele afișat.")
+  .max(80, "Numele poate avea maximum 80 de caractere.");
+export function profileName(user: { user_metadata?: Record<string, unknown> }) {
+  const value = user.user_metadata?.display_name;
+  return typeof value === "string" && value.trim()
+    ? value.trim().slice(0, 80)
+    : "Cont personal";
+}

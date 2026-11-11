@@ -49,3 +49,6 @@ next-env.d.ts
 # Supabase CLI caches
 /supabase/.temp/
 /supabase/.branches/
+
+# Local Netlify linkage and build artifacts
+/.netlify/

@@ -4,6 +4,7 @@ export interface Transaction {
   category: string;
   date: string;
   amount: number;
+  paymentMethod?: "unspecified" | "cash" | "card";
 }
 export interface FinanceData {
   balance: number;

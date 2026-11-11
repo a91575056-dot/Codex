@@ -23,6 +23,7 @@ export type TransactionRow = {
   category_id: string;
   kind: "income" | "expense";
   description: string;
+  payment_method: "unspecified" | "cash" | "card";
   amount_minor: number;
   occurred_on: string;
   created_at: string;

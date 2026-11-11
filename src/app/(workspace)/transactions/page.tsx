@@ -1,3 +1,4 @@
+import { paymentLabels } from "@/lib/payment";
 import Link from "next/link";
 import { supabaseConfig } from "@/lib/supabase/config";
 import { getLedger } from "@/lib/supabase/repository";
@@ -132,7 +133,8 @@ export default async function TransactionPage({
                     <h2>{t.description}</h2>
                     <p>
                       {t.occurred_on} · {names.get(t.category_id)} ·{" "}
-                      {accountNames.get(t.account_id)}
+                      {accountNames.get(t.account_id)} ·{" "}
+                      {paymentLabels[t.payment_method]}
                     </p>
                   </div>
                   <strong className={t.kind === "income" ? "positive" : ""}>

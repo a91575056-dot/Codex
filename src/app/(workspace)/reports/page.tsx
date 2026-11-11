@@ -84,6 +84,7 @@ export default async function ReportsPage({
             name: t.description,
             category: names.get(t.category_id) || "Categorie",
             date: t.occurred_on,
+            paymentMethod: t.payment_method,
             amount: ((t.kind === "income" ? 1 : -1) * t.amount_minor) / 100,
           }))}
         />

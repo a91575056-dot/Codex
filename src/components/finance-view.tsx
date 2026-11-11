@@ -1,3 +1,4 @@
+import { paymentLabels } from "@/lib/payment";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -236,6 +237,7 @@ export function Transactions({
                 <th>Tranzacție</th>
                 <th>Categorie</th>
                 <th>Dată</th>
+                <th>Plată</th>
                 <th className="text-right">Sumă</th>
               </tr>
             </thead>
@@ -264,6 +266,7 @@ export function Transactions({
                       timeZone: "UTC",
                     }).format(new Date(t.date))}
                   </td>
+                  <td>{paymentLabels[t.paymentMethod || "unspecified"]}</td>
                   <td className={`amount ${t.amount > 0 ? "positive" : ""}`}>
                     {t.amount > 0 ? "+" : ""}
                     {money(t.amount)}

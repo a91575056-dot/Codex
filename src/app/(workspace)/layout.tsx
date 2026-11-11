@@ -1,3 +1,4 @@
+import { profileName } from "@/lib/auth/validation";
 import { Shell } from "@/components/shell";
 import { supabaseConfig } from "@/lib/supabase/config";
 import { requireUser } from "@/lib/auth/session";
@@ -9,7 +10,11 @@ export default async function WorkspaceLayout({
 }) {
   const session = supabaseConfig() ? await requireUser() : null;
   return (
-    <Shell demo={!session} email={session?.user.email}>
+    <Shell
+      demo={!session}
+      email={session?.user.email}
+      profileName={session ? profileName(session.user) : undefined}
+    >
       {children}
     </Shell>
   );

@@ -213,3 +213,43 @@ Pentru Chromium de sistem pe Linux, prefixați comenzile Playwright cu
 confirmarea emailului, recuperarea parolei, persistența sesiunii și CRUD-ul. Nu
 folosiți conturile/cheile din fixture cu un serviciu real. GitHub Actions rulează
 verificările automate; documentația de review este în `docs/release-v1.md`.
+
+## Instalare pe iPhone și cheltuieli rapide
+
+FinTrack se instalează ca aplicație web (PWA), după publicare pe un domeniu HTTPS.
+În Safari deschideți `/install`, apoi Partajare → Adăugați pe ecranul principal →
+Deschideți ca aplicație web. Pictograma pornește formularul `/quick-expense`.
+Nu este un fișier IPA și nu se instalează din Descărcări. Necesită internet;
+nu păstrează în cache paginile financiare pentru utilizare offline.
+
+Înregistrați un cont personal cu numele dorit, confirmați emailul, apoi conectați-vă.
+Datele demo rămân separate. Formularul rapid salvează suma, contul, categoria și
+metoda Cash/Card în tranzacțiile utilizatorului autentificat. Retrimiterea aceleiași
+cereri nu creează duplicate. Contul preferat pentru fiecare metodă este reținut
+local, separat pentru fiecare utilizator. Metoda tranzacțiilor istorice rămâne
+„Nespecificat”. Migrația necesară este
+`supabase/migrations/20261111084659_quick_expense_payment_method.sql`.
+
+Opțional, o comandă Apple Shortcuts poate deschide adresa formularului prin
+Atingere spate de trei ori. Aceasta poate deschide Safari; dialogurile native
+Shortcuts pentru introducerea sumei nu sunt implementate în această etapă.
+
+### Publicare pe Netlify
+
+Proiectul pregătit: https://app.netlify.com/projects/fintrack-dionis .
+Conectați repository-ul `a91575056-dot/Codex`, branch `work`, în
+Project configuration → Build & deploy → Continuous deployment → Link repository.
+`netlify.toml` configurează build-ul Next.js; nu adăugați redirect SPA.
+Configurați cele trei variabile publice din `.env.example` în Netlify, cu
+`NEXT_PUBLIC_SITE_URL` egal cu domeniul HTTPS publicat. Nu folosiți service_role.
+Alternativ, din copia locală actualizată, cu Node.js 24:
+
+```bash
+npx netlify-cli login
+npx netlify-cli deploy --prod --site a112f59d-ed1f-4599-9e8a-8669f08f7a39
+```
+
+În Supabase Authentication → URL Configuration configurați Site URL cu domeniul
+public și adăugați URL-urile de callback și recuperare descrise mai sus pentru
+acel domeniu. Verificați întâi finalizarea deploy-ului: crearea proiectului Netlify
+nu publică automat codul. Instalarea pe un iPhone fizic necesită verificare manuală.

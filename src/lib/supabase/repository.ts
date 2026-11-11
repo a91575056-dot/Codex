@@ -5,8 +5,8 @@ import { getPlanning, allRows } from "./planning-repository";
 import { portfolioSummary, budgetProgress } from "@/lib/planning";
 import { todayISO } from "@/lib/goals";
 import type { AccountRow, CategoryRow, TransactionRow } from "./database.types";
-export async function getLedger() {
-  const { client, user } = await requireUser();
+export async function getLedger(next = "/") {
+  const { client, user } = await requireUser(next);
   const [a, c] = await Promise.all([
     allRows<AccountRow>((f, t) =>
       client

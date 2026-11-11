@@ -51,9 +51,9 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
         title="Finanțele tale"
         description="Datele salvate în contul tău. Sumele sunt în RON."
       />
-      <div className="mb-6">
+      <div className="lab-actions mb-6">
         <Button asChild>
-          <Link href="/transactions">Adaugă o tranzacție</Link>
+          <Link href="/quick-expense">Cheltuială rapidă</Link>
         </Button>
       </div>
       <ConnectedStats data={data} />

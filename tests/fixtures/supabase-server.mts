@@ -46,6 +46,7 @@ function token(id: string) {
   );
 }
 const tokens = new Map(users.map((u) => [token(u.id), u]));
+const names = new Map<string, string>();
 function userBody(u: (typeof users)[number]) {
   return {
     ...u,
@@ -54,7 +55,7 @@ function userBody(u: (typeof users)[number]) {
     email_confirmed_at: "2026-01-01T00:00:00Z",
     created_at: "2026-01-01T00:00:00Z",
     app_metadata: { provider: "email" },
-    user_metadata: {},
+    user_metadata: names.has(u.id) ? { display_name: names.get(u.id) } : {},
     identities: [],
   };
 }
@@ -126,6 +127,12 @@ const server = createServer(async (req, res) => {
         expires_in: 3600,
         user: userBody(found),
       });
+    }
+    if (url.pathname === "/auth/v1/user" && req.method === "PUT" && user) {
+      const input = await body(req);
+      if (typeof input.data?.display_name === "string")
+        names.set(user.id, input.data.display_name);
+      return reply(res, 200, userBody(user));
     }
     if (url.pathname === "/auth/v1/user")
       return user

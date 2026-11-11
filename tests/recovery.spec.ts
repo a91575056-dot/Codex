@@ -7,14 +7,12 @@ test("recovery and resend forms are discoverable and demo does not send email", 
   await expect(
     page.getByRole("heading", { name: "Recuperează accesul" }),
   ).toBeVisible();
-  const form = page
-    .locator("[data-slot=card]")
-    .filter({
-      has: page.getByRole("heading", {
-        name: "Recuperează accesul",
-        exact: true,
-      }),
-    });
+  const form = page.locator("[data-slot=card]").filter({
+    has: page.getByRole("heading", {
+      name: "Recuperează accesul",
+      exact: true,
+    }),
+  });
   await form
     .getByLabel("Email", { exact: true })
     .fill("example@fintrack.invalid");

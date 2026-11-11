@@ -41,6 +41,7 @@ const tx = (
   amount_minor: amount,
   occurred_on: date,
   description: "Test",
+  payment_method: "unspecified",
   created_at: "",
 });
 const holding: HoldingRow = {

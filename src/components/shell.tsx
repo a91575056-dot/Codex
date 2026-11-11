@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   Landmark,
+  PlusCircle,
   Target,
   FlaskConical,
   LayoutDashboard,
@@ -24,6 +25,7 @@ const links = [
   ["/", "Panou de control", LayoutDashboard],
   ["/goals", "Obiective", Target],
   ["/decision-lab", "Laborator de decizii", FlaskConical],
+  ["/quick-expense", "Cheltuială rapidă", PlusCircle],
   ["/transactions", "Tranzacții", ArrowLeftRight],
   ["/budgets", "Bugete", Wallet],
   ["/investments", "Investiții", ChartNoAxesCombined],
@@ -35,11 +37,13 @@ export function Shell({
   children,
   demo = true,
   email,
+  profileName,
   prefix = "",
 }: {
   children: React.ReactNode;
   demo?: boolean;
   email?: string;
+  profileName?: string;
   prefix?: string;
 }) {
   const path = usePathname();
@@ -83,7 +87,11 @@ export function Shell({
           {links.map(([href, label, Icon]) => (
             <Link
               key={href}
-              href={prefix + (href === "/" ? "" : href) || "/"}
+              href={
+                href === "/quick-expense"
+                  ? href
+                  : prefix + (href === "/" ? "" : href) || "/"
+              }
               aria-current={
                 path === (prefix + (href === "/" ? "" : href) || "/")
                   ? "page"
@@ -119,7 +127,9 @@ export function Shell({
           <div className="profile">
             <span className="avatar">{demo ? "AD" : "CP"}</span>
             <div>
-              <strong>{demo ? "Alex Demo" : "Cont personal"}</strong>
+              <strong>
+                {demo ? "Alex Demo" : profileName || "Cont personal"}
+              </strong>
               <small className="profile-email">
                 {demo ? "Cont demonstrativ" : email}
               </small>
