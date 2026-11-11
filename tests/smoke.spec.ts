@@ -19,7 +19,7 @@ test("dashboard, all navigation destinations and demo export", async ({
   ];
   for (const [label, url] of sections) {
     await page
-      .getByRole("navigation")
+      .getByRole("navigation", { name: "Navigare principală" })
       .getByRole("link", { name: label, exact: true })
       .click();
     await expect(page).toHaveURL(url);
@@ -28,7 +28,7 @@ test("dashboard, all navigation destinations and demo export", async ({
     ).toBeVisible();
     await expect(
       page
-        .getByRole("navigation")
+        .getByRole("navigation", { name: "Navigare principală" })
         .getByRole("link", { name: label, exact: true }),
     ).toHaveAttribute("aria-current", "page");
   }
@@ -56,14 +56,19 @@ test("mobile menu navigates and pages fit the viewport", async ({ page }) => {
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true);
-  await page.getByRole("button", { name: "Deschide meniul" }).click();
   await page
-    .getByRole("navigation")
+    .locator(".mobile-bar")
+    .getByRole("button", { name: "Deschide meniul" })
+    .click();
+  await page
+    .getByRole("navigation", { name: "Navigare principală" })
     .getByRole("link", { name: "Tranzacții", exact: true })
     .click();
   await expect(page).toHaveURL("/transactions");
   await expect(
-    page.getByRole("button", { name: "Deschide meniul" }),
+    page
+      .locator(".mobile-bar")
+      .getByRole("button", { name: "Deschide meniul" }),
   ).toHaveAttribute("aria-expanded", "false");
   expect(
     await page.evaluate(
