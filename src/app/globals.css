@@ -1850,3 +1850,37 @@ footer {
     display: none;
   }
 }
+
+.pull-refresh {
+  display: none;
+}
+@media (max-width: 640px) {
+  html {
+    overscroll-behavior-y: none;
+  }
+  .pull-refresh.visible {
+    display: flex;
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 34;
+    align-items: center;
+    gap: 8px;
+    width: max-content;
+    max-width: 94vw;
+    padding: 12px 16px;
+    border: 1px solid #dce9e1;
+    border-radius: 24px;
+    background: #fff;
+    color: #137d67;
+    box-shadow: 0 4px 20px #172b2320;
+    font-size: 12px;
+    pointer-events: none;
+  }
+}
+@media print {
+  .pull-refresh {
+    display: none !important;
+  }
+}

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { signOut } from "@/app/auth/actions";
 import { Button } from "./ui/button";
+import { PullToRefresh } from "./pull-to-refresh";
 const links = [
   ["/", "Panou de control", LayoutDashboard],
   ["/goals", "Obiective", Target],
@@ -147,6 +148,7 @@ export function Shell({
   const transactions = `${prefix}/transactions`;
   return (
     <>
+      <PullToRefresh disabled={open} />
       <a className="skip-link" href="#main">
         Sari la conținut
       </a>
@@ -215,7 +217,25 @@ export function Shell({
                   ? "page"
                   : undefined
               }
-              onClick={() => setOpen(false)}
+              onClick={(event) => {
+                if (
+                  href === "/" &&
+                  !event.ctrlKey &&
+                  !event.metaKey &&
+                  !event.shiftKey &&
+                  !event.altKey
+                ) {
+                  event.preventDefault();
+                  if (
+                    window.location.pathname === home &&
+                    !window.location.search &&
+                    !window.location.hash
+                  ) {
+                    window.scrollTo(0, 0);
+                    window.location.reload();
+                  } else window.location.assign(home);
+                } else setOpen(false);
+              }}
               className={`nav-link ${path === (prefix + (href === "/" ? "" : href) || "/") ? "active" : ""}`}
             >
               <Icon size={19} />
@@ -283,10 +303,31 @@ export function Shell({
         </footer>
       </div>
       <nav ref={bottomBar} className="mobile-tabs" aria-label="Acces rapid">
-        <Link href={home} aria-current={path === home ? "page" : undefined}>
+        <a
+          href={home}
+          aria-current={path === home ? "page" : undefined}
+          onClick={(event) => {
+            if (
+              event.ctrlKey ||
+              event.metaKey ||
+              event.shiftKey ||
+              event.altKey
+            )
+              return;
+            event.preventDefault();
+            if (
+              window.location.pathname === home &&
+              !window.location.search &&
+              !window.location.hash
+            ) {
+              window.scrollTo(0, 0);
+              window.location.reload();
+            } else window.location.assign(home);
+          }}
+        >
           <LayoutDashboard size={21} />
           <span>Panou</span>
-        </Link>
+        </a>
         <Link
           href={transactions}
           aria-current={path === transactions ? "page" : undefined}

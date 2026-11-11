@@ -49,11 +49,9 @@ test("mobile menu supports swipes, keyboard dismissal and quick navigation", asy
   await page.goto("/demo");
   const menu = page.locator("#sidebar");
   const swipe = async (x: number, y: number, endX: number, endY: number) => {
-    await page
-      .locator("main")
-      .dispatchEvent("touchstart", {
-        touches: [{ identifier: 1, clientX: x, clientY: y }],
-      });
+    await page.locator("main").dispatchEvent("touchstart", {
+      touches: [{ identifier: 1, clientX: x, clientY: y }],
+    });
     await page.locator("main").dispatchEvent("touchend", {
       changedTouches: [{ identifier: 1, clientX: endX, clientY: endY }],
     });
@@ -92,4 +90,62 @@ test("mobile menu supports swipes, keyboard dismissal and quick navigation", asy
     path: "artifacts/mobile-navigation.png",
     fullPage: true,
   });
+});
+
+test("pull refresh and Home perform fresh document loads", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/demo");
+  let documents = 0;
+  page.on("request", (request) => {
+    if (request.isNavigationRequest() && request.frame() === page.mainFrame())
+      documents++;
+  });
+  const pull = async (amount: number) => {
+    const main = page.locator("main");
+    await main.dispatchEvent("touchstart", {
+      touches: [{ identifier: 1, clientX: 180, clientY: 200 }],
+    });
+    await main.dispatchEvent("touchmove", {
+      cancelable: true,
+      touches: [{ identifier: 1, clientX: 180, clientY: 200 + amount }],
+    });
+  };
+  await pull(60);
+  await expect(page.getByRole("status")).toContainText("Trage în jos");
+  await page.locator("main").dispatchEvent("touchend");
+  expect(documents).toBe(0);
+  await pull(170);
+  await expect(page.getByRole("status")).toContainText("Eliberează");
+  await Promise.all([
+    page.waitForEvent("load"),
+    page.locator("main").dispatchEvent("touchend"),
+  ]);
+  expect(documents).toBe(1);
+  await page
+    .locator(".mobile-bar")
+    .getByRole("button", { name: "Deschide meniul" })
+    .click();
+  await expect(page.locator("#sidebar")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#sidebar")).not.toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, 250));
+  await Promise.all([
+    page.waitForEvent("load"),
+    page
+      .locator(".mobile-tabs")
+      .getByRole("link", { name: "Panou", exact: true })
+      .click({ position: { x: 5, y: 5 } }),
+  ]);
+  await expect(page).toHaveURL(/\/demo$/);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  expect(documents).toBe(2);
+  await page.goto("/demo/transactions");
+  await Promise.all([
+    page.waitForEvent("load"),
+    page
+      .locator(".mobile-tabs")
+      .getByRole("link", { name: "Panou", exact: true })
+      .click({ position: { x: 5, y: 5 } }),
+  ]);
+  await expect(page).toHaveURL(/\/demo$/);
 });
