@@ -661,3 +661,224 @@ test("dashboard exposes income and every feature; opening balance stays distinct
     fullPage: true,
   });
 });
+
+test("complete finance: transfers stay neutral, recurring confirmation posts once, and CSV preview/import/reimport is safe", async ({
+  page,
+}) => {
+  await login(page, "d@fintrack.invalid");
+  await page.goto("/settings");
+  let c = card(page, "Cont personal");
+  await c
+    .getByText("Modifică numele sau soldul inițial", { exact: true })
+    .click();
+  await c.getByLabel("Sold inițial (MDL)").fill("1000");
+  await c
+    .getByRole("button", { name: "Salvează modificările", exact: true })
+    .click();
+  await expect(c.getByText("1.000 MDL", { exact: true })).toBeVisible();
+  c = card(page, "Adaugă un cont");
+  await c.getByLabel("Numele contului").fill("Numerar complet");
+  await c.getByRole("button", { name: "Adaugă înregistrarea" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Numerar complet", exact: true }),
+  ).toBeVisible();
+  await page.goto("/transfers");
+  let f = card(page, "Un transfer nou");
+  await f
+    .getByRole("combobox", { name: "Din contul", exact: true })
+    .selectOption({ label: "Cont personal · MDL" });
+  await f
+    .getByRole("combobox", { name: "În contul", exact: true })
+    .selectOption({ label: "Numerar complet · MDL" });
+  await f.getByLabel("Sumă transferată (MDL)").fill("100");
+  await f
+    .getByRole("button", { name: "Înregistrează transferul", exact: true })
+    .click();
+  await expect(
+    card(page, "Cont personal").getByText("900 MDL", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    card(page, "Numerar complet").getByText("100 MDL", { exact: true }),
+  ).toBeVisible();
+  const transfer = card(page, "Cont personal → Numerar complet");
+  await transfer.getByText("Editează transferul", { exact: true }).click();
+  await transfer.getByLabel("Sumă transferată (MDL)").fill("50");
+  await transfer
+    .getByRole("button", { name: "Salvează transferul", exact: true })
+    .click();
+  await expect(
+    card(page, "Cont personal").getByText("950 MDL", { exact: true }),
+  ).toBeVisible();
+  await transfer.getByText("Șterge transferul", { exact: true }).click();
+  await transfer.getByLabel("Confirm ștergerea", { exact: true }).check();
+  await transfer
+    .getByRole("button", { name: "Șterge definitiv", exact: true })
+    .click();
+  await expect(transfer).toHaveCount(0);
+  await expect(
+    card(page, "Cont personal").getByText("1.000 MDL", { exact: true }),
+  ).toBeVisible();
+  f = card(page, "Un transfer nou");
+  await f
+    .getByRole("combobox", { name: "Din contul", exact: true })
+    .selectOption({ label: "Cont personal · MDL" });
+  await f
+    .getByRole("combobox", { name: "În contul", exact: true })
+    .selectOption({ label: "Numerar complet · MDL" });
+  await f.getByLabel("Sumă transferată (MDL)").fill("200");
+  await f
+    .getByRole("button", { name: "Înregistrează transferul", exact: true })
+    .click();
+  await expect(
+    card(page, "Cont personal").getByText("800 MDL", { exact: true }),
+  ).toBeVisible();
+  await page.goto("/");
+  await expect(
+    page
+      .locator(".stat-card")
+      .filter({ hasText: "Sold total" })
+      .locator(".stat-value"),
+  ).toHaveText("1.000 MDL");
+  await expect(
+    page
+      .locator(".stat-card")
+      .filter({ hasText: "Venituri lunare" })
+      .locator(".stat-value"),
+  ).toHaveText("0 MDL");
+  await expect(
+    page
+      .locator(".stat-card")
+      .filter({ hasText: "Cheltuieli lunare" })
+      .locator(".stat-value"),
+  ).toHaveText("0 MDL");
+  await page.goto("/recurring");
+  f = card(page, "O regulă nouă");
+  await f.getByLabel("Denumire", { exact: true }).fill("Abonament complet");
+  await f.getByLabel("Sumă recurentă (MDL)").fill("25");
+  await f
+    .getByRole("combobox", { name: "Categoria regulii", exact: true })
+    .selectOption({ label: "Alimente" });
+  await f.getByRole("button", { name: "Creează regula", exact: true }).click();
+  let rule = card(page, "Abonament complet");
+  await expect(rule).toBeVisible();
+  await page.goto("/");
+  await expect(
+    page.getByRole("region", { name: "Următoarele scadențe" }),
+  ).toContainText("Abonament complet");
+  await page.goto("/recurring");
+  rule = card(page, "Abonament complet");
+  await rule.getByText("Confirmă scadența", { exact: true }).click();
+  await rule.getByLabel(/Confirm că această scadență/).check();
+  await rule
+    .getByRole("button", { name: "Înregistrează scadența", exact: true })
+    .click();
+  await expect(
+    rule.getByText("1 scadențe înregistrate", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    rule.getByRole("button", { name: "Înregistrează scadența", exact: true }),
+  ).toBeDisabled();
+  await rule.getByText("Editează sau pune în pauză", { exact: true }).click();
+  await rule
+    .getByRole("combobox", { name: "Starea regulii", exact: true })
+    .selectOption("false");
+  await rule
+    .getByRole("button", { name: "Salvează regula", exact: true })
+    .click();
+  await expect(rule.getByText(/Scadență:.*În pauză/)).toBeVisible();
+  await rule.getByText("Șterge regula", { exact: true }).click();
+  await rule.getByLabel("Confirm ștergerea", { exact: true }).check();
+  await rule
+    .getByRole("button", { name: "Șterge definitiv", exact: true })
+    .click();
+  await expect(rule).toHaveCount(0);
+  await page.goto("/transactions");
+  await expect(
+    page.getByRole("heading", { name: "Abonament complet", exact: true }),
+  ).toHaveCount(1);
+  const csv = `data;descriere;tip;suma;categorie;metoda\n${today()};Salariu CSV;venit;150;Salariu;card\n${today()};Pâine CSV;cheltuiala;10;Alimente;cash\n${today()};Pâine CSV;cheltuiala;10;Alimente;cash`;
+  async function preview(text: string) {
+    await page.getByLabel("Fișier CSV").setInputFiles({
+      name: "istoric.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(text),
+    });
+    await page
+      .getByRole("button", { name: "Verifică fișierul", exact: true })
+      .click();
+  }
+  await page.goto("/import");
+  await preview(csv);
+  await expect(
+    page.getByRole("heading", { name: "Previzualizare: 3 tranzacții valide" }),
+  ).toBeVisible();
+  const other = await page.context().newPage();
+  await other.goto("/transactions");
+  await expect(
+    other.getByRole("heading", { name: "Salariu CSV", exact: true }),
+  ).toHaveCount(0);
+  await other.close();
+  await page.getByLabel("Confirm importul tranzacțiilor verificate").check();
+  await page
+    .getByRole("button", { name: "Confirmă importul", exact: true })
+    .click();
+  await expect(page.locator(".form-success[role=status]")).toContainText(
+    "3 adăugate, 0 duplicate ignorate",
+  );
+  await preview(csv);
+  await page.getByLabel("Confirm importul tranzacțiilor verificate").check();
+  await page
+    .getByRole("button", { name: "Confirmă importul", exact: true })
+    .click();
+  await expect(page.locator(".form-success[role=status]")).toContainText(
+    "0 adăugate, 3 duplicate ignorate",
+  );
+  await preview(
+    `data;descriere;tip;suma;categorie;metoda\n${today()};Eroare;venit;10;Nu există;card`,
+  );
+  await expect(page.locator(".form-error[role=alert]")).toContainText(
+    "Categoria nu există",
+  );
+  await expect(
+    page.getByRole("button", { name: "Confirmă importul", exact: true }),
+  ).toHaveCount(0);
+  await page.goto("/transactions");
+  await expect(
+    page.getByRole("heading", { name: "Pâine CSV", exact: true }),
+  ).toHaveCount(2);
+  await expect(
+    page.getByRole("heading", { name: "Salariu CSV", exact: true }),
+  ).toHaveCount(1);
+  await page.goto("/");
+  await expect(
+    page
+      .locator(".stat-card")
+      .filter({ hasText: "Sold total" })
+      .locator(".stat-value"),
+  ).toHaveText("1.105 MDL");
+  await expect(
+    page
+      .locator(".stat-card")
+      .filter({ hasText: "Venituri lunare" })
+      .locator(".stat-value"),
+  ).toHaveText("150 MDL");
+  await expect(
+    page
+      .locator(".stat-card")
+      .filter({ hasText: "Cheltuieli lunare" })
+      .locator(".stat-value"),
+  ).toHaveText("45 MDL");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/transfers");
+  await expect(
+    page.getByRole("heading", {
+      name: "Transferuri între conturi",
+      exact: true,
+    }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+});

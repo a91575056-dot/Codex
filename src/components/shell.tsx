@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   Landmark,
+  Repeat,
+  Upload,
   PlusCircle,
   Target,
   FlaskConical,
@@ -27,6 +29,9 @@ const links = [
   ["/decision-lab", "Laborator de decizii", FlaskConical],
   ["/quick-expense", "Cheltuială rapidă", PlusCircle],
   ["/transactions", "Tranzacții", ArrowLeftRight],
+  ["/transfers", "Transferuri", ArrowLeftRight],
+  ["/recurring", "Recurente", Repeat],
+  ["/import", "Import CSV", Upload],
   ["/budgets", "Bugete", Wallet],
   ["/investments", "Investiții", ChartNoAxesCombined],
   ["/analytics", "Analize", ChartPie],
@@ -88,7 +93,12 @@ export function Shell({
             <Link
               key={href}
               href={
-                href === "/quick-expense"
+                [
+                  "/quick-expense",
+                  "/transfers",
+                  "/recurring",
+                  "/import",
+                ].includes(href)
                   ? href
                   : prefix + (href === "/" ? "" : href) || "/"
               }

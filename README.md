@@ -309,3 +309,20 @@ lunii datei alese; înregistrările viitoare intră în calcule când ajunge ace
 Soldurile inițiale se configurează în Setări și nu reprezintă venituri ale lunii.
 Panoul oferă acces direct și la bugete, economii MDL/EUR, investiții manuale,
 analize, rapoarte, laborator și configurarea iPhone.
+
+## Fluxuri pentru administrarea zilnică — versiune locală
+
+- **Transferuri:** mutări MDL între conturile proprii, editare/ștergere și solduri
+  recalculate. Nu se numără drept venituri sau cheltuieli.
+- **Recurente:** salariu, chirie și abonamente săptămânale/lunare/anuale, pauză,
+  scadențe în panou, confirmare manuală și înregistrare fără dublare.
+- **Import CSV:** șablon gol, previzualizare, erori pe rând, confirmare, import
+  atomic și ignorarea rândurilor deja importate. Rapoartele CSV includ și contul.
+
+Detaliile, limitele și modelul de calcul sunt în `docs/finance-workflows.md`.
+Acest update este **local, fără push sau modificare a bazei publice**, la cererea
+utilizatorului. Pentru un Supabase local/proiect nou aplicați migrațiile în ordine,
+inclusiv `20261111111543_transfers_recurring_and_csv_import.sql`. Nu publicați noul
+cod în modul personal înaintea migrației și nu reaplicați migrațiile deja existente
+în proiectul public. Pentru validare fără chei: `npm test`, `npm run test:integration`
+și `npm run test:e2e` folosesc date fictive separate; pentru demo lăsați cheile goale.

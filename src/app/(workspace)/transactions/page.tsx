@@ -54,6 +54,17 @@ export default async function TransactionPage({
         title="Tranzacții"
         description="Adaugă și gestionează veniturile și cheltuielile tale."
       />
+      <p className="lab-actions mb-6">
+        <Link className="text-link" href="/import">
+          Importă din CSV
+        </Link>
+        <Link className="text-link" href="/transfers">
+          Transfer între conturile mele
+        </Link>
+        <Link className="text-link" href="/recurring">
+          Venituri și plăți recurente
+        </Link>
+      </p>
       <Card id="transaction-form" className="mb-6 transaction-entry">
         <CardHeader>
           <CardTitle>Adaugă o tranzacție</CardTitle>

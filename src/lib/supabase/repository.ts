@@ -1,3 +1,5 @@
+import type { Transfer } from "@/lib/operations";
+import { getRecurringRules } from "./operations-repository";
 import "server-only";
 import { requireUser } from "@/lib/auth/session";
 import { calculateFinance } from "@/lib/finance-calculations";
@@ -7,7 +9,7 @@ import { todayISO } from "@/lib/goals";
 import type { AccountRow, CategoryRow, TransactionRow } from "./database.types";
 export async function getLedger(next = "/") {
   const { client, user } = await requireUser(next);
-  const [a, c] = await Promise.all([
+  const [a, c, transfers] = await Promise.all([
     allRows<AccountRow>((f, t) =>
       client
         .from("accounts")
@@ -23,6 +25,15 @@ export async function getLedger(next = "/") {
         .select("*")
         .eq("user_id", user.id)
         .order("name")
+        .order("id")
+        .range(f, t),
+    ),
+    allRows<Transfer>((f, t) =>
+      client
+        .from("transfers")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("occurred_on", { ascending: false })
         .order("id")
         .range(f, t),
     ),
@@ -42,10 +53,14 @@ export async function getLedger(next = "/") {
     transactions.push(...data);
     if (data.length < 500) break;
   }
-  return { accounts: a, categories: c, transactions, user };
+  return { accounts: a, categories: c, transactions, transfers, user };
 }
 export async function getUserFinance() {
-  const [ledger, planning] = await Promise.all([getLedger(), getPlanning()]);
+  const [ledger, planning, recurring] = await Promise.all([
+    getLedger(),
+    getPlanning(),
+    getRecurringRules(),
+  ]);
   const data = calculateFinance(
     ledger.accounts,
     ledger.categories,
@@ -55,6 +70,15 @@ export async function getUserFinance() {
   const names = new Map(ledger.categories.map((c) => [c.id, c.name]));
   return {
     ...data,
+    upcoming: recurring
+      .filter((r) => r.active)
+      .slice(0, 5)
+      .map((r) => ({
+        id: r.id,
+        name: r.description,
+        date: r.next_due_on,
+        amount: ((r.kind === "income" ? 1 : -1) * r.amount_minor) / 100,
+      })),
     portfolio: portfolio.value / 100,
     allocation: portfolio.allocation,
     budgets: planning.budgets

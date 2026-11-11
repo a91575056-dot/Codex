@@ -3,8 +3,7 @@ import { profileName } from "@/lib/auth/validation";
 import Link from "next/link";
 import { supabaseConfig } from "@/lib/supabase/config";
 import { getLedger } from "@/lib/supabase/repository";
-import { safeTotal } from "@/lib/planning";
-import { todayISO } from "@/lib/goals";
+import { accountBalance } from "@/lib/operations";
 import { accountFields, categoryFields } from "@/lib/form-fields";
 import { money } from "@/lib/finance";
 import { Heading } from "@/components/finance-view";
@@ -72,16 +71,11 @@ export default async function SettingsPage() {
       <h2 className="overview-heading">Conturile tale</h2>
       <div className="goal-grid mb-8">
         {ledger.accounts.map((a) => {
-          const balance = safeTotal([
-            a.opening_balance_minor,
-            ...ledger.transactions
-              .filter(
-                (t) => t.account_id === a.id && t.occurred_on <= todayISO(),
-              )
-              .map((t) =>
-                t.kind === "income" ? t.amount_minor : -t.amount_minor,
-              ),
-          ]);
+          const balance = accountBalance(
+            a,
+            ledger.transactions,
+            ledger.transfers,
+          );
           return (
             <Card key={a.id}>
               <CardHeader>
@@ -130,9 +124,8 @@ export default async function SettingsPage() {
       <p className="lab-help mt-6">
         Conturile și categoriile utilizate nu pot fi șterse până la modificarea
         înregistrărilor asociate. Schimbarea tipului unei categorii utilizate
-        este blocată. Nu înregistra transferurile între conturile tale ca venit
-        sau cheltuială: această versiune nu are un registru separat de
-        transferuri.
+        este blocată. Folosește pagina Transferuri pentru mutarea banilor între
+        conturile tale.
       </p>
     </>
   );

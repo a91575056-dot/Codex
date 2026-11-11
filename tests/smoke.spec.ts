@@ -85,3 +85,24 @@ test("desktop dashboard screenshot", async ({ page }) => {
     fullPage: true,
   });
 });
+
+test("new finance modules remain read-only without Supabase configuration", async ({
+  page,
+}) => {
+  for (const [path, title] of [
+    ["/transfers", "Transferuri între conturi"],
+    ["/recurring", "Venituri și plăți recurente"],
+    ["/import", "Importă tranzacții CSV"],
+  ]) {
+    await page.goto(path);
+    await expect(
+      page.getByRole("heading", { name: title, exact: true }),
+    ).toBeVisible();
+    await expect(page.getByText("DEMO", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("button", {
+        name: /Înregistrează transferul|Creează regula|Confirmă importul/,
+      }),
+    ).toHaveCount(0);
+  }
+});

@@ -1,3 +1,9 @@
+import type {
+  Transfer,
+  RecurringRule,
+  RecurringOccurrence,
+} from "@/lib/operations";
+import type { ImportRow } from "@/lib/csv-import";
 import type { ShortcutDevice, ShortcutReceipt } from "@/lib/shortcut";
 import type { BudgetRow, HoldingRow } from "@/lib/planning";
 import type { Goal, Contribution, Scenario } from "@/lib/goals";
@@ -28,6 +34,7 @@ export type TransactionRow = {
   amount_minor: number;
   occurred_on: string;
   created_at: string;
+  import_fingerprint?: string | null;
 };
 type Table<Row, Required extends keyof Row> = {
   Row: Row;
@@ -38,6 +45,32 @@ type Table<Row, Required extends keyof Row> = {
 export type Database = {
   public: {
     Tables: {
+      transfers: Table<
+        Transfer,
+        | "id"
+        | "user_id"
+        | "from_account_id"
+        | "to_account_id"
+        | "amount_minor"
+        | "occurred_on"
+      >;
+      recurring_rules: Table<
+        RecurringRule,
+        | "id"
+        | "user_id"
+        | "account_id"
+        | "category_id"
+        | "kind"
+        | "description"
+        | "amount_minor"
+        | "frequency"
+        | "start_on"
+        | "next_due_on"
+      >;
+      recurring_occurrences: Table<
+        RecurringOccurrence,
+        "user_id" | "rule_id" | "due_on" | "transaction_id"
+      >;
       shortcut_devices: Table<
         ShortcutDevice,
         | "user_id"
@@ -93,6 +126,19 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      post_recurring: {
+        Args: {
+          p_rule_id: string;
+          p_due_on: string;
+          p_occurred_on: string;
+          p_expected_updated_at: string;
+        };
+        Returns: { transaction_id: string; replayed: boolean };
+      };
+      import_transactions: {
+        Args: { p_rows: ImportRow[] };
+        Returns: { inserted: number; skipped: number };
+      };
       shortcut_options: {
         Args: { p_token: string };
         Returns: { currency: "MDL"; categories: Record<string, string> };

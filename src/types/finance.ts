@@ -4,9 +4,11 @@ export interface Transaction {
   category: string;
   date: string;
   amount: number;
+  account?: string;
   paymentMethod?: "unspecified" | "cash" | "card";
 }
 export interface FinanceData {
+  upcoming?: { id: string; name: string; date: string; amount: number }[];
   balance: number;
   income: number;
   expenses: number;

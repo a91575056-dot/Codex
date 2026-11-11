@@ -63,3 +63,11 @@ Metodele, formulele, limitele și un exemplu reproductibil sunt în `decision-la
 Advisory-ul existent indică protecția împotriva parolelor compromise dezactivată.
 Nu a fost schimbată configurația Auth la acest update. Configurarea se poate face
 conform [documentației Supabase](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
+
+## Extensie locală pentru administrarea zilnică
+
+În branch-ul local de review sunt adăugate transferuri între conturi, reguli
+recurente confirmate manual, scadențe în panou și import CSV cu previzualizare și
+deduplicare. Acestea elimină limitele istorice privind transferurile și importul
+menționate în documentele v1. Sunt descrise în `finance-workflows.md` și necesită
+migrația nouă. Nu sunt încă publicate; instrucțiunea utilizatorului interzice push.

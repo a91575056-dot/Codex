@@ -13,13 +13,14 @@ export function ReportDownload({
   function download() {
     const rows = [
       [demo ? "DEMO — Date fictive" : "FinTrack — Tranzacții personale"],
-      ["Dată", "Descriere", "Categorie", "Plată", "Sumă MDL"],
+      ["Dată", "Descriere", "Categorie", "Plată", "Sumă MDL", "Cont"],
       ...transactions.map((t) => [
         t.date,
         t.name,
         t.category,
         paymentLabels[t.paymentMethod || "unspecified"],
         t.amount,
+        t.account || "",
       ]),
     ];
     const csv =

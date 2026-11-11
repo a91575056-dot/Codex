@@ -82,6 +82,7 @@ export default async function ReportsPage({
           transactions={report.rows.map((t) => ({
             id: t.id,
             name: t.description,
+            account: ledger.accounts.find((a) => a.id === t.account_id)?.name,
             category: names.get(t.category_id) || "Categorie",
             date: t.occurred_on,
             paymentMethod: t.payment_method,

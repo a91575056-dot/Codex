@@ -78,8 +78,14 @@ export function ShortcutGuide({
           paranteze. Salvează răspunsul ca variabila <code>Opțiuni</code>.
         </li>
         <li>
-          Folosește <strong>Obține valoarea din dicționar</strong> pentru cheia{" "}
-          <code>categories</code> din Opțiuni. Salvează dicționarul ca{" "}
+          Adaugă întâi{" "}
+          <strong>
+            Obține dicționarul din intrare / Get Dictionary from Input
+          </strong>{" "}
+          cu rezultatul cererii URL. Apoi folosește{" "}
+          <strong>Obține valoarea din dicționar</strong> pentru cheia{" "}
+          <code>categories</code> din dicționarul obținut. Tastează cheia
+          manual, fără spații sau Enter. Salvează dicționarul ca{" "}
           <code>Categorii</code>. Obține{" "}
           <strong>Toate cheile / All Keys</strong> și folosește{" "}
           <strong>Alege din listă</strong> pentru întrebarea „Pe ce ai

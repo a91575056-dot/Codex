@@ -17,6 +17,7 @@ for (const name of (await readdir("supabase/migrations"))
   .sort())
   await db.exec(await readFile("supabase/migrations/" + name, "utf8"));
 const users = [
+  { id: "00000000-0000-4000-8000-000000000004", email: "d@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000003", email: "c@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000001", email: "a@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000002", email: "b@fintrack.invalid" },
@@ -76,6 +77,9 @@ async function body(req: IncomingMessage) {
   return s ? JSON.parse(s) : {};
 }
 const tables = new Set([
+  "transfers",
+  "recurring_rules",
+  "recurring_occurrences",
   "shortcut_devices",
   "accounts",
   "categories",
@@ -152,6 +156,13 @@ const server = createServer(async (req, res) => {
     if (url.pathname.startsWith("/rest/v1/rpc/")) {
       const rpc = url.pathname.split("/").at(-1);
       const allowed: Record<string, string[]> = {
+        post_recurring: [
+          "p_rule_id",
+          "p_due_on",
+          "p_occurred_on",
+          "p_expected_updated_at",
+        ],
+        import_transactions: ["p_rows"],
         shortcut_options: ["p_token"],
         shortcut_expense: [
           "p_token",
@@ -172,7 +183,11 @@ const server = createServer(async (req, res) => {
         ]);
         await db.exec(user ? "set role authenticated" : "set role anon");
         try {
-          const values = allowed[rpc].map((key) => args[key]);
+          const values = allowed[rpc].map((key) =>
+            typeof args[key] === "object"
+              ? JSON.stringify(args[key])
+              : args[key],
+          );
           const result = await db.query<{ result: unknown }>(
             "select public." +
               rpc +

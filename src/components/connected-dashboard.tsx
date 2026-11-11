@@ -1,3 +1,4 @@
+import { money } from "@/lib/finance";
 import Link from "next/link";
 import {
   Wallet,
@@ -106,6 +107,27 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
           </Link>
         </section>
       )}
+      {!!data.upcoming?.length && (
+        <section
+          className="dashboard-onboarding"
+          aria-labelledby="upcoming-title"
+        >
+          <h2 id="upcoming-title">Următoarele scadențe</h2>
+          <p>
+            Încasările și plățile planificate intră în sold numai după
+            confirmare.
+          </p>
+          {data.upcoming.map((r) => (
+            <p key={r.id}>
+              <strong>{r.date}</strong> · {r.name} · {r.amount > 0 ? "+" : ""}
+              {money(r.amount)}
+            </p>
+          ))}
+          <Link className="text-link" href="/recurring">
+            Gestionează și confirmă scadențele
+          </Link>
+        </section>
+      )}
       <section
         className="dashboard-tools"
         aria-labelledby="dashboard-tools-title"
@@ -115,6 +137,25 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
         </h2>
         <div className="dashboard-tools-grid">
           {[
+            {
+              href: "/transfers",
+              title: "Transferuri între conturi",
+              description:
+                "Mută bani între card și numerar fără venituri artificiale.",
+              icon: Wallet,
+            },
+            {
+              href: "/recurring",
+              title: "Venituri și plăți recurente",
+              description: "Urmărește salariul, chiria și abonamentele.",
+              icon: Wallet,
+            },
+            {
+              href: "/import",
+              title: "Importă tranzacții CSV",
+              description: "Verifică istoricul și importă fără duplicate.",
+              icon: FileText,
+            },
             {
               href: "/settings",
               title: "Conturi și solduri",
