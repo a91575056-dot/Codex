@@ -1,3 +1,4 @@
+import { loanAccountDelta, type Loan } from "./loans";
 import { z } from "zod";
 import { transactionSchema } from "./transaction-validation";
 import { safeTotal } from "./planning";
@@ -86,9 +87,11 @@ export function accountBalance(
   transactions: TransactionRow[],
   transfers: Transfer[],
   today = todayISO(),
+  loans: Loan[] = [],
 ) {
   return safeTotal([
     account.opening_balance_minor,
+    loanAccountDelta(loans, account.id, today),
     ...transactions
       .filter((t) => t.account_id === account.id && t.occurred_on <= today)
       .map((t) => (t.kind === "income" ? 1 : -1) * t.amount_minor),

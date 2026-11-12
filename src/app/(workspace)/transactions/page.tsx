@@ -112,6 +112,13 @@ export default async function TransactionPage({
           Venituri și plăți recurente
         </Link>
       </p>
+      <p className="lab-help mb-6">
+        Împrumuturile și rambursările modifică soldul, dar se urmăresc separat
+        de venituri și consum.{" "}
+        <Link className="text-link" href="/debts">
+          Deschide registrul împrumuturilor
+        </Link>
+      </p>
       <Card id="transaction-form" className="mb-6 transaction-entry">
         <CardHeader>
           <CardTitle>Adaugă o tranzacție</CardTitle>

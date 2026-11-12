@@ -134,6 +134,8 @@ export default async function SettingsPage() {
             a,
             ledger.transactions,
             ledger.transfers,
+            undefined,
+            ledger.loans,
           );
           return (
             <Card key={a.id}>

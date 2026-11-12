@@ -28,6 +28,7 @@ export const shortcutTransactionSchema = shortcutExpenseSchema
   .strict();
 export type ShortcutDevice = {
   allow_income: boolean;
+  allow_loans: boolean;
   id: string;
   user_id: string;
   name: string;
@@ -50,6 +51,7 @@ export type DeviceView = Pick<
   | "expires_at"
   | "last_used_at"
   | "allow_income"
+  | "allow_loans"
 >;
 export type ShortcutReceipt = {
   transaction_id: string;
@@ -60,3 +62,11 @@ export type ShortcutReceipt = {
   occurred_on: string;
   replayed: boolean;
 };
+
+export const shortcutLoanSchema = shortcutExpenseSchema
+  .omit({ category_id: true })
+  .extend({
+    direction: z.enum(["lent", "borrowed"]),
+    person: z.string().trim().min(1, "Scrie numele persoanei.").max(100),
+  })
+  .strict();

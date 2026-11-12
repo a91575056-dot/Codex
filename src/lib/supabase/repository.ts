@@ -1,3 +1,4 @@
+import { loanActivity, loanTotals, type Loan } from "@/lib/loans";
 import { financialReport } from "@/lib/reports";
 import { currentMonth } from "@/lib/finance-calculations";
 import { getEnvelopes } from "./envelope-repository";
@@ -14,7 +15,7 @@ import { todayISO } from "@/lib/goals";
 import type { AccountRow, CategoryRow, TransactionRow } from "./database.types";
 export async function getLedger(next = "/") {
   const { client, user } = await requireUser(next);
-  const [a, c, transfers] = await Promise.all([
+  const [a, c, transfers, loans] = await Promise.all([
     allRows<AccountRow>((f, t) =>
       client
         .from("accounts")
@@ -42,6 +43,15 @@ export async function getLedger(next = "/") {
         .order("id")
         .range(f, t),
     ),
+    allRows<Loan>((f, t) =>
+      client
+        .from("loans")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("occurred_on", { ascending: false })
+        .order("id")
+        .range(f, t),
+    ),
   ]);
 
   const transactions: TransactionRow[] = [];
@@ -58,7 +68,7 @@ export async function getLedger(next = "/") {
     transactions.push(...data);
     if (data.length < 500) break;
   }
-  return { accounts: a, categories: c, transactions, transfers, user };
+  return { accounts: a, categories: c, transactions, transfers, loans, user };
 }
 export async function getUserFinance() {
   const [ledger, planning, recurring, envelopes] = await Promise.all([
@@ -71,6 +81,9 @@ export async function getUserFinance() {
     ledger.accounts,
     ledger.categories,
     ledger.transactions,
+    new Date(),
+    "MDL",
+    ledger.loans,
   );
   const euro = calculateFinance(
     ledger.accounts,
@@ -78,6 +91,7 @@ export async function getUserFinance() {
     ledger.transactions,
     new Date(),
     "EUR",
+    ledger.loans,
   );
   const portfolio = portfolioSummary(planning.holdings);
   const names = new Map(ledger.categories.map((c) => [c.id, c.name]));
@@ -94,9 +108,15 @@ export async function getUserFinance() {
       ledger.categories,
       ledger.transactions,
     ),
-    transactions: [...data.transactions, ...euro.transactions].sort(
-      (a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id),
-    ),
+    loanSummary: {
+      MDL: loanTotals(ledger.loans, "MDL"),
+      EUR: loanTotals(ledger.loans, "EUR"),
+    },
+    transactions: [
+      ...data.transactions,
+      ...euro.transactions,
+      ...loanActivity(ledger.loans, ledger.accounts),
+    ].sort((a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id)),
     euro: ledger.accounts.some((a) => a.currency === "EUR")
       ? { balance: euro.balance, income: euro.income, expenses: euro.expenses }
       : undefined,

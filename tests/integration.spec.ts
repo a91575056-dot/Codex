@@ -1336,3 +1336,167 @@ test("redesign: connected responsive layouts and persistent themes", async ({
     ).toBe(true);
   }
 });
+
+test("loans: native opt-in, cash balances, no salary allocation, browser creation and full repayments", async ({
+  page,
+  playwright,
+  browser,
+}) => {
+  await login(page, "g@fintrack.invalid");
+  await page.goto("/settings");
+  const account = card(page, "Adaugă un cont");
+  await account.getByLabel("Numele contului").fill("Cash împrumuturi");
+  await account.getByLabel("Sold inițial (în moneda contului)").fill("1000");
+  await account.getByRole("button", { name: "Adaugă înregistrarea" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Cash împrumuturi", exact: true }),
+  ).toBeVisible();
+  await page.goto("/iphone");
+  const form = card(page, "Conectează un iPhone");
+  await form.getByLabel("Numele telefonului").fill("Telefon împrumuturi");
+  await form
+    .getByLabel("Cont pentru Cash")
+    .selectOption({ label: "Cash împrumuturi · MDL" });
+  await form
+    .getByLabel("Cont pentru Card")
+    .selectOption({ label: "Cont personal · MDL" });
+  await form
+    .getByRole("button", { name: "Conectează telefonul", exact: true })
+    .click();
+  const token = await page.getByLabel("Tokenul telefonului").inputValue();
+  const api = await playwright.request.newContext({
+    baseURL: "http://127.0.0.1:3002",
+    extraHTTPHeaders: { Authorization: "Bearer " + token },
+  });
+  const payload = {
+    request_id: "loan-native-integration-01",
+    direction: "lent",
+    person: "Ana împrumut QA",
+    amount: "250",
+    payment_method: "cash",
+    description: "Împrumut de test local",
+  };
+  expect(
+    (await api.post("/api/shortcut/loans", { data: payload })).status(),
+  ).toBe(403);
+  const device = card(page, "Telefon împrumuturi");
+  await device
+    .getByRole("button", { name: "Activează împrumuturile", exact: true })
+    .click();
+  await expect(device.getByRole("status")).toContainText(
+    "Împrumuturi activate",
+  );
+  const result = await api.post("/api/shortcut/loans", { data: payload });
+  expect(result.status()).toBe(201);
+  expect((await result.json()).message).toContain("Împrumut dat salvat");
+  expect(
+    (await api.post("/api/shortcut/loans", { data: payload })).status(),
+  ).toBe(200);
+  expect(
+    (
+      await api.post("/api/shortcut/loans", {
+        data: { ...payload, amount: "251" },
+      })
+    ).status(),
+  ).toBe(409);
+  await page.goto("/");
+  await expect(page.locator(".stats-grid")).toContainText("750 MDL");
+  await expect(page.locator(".stats-grid")).toContainText("Venituri lunare");
+  await expect(page.locator(".stats-grid")).not.toContainText("250 MDL");
+  await expect(
+    page.getByRole("region", { name: "Situația împrumuturilor" }),
+  ).toContainText("250 MDL");
+  const borrowed = await api.post("/api/shortcut/loans", {
+    data: {
+      ...payload,
+      request_id: "loan-native-integration-02",
+      direction: "borrowed",
+      person: "Ion împrumut QA",
+      amount: "100",
+    },
+  });
+  expect(borrowed.status()).toBe(201);
+  await page.goto("/debts");
+  const ana = card(page, "Ana împrumut QA");
+  await expect(ana).toContainText("De primit");
+  const ion = card(page, "Ion împrumut QA");
+  await expect(ion).toContainText("De restituit");
+  await page.setViewportSize({ width: 375, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: "artifacts/loans-mobile.png",
+    fullPage: true,
+    caret: "initial",
+  });
+  await ana.getByText("Înregistrează rambursarea", { exact: true }).click();
+  await ana
+    .getByLabel("Cont pentru rambursare")
+    .selectOption({ label: "Cash împrumuturi · MDL" });
+  await ana
+    .getByLabel("Confirm că am primit integral", { exact: false })
+    .check();
+  await ana
+    .getByRole("button", { name: "Confirmă rambursarea integrală" })
+    .click();
+  await expect(ana).toHaveCount(0);
+  await ion.getByText("Înregistrează rambursarea", { exact: true }).click();
+  await ion
+    .getByLabel("Confirm că am restituit integral", { exact: false })
+    .check();
+  await ion
+    .getByRole("button", { name: "Confirmă rambursarea integrală" })
+    .click();
+  await expect(ion).toHaveCount(0);
+  await page.goto("/");
+  await expect(page.locator(".stats-grid")).toContainText("1.000 MDL");
+  await page.goto("/reports");
+  await expect(page.locator(".stats-grid")).not.toContainText("100 MDL");
+  await expect(page.locator(".stats-grid")).toContainText("0 MDL");
+  await page.goto("/debts?view=history");
+  await expect(card(page, "Ana împrumut QA")).toContainText("Rambursat");
+  await expect(card(page, "Ion împrumut QA")).toContainText("Rambursat");
+  await page.goto("/debts");
+  await page
+    .getByRole("button", { name: "Adaugă împrumut", exact: true })
+    .click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Tipul împrumutului").selectOption("borrowed");
+  await dialog
+    .getByLabel("Persoana", { exact: true })
+    .fill("Maria împrumut UI");
+  await dialog
+    .getByLabel("Contul împrumutului")
+    .selectOption({ label: "Cash împrumuturi · MDL" });
+  await dialog.getByLabel("Sumă împrumut (MDL)").fill("80");
+  await dialog.getByRole("button", { name: "Salvează împrumutul" }).click();
+  await expect(dialog.getByRole("status")).toContainText("Împrumut salvat");
+  await dialog.getByRole("button", { name: "Închide dialogul" }).click();
+  await expect(card(page, "Maria împrumut UI")).toContainText("80 MDL");
+  const context = await browser.newContext();
+  const other = await context.newPage();
+  await login(other, "b@fintrack.invalid");
+  await other.goto("/debts");
+  await expect(
+    other.getByRole("heading", {
+      name: /Ana împrumut QA|Ion împrumut QA|Maria împrumut UI/,
+    }),
+  ).toHaveCount(0);
+  await context.close();
+  await page.goto("/iphone");
+  await device
+    .getByRole("button", { name: "Dezactivează împrumuturile" })
+    .click();
+  await expect(device.getByRole("status")).toContainText("Împrumuturi dezactivate");
+  expect(
+    (
+      await api.post("/api/shortcut/loans", {
+        data: { ...payload, request_id: "loan-native-integration-disabled" },
+      })
+    ).status(),
+  ).toBe(403);
+  await api.dispose();
+});

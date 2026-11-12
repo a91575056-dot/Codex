@@ -2,6 +2,7 @@
 import { useActionState, useState } from "react";
 import {
   setShortcutIncome,
+  setShortcutLoans,
   createShortcutDevice,
   revokeShortcutDevice,
   type DeviceState,
@@ -134,6 +135,40 @@ export function ShortcutIncomePermission({
           : enabled
             ? "Dezactivează veniturile"
             : "Activează veniturile"}
+      </Button>
+    </form>
+  );
+}
+
+export function ShortcutLoanPermission({
+  id,
+  enabled,
+}: {
+  id: string;
+  enabled: boolean;
+}) {
+  const [state, action, pending] = useActionState(setShortcutLoans, {});
+  return (
+    <form action={action} className="form-grid mt-4">
+      <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="enabled" value={enabled ? "no" : "yes"} />
+      <p>
+        {enabled
+          ? "Acest telefon poate înregistra împrumuturi date și primite."
+          : "Împrumuturile necesită activare separată pentru acest telefon."}
+      </p>
+      {state.error && (
+        <p role="alert" className="form-error">
+          {state.error}
+        </p>
+      )}
+      {state.success && <p role="status">{state.success}</p>}
+      <Button variant="outline" disabled={pending}>
+        {pending
+          ? "Se actualizează…"
+          : enabled
+            ? "Dezactivează împrumuturile"
+            : "Activează împrumuturile"}
       </Button>
     </form>
   );

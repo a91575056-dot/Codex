@@ -115,6 +115,31 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
         </Button>
       </div>
       <ConnectedStats data={data} />
+      {data.loanSummary &&
+        Object.entries(data.loanSummary).some(
+          ([, s]) => s.receivable || s.payable,
+        ) && (
+          <section
+            className="currency-summary"
+            aria-label="Situația împrumuturilor"
+          >
+            <h2>Împrumuturi active</h2>
+            {(["MDL", "EUR"] as const).map((c) => {
+              const s = data.loanSummary![c];
+              return s.receivable || s.payable ? (
+                <p key={c}>
+                  {c} · De primit:{" "}
+                  <strong>{money(s.receivable / 100, c)}</strong> · De
+                  restituit: <strong>{money(s.payable / 100, c)}</strong>
+                </p>
+              ) : null;
+            })}
+            <Link className="text-link" href="/debts">
+              Vezi împrumuturile și rambursările
+            </Link>
+          </section>
+        )}
+
       {data.euro && (
         <section className="currency-summary" aria-label="Conturi în euro">
           <h2>Conturi în EUR</h2>
@@ -249,7 +274,7 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
             {[
               {
                 href: "/debts",
-                title: "Cine îmi datorează bani",
+                title: "Datorii și împrumuturi",
                 description:
                   "Notează datorii în MDL sau EUR și marchează încasarea.",
                 icon: Wallet,

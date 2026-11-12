@@ -58,6 +58,32 @@ export function ShortcutGuide({
         </div>
       )}
       <section className="demo-banner">
+        <h3>Împrumut dat sau primit din aceeași scurtătură</h3>
+        <p>
+          Activează separat împrumuturile pentru telefon. Șablonul complet
+          adaugă „Împrumut dat” la Cheltuială și „Împrumut primit” la Venit,
+          apoi cere persoana, suma în MDL și Cash/Card. Soldul se actualizează,
+          iar datoria apare în registrul împrumuturilor; principalul nu intră în
+          bugete sau în salariu.
+        </p>
+        <p>
+          Rambursările integrale se confirmă din pagina Datorii și împrumuturi,
+          cu alegerea contului.
+        </p>
+        <a
+          className="text-link"
+          href="/shortcuts/fintrack-mdl.cherri.txt"
+          download
+        >
+          Descarcă tot codul pentru Cherri
+        </a>
+        <p>
+          Acesta este cod sursă, fără token. Necesită compilare și semnare
+          înainte de import în Scurtături. Introdu cheia numai la import pe
+          telefon, nu în editorul web.
+        </p>
+      </section>
+      <section className="demo-banner">
         <h3>O singură scurtătură: Cheltuială sau Venit</h3>
         <p>
           Poți modifica scurtătura FinTrack existentă. Întâi activează

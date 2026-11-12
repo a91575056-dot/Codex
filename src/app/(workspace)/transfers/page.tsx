@@ -41,8 +41,13 @@ export default async function TransfersPage() {
             <CardContent>
               <strong className="stat-value">
                 {money(
-                  accountBalance(a, ledger.transactions, ledger.transfers) /
-                    100,
+                  accountBalance(
+                    a,
+                    ledger.transactions,
+                    ledger.transfers,
+                    undefined,
+                    ledger.loans,
+                  ) / 100,
                   a.currency,
                 )}
               </strong>

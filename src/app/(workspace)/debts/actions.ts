@@ -94,3 +94,57 @@ export async function changeDebtStatus(
           : "Datoria a fost ștearsă.",
   };
 }
+
+export async function saveLoan(
+  _state: DebtState,
+  form: FormData,
+): Promise<DebtState> {
+  if (!supabaseConfig())
+    return { error: "Modul demo nu salvează împrumuturi." };
+  const { loanSchema } = await import("@/lib/loans");
+  const p = loanSchema.safeParse(Object.fromEntries(form));
+  if (!p.success) return { error: p.error.issues[0].message };
+  const { client } = await requireUser("/debts");
+  const { data, error } = await client.rpc("record_loan", {
+    p_id: p.data.id,
+    p_account_id: p.data.account_id,
+    p_direction: p.data.direction,
+    p_person: p.data.person,
+    p_amount_minor: p.data.amount,
+    p_occurred_on: p.data.occurred_on,
+    p_note: p.data.note,
+  });
+  if (error || !data)
+    return {
+      error:
+        "Împrumutul nu a putut fi confirmat. Verifică lista înainte să repeți înregistrarea.",
+    };
+  revalidatePath("/", "layout");
+  return {
+    success:
+      "Împrumut salvat. Soldul contului a fost actualizat; bugetele rămân separate.",
+  };
+}
+export async function settleLoan(
+  _state: DebtState,
+  form: FormData,
+): Promise<DebtState> {
+  if (!supabaseConfig())
+    return { error: "Modul demo nu modifică împrumuturi." };
+  const id = idSchema.safeParse(form.get("id")),
+    account = idSchema.safeParse(form.get("account_id"));
+  if (!id.success || !account.success || form.get("confirm") !== "yes")
+    return { error: "Alege contul și confirmă rambursarea integrală." };
+  const { client } = await requireUser("/debts");
+  const { data, error } = await client.rpc("settle_loan", {
+    p_id: id.data,
+    p_account_id: account.data,
+  });
+  if (error || !data)
+    return {
+      error:
+        "Rambursarea nu a putut fi confirmată. Alege un cont propriu în moneda împrumutului și verifică istoricul.",
+    };
+  revalidatePath("/", "layout");
+  return { success: "Rambursare integrală înregistrată o singură dată." };
+}

@@ -1,0 +1,121 @@
+#include 'actions/text'
+#include 'actions/web'
+#include 'actions/calendar'
+
+#define name FinTrack MDL
+#define color blue
+#define glyph calculator
+
+// Introdu tokenul numai la import pe iPhone, nu in editorul web.
+#question privateToken "Lipeste tokenul FinTrack aici, pe iPhone sau iPad." ""
+const token = replaceText('\s+', "", privateToken, true, true)
+const tokenLength = count(token, "Characters")
+if tokenLength != 70 {
+    alert("Copiaza cheia completa din FinTrack > iPhone si scurtaturi.", "Token invalid")
+    stop()
+}
+
+@kind = "expense"
+@categoryKey = "categories"
+@loanDirection = "lent"
+@loanLabel = "Împrumut dat"
+menu "Ce înregistrezi?" {
+    item "Cheltuială":
+        @kind = "expense"
+        @categoryKey = "categories"
+        @loanDirection = "lent"
+        @loanLabel = "Împrumut dat"
+    item "Venit":
+        @kind = "income"
+        @categoryKey = "income_categories"
+        @loanDirection = "borrowed"
+        @loanLabel = "Împrumut primit"
+}
+
+const rawOptions = jsonRequest("https://fintrack-dionis.netlify.app/api/shortcut/finance-options", "POST", {}, {"Authorization": "Bearer {token}"})
+const optionsText = "{rawOptions}"
+const options = getDictionary(optionsText)
+const optionsError = getValue(options, "error")
+if optionsError {
+    alert("{optionsError}", "FinTrack")
+    stop()
+}
+@categories = {}
+const rawCategories = getValue(options, @categoryKey)
+if rawCategories {
+    @categories = getDictionary(rawCategories)
+}
+@categoryNames = getKeys(@categories)
+@categoryNames += @loanLabel
+const selectedCategory = chooseFromList(@categoryNames, "Alege categoria")
+const selectedName = "{selectedCategory}"
+@isLoan = false
+@person = ""
+@categoryID = ""
+if selectedName == @loanLabel {
+    @isLoan = true
+    const personInput = prompt("Cu cine este împrumutul?")
+    @person = trimWhitespace(personInput)
+    if !@person {
+        alert("Scrie numele persoanei. Nu am salvat nimic.", "FinTrack")
+        stop()
+    }
+} else {
+    const selectedID = getValue(@categories, selectedName)
+    @categoryID = "{selectedID}"
+    if !@categoryID {
+        alert("Alege o categorie valida. Pentru venituri activeaza permisiunea telefonului in FinTrack.", "FinTrack")
+        stop()
+    }
+}
+
+const amountInput = prompt("Ce sumă în MDL?", "Number")
+const amount = number(amountInput)
+if amount <= 0 {
+    alert("Introdu o suma pozitiva.", "Suma invalida")
+    stop()
+}
+const methods = list("cash", "card")
+const method = chooseFromList(methods, "Cont numerar (cash) sau card?")
+const details = prompt("Detalii (opțional)", "Text", "")
+const now = currentDate()
+const stamp = formatDate(now, "Custom", "yyyyMMddHHmmss")
+const randomA = randomNumber(100000, 999999)
+const randomB = randomNumber(100000, 999999)
+const requestID = "{stamp}-{randomA}-{randomB}"
+
+@responseText = ""
+if @isLoan {
+    const loanResponse = jsonRequest("https://fintrack-dionis.netlify.app/api/shortcut/loans", "POST", {
+        "request_id": "{requestID}",
+        "direction": "{@loanDirection}",
+        "person": "{@person}",
+        "amount": "{amount}",
+        "payment_method": "{method}",
+        "description": "{details}"
+    }, {"Authorization": "Bearer {token}"})
+    @responseText = "{loanResponse}"
+} else {
+    const transactionResponse = jsonRequest("https://fintrack-dionis.netlify.app/api/shortcut/transactions", "POST", {
+        "request_id": "{requestID}",
+        "kind": "{@kind}",
+        "amount": "{amount}",
+        "payment_method": "{method}",
+        "category_id": "{@categoryID}",
+        "description": "{details}"
+    }, {"Authorization": "Bearer {token}"})
+    @responseText = "{transactionResponse}"
+}
+const receipt = getDictionary(@responseText)
+const saveError = getValue(receipt, "error")
+if saveError {
+    alert("{saveError}", "FinTrack — verifica istoricul inainte sa repeti")
+    stop()
+}
+const message = getValue(receipt, "message")
+if !message {
+    alert("Nu pot confirma salvarea. Verifica istoricul in FinTrack inainte sa repeti inregistrarea.", "FinTrack")
+    stop()
+}
+showNotification("{message}", "FinTrack", false)
+nothing()

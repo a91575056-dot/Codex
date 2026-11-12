@@ -1,3 +1,6 @@
+import type { Loan } from "@/lib/loans";
+import type { AccountRow } from "@/lib/supabase/database.types";
+import { LoanSection } from "@/components/loan-section";
 import Link from "next/link";
 import { randomUUID } from "node:crypto";
 import { requireUser } from "@/lib/auth/session";
@@ -18,7 +21,7 @@ export default async function DebtsPage({
     return (
       <>
         <Heading
-          title="Cine îmi datorează bani"
+          title="Datorii și împrumuturi"
           description="Datorii în MDL și EUR, cu listă activă și istoric de achitări."
         />
         <DemoNotice />
@@ -29,15 +32,35 @@ export default async function DebtsPage({
       </>
     );
   const { client, user } = await requireUser("/debts");
-  const rows = await allRows<Receivable>((f, t) =>
-    client
-      .from("receivables")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("occurred_on", { ascending: false })
-      .order("id")
-      .range(f, t),
-  );
+  const [rows, loans, accounts] = await Promise.all([
+    allRows<Receivable>((f, t) =>
+      client
+        .from("receivables")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("occurred_on", { ascending: false })
+        .order("id")
+        .range(f, t),
+    ),
+    allRows<Loan>((f, t) =>
+      client
+        .from("loans")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("occurred_on", { ascending: false })
+        .order("id")
+        .range(f, t),
+    ),
+    allRows<AccountRow>((f, t) =>
+      client
+        .from("accounts")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("name")
+        .order("id")
+        .range(f, t),
+    ),
+  ]);
   const history = (await searchParams).view === "history";
   const visible = rows.filter((r) =>
     history ? !!r.settled_on : !r.settled_on,
@@ -46,9 +69,24 @@ export default async function DebtsPage({
   return (
     <>
       <Heading
-        title="Cine îmi datorează bani"
-        description="Notează cine trebuie să îți returneze bani. Sumele MDL și EUR rămân separate."
+        title="Datorii și împrumuturi"
+        description="Împrumuturi date și primite, rambursări și datorii notate separat. MDL și EUR rămân separate."
       />
+      <nav className="lab-actions mb-6" aria-label="Lista datoriilor">
+        <Link href="/debts" aria-current={!history ? "page" : undefined}>
+          Datorii active (
+          {[...rows, ...loans].filter((r) => !r.settled_on).length})
+        </Link>
+        <Link
+          href="/debts?view=history"
+          aria-current={history ? "page" : undefined}
+        >
+          Istoric achitate (
+          {[...rows, ...loans].filter((r) => r.settled_on).length})
+        </Link>
+      </nav>
+      <LoanSection history={history} loans={loans} accounts={accounts} />
+      <h2 className="overview-heading">Datorii notate fără mișcare de cont</h2>
       <div className="goal-grid mb-6">
         {(["MDL", "EUR"] as const).map((c) => (
           <Card key={c}>
@@ -65,8 +103,9 @@ export default async function DebtsPage({
         ))}
       </div>
       <p className="lab-help mb-6">
-        Datoriile sunt o evidență separată. Adăugarea sau bifarea „Achitat” nu
-        schimbă soldurile conturilor și nu înregistrează automat un venit.
+        Datoriile din secțiunea de mai jos sunt o evidență separată. Adăugarea
+        sau bifarea „Achitat” nu schimbă soldurile conturilor și nu
+        înregistrează automat un venit.
       </p>
       {!history && (
         <Card className="mb-6">
@@ -78,17 +117,7 @@ export default async function DebtsPage({
           </CardContent>
         </Card>
       )}
-      <nav className="lab-actions mb-6" aria-label="Lista datoriilor">
-        <Link href="/debts" aria-current={!history ? "page" : undefined}>
-          Datorii active ({rows.filter((r) => !r.settled_on).length})
-        </Link>
-        <Link
-          href="/debts?view=history"
-          aria-current={history ? "page" : undefined}
-        >
-          Istoric achitate ({rows.filter((r) => r.settled_on).length})
-        </Link>
-      </nav>
+
       <h2 className="overview-heading">
         {history ? "Datorii achitate" : "Datorii active"}
       </h2>

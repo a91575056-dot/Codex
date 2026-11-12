@@ -102,3 +102,31 @@ export async function setShortcutIncome(
         : "Venituri dezactivate. Cheltuielile rămân disponibile.",
   };
 }
+
+export async function setShortcutLoans(
+  _state: DeviceState,
+  form: FormData,
+): Promise<DeviceState> {
+  if (!supabaseConfig())
+    return { error: "Modul demo nu modifică dispozitive." };
+  const id = idSchema.safeParse(form.get("id")),
+    enabled = form.get("enabled");
+  if (!id.success || !["yes", "no"].includes(String(enabled)))
+    return { error: "Alege telefonul și permisiunea." };
+  const { client } = await requireUser("/iphone");
+  const { error } = await client.rpc("configure_shortcut_loans", {
+    p_device_id: id.data,
+    p_enabled: enabled === "yes",
+  });
+  if (error)
+    return {
+      error: "Permisiunea pentru împrumuturi nu a putut fi actualizată.",
+    };
+  revalidatePath("/iphone");
+  return {
+    success:
+      enabled === "yes"
+        ? "Împrumuturi activate pentru acest telefon."
+        : "Împrumuturi dezactivate. Înregistrările existente se păstrează.",
+  };
+}

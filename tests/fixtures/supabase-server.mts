@@ -17,6 +17,7 @@ for (const name of (await readdir("supabase/migrations"))
   .sort())
   await db.exec(await readFile("supabase/migrations/" + name, "utf8"));
 const users = [
+  { id: "00000000-0000-4000-8000-000000000007", email: "g@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000006", email: "f@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000005", email: "e@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000004", email: "d@fintrack.invalid" },
@@ -79,6 +80,7 @@ async function body(req: IncomingMessage) {
   return s ? JSON.parse(s) : {};
 }
 const tables = new Set([
+  "loans",
   "envelope_plans",
   "envelope_rules",
   "envelope_funding",
@@ -177,6 +179,26 @@ const server = createServer(async (req, res) => {
           "p_expected_updated_at",
         ],
         import_transactions: ["p_rows"],
+        record_loan: [
+          "p_id",
+          "p_account_id",
+          "p_direction",
+          "p_person",
+          "p_amount_minor",
+          "p_occurred_on",
+          "p_note",
+        ],
+        settle_loan: ["p_id", "p_account_id"],
+        configure_shortcut_loans: ["p_device_id", "p_enabled"],
+        shortcut_loan: [
+          "p_token",
+          "p_request_id",
+          "p_direction",
+          "p_person",
+          "p_amount_minor",
+          "p_payment_method",
+          "p_note",
+        ],
         configure_shortcut_income: ["p_device_id", "p_enabled"],
         shortcut_finance_options: ["p_token"],
         shortcut_income: [

@@ -1,3 +1,4 @@
+import { loanAccountDelta, type Loan } from "./loans";
 import type {
   AccountRow,
   CategoryRow,
@@ -19,6 +20,7 @@ export function calculateFinance(
   rows: TransactionRow[],
   now = new Date(),
   currency: SavingsCurrency = "MDL",
+  loans: Loan[] = [],
 ): FinanceData {
   rows = transactionsInCurrency(accounts, rows, currency);
   accounts = accounts.filter((a) => a.currency === currency);
@@ -49,6 +51,8 @@ export function calculateFinance(
     month: "2-digit",
     day: "2-digit",
   }).format(now);
+  for (const account of accounts)
+    balanceMinor += BigInt(loanAccountDelta(loans, account.id, today));
   for (const t of rows) {
     if (t.occurred_on > today) continue;
     const signed =

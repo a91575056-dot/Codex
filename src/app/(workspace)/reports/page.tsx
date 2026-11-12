@@ -89,8 +89,10 @@ export default async function ReportsPage({
       )}
       <p className="lab-help">
         Moneda: {currency}. Fără conversie valutară. Perioadă inclusivă:{" "}
-        {range.from} — {range.to}. {report.rows.length} tranzacții. Dacă
-        selectezi date viitoare, raportul include și înregistrările respective.
+        {range.from} — {range.to}. {report.rows.length} tranzacții.
+        Împrumuturile și rambursările sunt finanțări separate și nu intră în
+        aceste venituri/cheltuieli. Dacă selectezi date viitoare, raportul
+        include și înregistrările respective.
       </p>
       <div className="stats-grid report-metrics">
         {[

@@ -8,6 +8,7 @@ import { Heading, DemoNotice } from "@/components/finance-view";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   ShortcutIncomePermission,
+  ShortcutLoanPermission,
   ShortcutDeviceForm,
   RevokeShortcutDevice,
 } from "@/components/shortcut-device-form";
@@ -45,7 +46,7 @@ export default async function IphonePage() {
       client
         .from("shortcut_devices")
         .select(
-          "id,name,cash_account_id,card_account_id,created_at,expires_at,last_used_at,allow_income",
+          "id,name,cash_account_id,card_account_id,created_at,expires_at,last_used_at,allow_income,allow_loans",
         )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
@@ -118,6 +119,10 @@ export default async function IphonePage() {
               <ShortcutIncomePermission
                 id={device.id}
                 enabled={device.allow_income}
+              />
+              <ShortcutLoanPermission
+                id={device.id}
+                enabled={device.allow_loans}
               />
               <RevokeShortcutDevice id={device.id} />
             </CardContent>

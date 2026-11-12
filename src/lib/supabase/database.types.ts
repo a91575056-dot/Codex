@@ -1,3 +1,4 @@
+import type { Loan } from "@/lib/loans";
 import type {
   EnvelopePlan,
   EnvelopeRule,
@@ -51,6 +52,17 @@ type Table<Row, Required extends keyof Row> = {
 export type Database = {
   public: {
     Tables: {
+      loans: Table<
+        Loan,
+        | "id"
+        | "user_id"
+        | "direction"
+        | "account_id"
+        | "currency"
+        | "person"
+        | "amount_minor"
+        | "occurred_on"
+      >;
       envelope_plans: Table<EnvelopePlan, "user_id" | "currency">;
       envelope_rules: Table<
         EnvelopeRule,
@@ -152,6 +164,48 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      record_loan: {
+        Args: {
+          p_id: string;
+          p_account_id: string;
+          p_direction: string;
+          p_person: string;
+          p_amount_minor: number;
+          p_occurred_on: string;
+          p_note: string;
+        };
+        Returns: string;
+      };
+      settle_loan: {
+        Args: { p_id: string; p_account_id: string };
+        Returns: string;
+      };
+      configure_shortcut_loans: {
+        Args: { p_device_id: string; p_enabled: boolean };
+        Returns: boolean;
+      };
+      shortcut_loan: {
+        Args: {
+          p_token: string;
+          p_request_id: string;
+          p_direction: string;
+          p_person: string;
+          p_amount_minor: number;
+          p_payment_method: string;
+          p_note: string;
+        };
+        Returns: {
+          loan_id: string;
+          direction: "lent" | "borrowed";
+          person: string;
+          amount_minor: number;
+          currency: "MDL";
+          payment_method: "cash" | "card";
+          occurred_on: string;
+          replayed: boolean;
+        };
+      };
+
       confirm_envelope_investment: {
         Args: {
           p_rule_id: string;

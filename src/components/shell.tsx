@@ -33,7 +33,7 @@ const links = [
   ["/budgets", "Bugete", Wallet, "General"],
   ["/investments", "Investiții", ChartNoAxesCombined, "Planificare"],
   ["/goals", "Obiective", Target, "Planificare"],
-  ["/debts", "Datorii de primit", Wallet, "Planificare"],
+  ["/debts", "Datorii și împrumuturi", Wallet, "Planificare"],
   ["/recurring", "Recurente", Repeat, "Planificare"],
   ["/transfers", "Transferuri", ArrowLeftRight, "Planificare"],
   ["/analytics", "Analize", ChartPie, "Perspective"],
