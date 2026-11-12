@@ -66,3 +66,18 @@ No production loan transactions were created for tests.
   live loan records after release preparation. All financial test records were
   isolated locally. The intentional anonymous/authenticated definer advisory
   gains one bounded shortcut_loan finding; the other baseline notices remain.
+
+## Category-list correction
+
+The compiler emitted `@categoryNames += @loanLabel` as Set Variable, replacing
+all normal categories. The template now explicitly emits appendvariable through
+a named action declaration. Categories are kept as one immutable dictionary.
+The save route uses explicit text comparison (`operation == "loan"`), rather
+than a has-value test of a 0/1 flag. Recompiled output: 138 actions.
+
+A local simulation of the emitted category/selection actions verifies five
+scenarios: expense/Alimente, income/Salariu, income/Tips, loan/lent and
+loan/borrowed. Every list retains all mocked normal categories plus the loan
+option, normal choices resolve their category ID and retain transaction mode,
+and loan choices select loan mode. This is an action-graph regression check,
+not a claim of physical iOS execution.

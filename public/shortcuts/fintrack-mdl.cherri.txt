@@ -2,6 +2,9 @@
 #include 'actions/web'
 #include 'actions/calendar'
 
+// Adaugare explicita: evita suprascrierea listei la compilarea operatorului +=.
+action 'appendvariable' appendToNamedList(variable value: 'WFInput', text name: 'WFVariableName')
+
 #define name FinTrack MDL
 #define color blue
 #define glyph calculator
@@ -40,20 +43,21 @@ if optionsError {
     alert("{optionsError}", "FinTrack")
     stop()
 }
-@categories = {}
 const rawCategories = getValue(options, @categoryKey)
-if rawCategories {
-    @categories = getDictionary(rawCategories)
+if !rawCategories {
+    alert("Nu exista categorii disponibile. Pentru venituri activeaza permisiunea telefonului in FinTrack > iPhone si scurtaturi.", "FinTrack")
+    stop()
 }
-@categoryNames = getKeys(@categories)
-@categoryNames += @loanLabel
+const categories = getDictionary(rawCategories)
+@categoryNames = getKeys(categories)
+appendToNamedList(@loanLabel, "categoryNames")
 const selectedCategory = chooseFromList(@categoryNames, "Alege categoria")
 const selectedName = "{selectedCategory}"
-@isLoan = false
+@operation = "transaction"
 @person = ""
 @categoryID = ""
 if selectedName == @loanLabel {
-    @isLoan = true
+    @operation = "loan"
     const personInput = prompt("Cu cine este împrumutul?")
     @person = trimWhitespace(personInput)
     if !@person {
@@ -61,7 +65,7 @@ if selectedName == @loanLabel {
         stop()
     }
 } else {
-    const selectedID = getValue(@categories, selectedName)
+    const selectedID = getValue(categories, selectedName)
     @categoryID = "{selectedID}"
     if !@categoryID {
         alert("Alege o categorie valida. Pentru venituri activeaza permisiunea telefonului in FinTrack.", "FinTrack")
@@ -85,7 +89,7 @@ const randomB = randomNumber(100000, 999999)
 const requestID = "{stamp}-{randomA}-{randomB}"
 
 @responseText = ""
-if @isLoan {
+if @operation == "loan" {
     const loanResponse = jsonRequest("https://fintrack-dionis.netlify.app/api/shortcut/loans", "POST", {
         "request_id": "{requestID}",
         "direction": "{@loanDirection}",
