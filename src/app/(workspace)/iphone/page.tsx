@@ -1,3 +1,5 @@
+import { WidgetSettings } from "@/components/widget-settings";
+import type { WidgetView } from "@/lib/widget";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/session";
 import { supabaseConfig } from "@/lib/supabase/config";
@@ -31,7 +33,7 @@ export default async function IphonePage() {
       </>
     );
   const { client, user } = await requireUser("/iphone");
-  const [accounts, devices] = await Promise.all([
+  const [accounts, devices, widgets] = await Promise.all([
     allRows<AccountRow>((f, t) =>
       client
         .from("accounts")
@@ -48,6 +50,15 @@ export default async function IphonePage() {
         .select(
           "id,name,cash_account_id,card_account_id,created_at,expires_at,last_used_at,allow_income,allow_loans",
         )
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(f, t),
+    ),
+    allRows<WidgetView>((f, t) =>
+      client
+        .from("widget_devices")
+        .select("id,name,created_at,expires_at,last_used_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .order("id")
@@ -70,6 +81,7 @@ export default async function IphonePage() {
           Deschide formularul rapid
         </Link>
       </p>
+      <WidgetSettings devices={widgets} />
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Conectează un iPhone</CardTitle>

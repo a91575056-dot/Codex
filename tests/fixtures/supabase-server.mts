@@ -17,6 +17,7 @@ for (const name of (await readdir("supabase/migrations"))
   .sort())
   await db.exec(await readFile("supabase/migrations/" + name, "utf8"));
 const users = [
+  { id: "00000000-0000-4000-8000-000000000009", email: "i@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000008", email: "h@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000007", email: "g@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000006", email: "f@fintrack.invalid" },
@@ -81,6 +82,7 @@ async function body(req: IncomingMessage) {
   return s ? JSON.parse(s) : {};
 }
 const tables = new Set([
+  "widget_devices",
   "loans",
   "envelope_plans",
   "envelope_rules",
@@ -203,6 +205,7 @@ const server = createServer(async (req, res) => {
         ],
         configure_shortcut_income: ["p_device_id", "p_enabled"],
         shortcut_finance_options: ["p_token"],
+        widget_budget_snapshot: ["p_token"],
         shortcut_income: [
           "p_token",
           "p_request_id",

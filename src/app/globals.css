@@ -34,3 +34,13 @@
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
+
+.widget-instructions {
+  padding-left: 20px;
+  margin: 16px 0;
+  list-style: decimal;
+}
+.widget-instructions li {
+  margin: 8px 0;
+  line-height: 1.6;
+}

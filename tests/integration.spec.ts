@@ -1609,15 +1609,97 @@ test("Cash/Card wallets and opening debt repayment keep real balances separate",
   );
   for (const width of [375, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
-      ),
-    ).toBe(true);
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        { message: `Wallet layout at ${width}px after chart resize` },
+      )
+      .toBe(true);
     await page.screenshot({
       path: `artifacts/wallets-${width}.png`,
       fullPage: true,
     });
   }
   await expect(wallets).not.toHaveCount(0);
+});
+
+test("widget pairing reads only real MDL budgets and revocation removes access", async ({
+  page,
+  playwright,
+}) => {
+  await login(page, "i@fintrack.invalid");
+  await page.goto("/budgets");
+  const budget = card(page, "Adaugă un buget");
+  await budget
+    .getByLabel("Categorie de cheltuieli")
+    .selectOption({ label: "Alimente" });
+  await budget.getByLabel("Limită lunară (MDL)").fill("100");
+  await budget.getByRole("button", { name: "Adaugă înregistrarea" }).click();
+  await expect(budget.getByRole("status")).toBeVisible();
+  await page.goto("/iphone#widgets");
+  const settings = page.getByRole("region", { name: "Widgeturi iPhone" });
+  await expect(settings.locator(".widget-instructions")).toHaveCSS(
+    "list-style-type",
+    "decimal",
+  );
+  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  await settings
+    .getByRole("button", { name: "Copiază scriptul complet" })
+    .click();
+  await expect(settings.getByRole("status")).toContainText("Script copiat");
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied).toContain("Script.complete()");
+  expect(copied).toContain("const SITE");
+  await settings.getByLabel("Numele widgetului").fill("Widget QA");
+  await settings
+    .getByRole("button", { name: "Creează cheia widgetului" })
+    .click();
+  const token = await settings
+    .getByLabel("Cheia widgetului", { exact: true })
+    .inputValue();
+  expect(token).toMatch(/^ft_wg_[a-f0-9]{64}$/);
+  const api = await playwright.request.newContext({
+    baseURL: "http://127.0.0.1:3002",
+    extraHTTPHeaders: { Authorization: "Bearer " + token },
+  });
+  const response = await api.get("/api/widget/budgets");
+  expect(response.status()).toBe(200);
+  expect(response.headers()["cache-control"]).toContain("no-store");
+  const snapshot = await response.json();
+  expect(snapshot.currency).toBe("MDL");
+  expect(snapshot.source).toBe("monthly");
+  expect(snapshot.budgets).toHaveLength(1);
+  expect(snapshot.budgets[0]).toMatchObject({
+    name: "Alimente",
+    limit_minor: 10000,
+    remaining_minor: 10000,
+    remaining_percent: 100,
+  });
+  expect(JSON.stringify(snapshot)).not.toContain(token);
+  expect((await page.request.get("/api/widget/budgets")).status()).toBe(401);
+  expect(
+    (await page.request.get("/api/widget/budgets?token=" + token)).status(),
+  ).toBe(401);
+  expect(
+    (await api.post("/api/shortcut/expenses", { data: {} })).status(),
+  ).toBe(401);
+  const script = await page.request.get("/widgets/FinTrack.js");
+  expect(script.status()).toBe(200);
+  expect(await script.text()).toContain("Keychain.set");
+  await page.setViewportSize({ width: 375, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await settings.screenshot({ path: "artifacts/widget-setup-mobile.png" });
+  const device = card(page, "Widget QA");
+  await device.getByLabel("Confirm deconectarea acestui widget").check();
+  await device.getByRole("button", { name: "Deconectează widgetul" }).click();
+  await expect(device).toHaveCount(0);
+  expect((await api.get("/api/widget/budgets")).status()).toBe(401);
+  await api.dispose();
 });

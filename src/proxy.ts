@@ -4,7 +4,11 @@ import { supabaseConfig } from "@/lib/supabase/config";
 export async function proxy(request: NextRequest) {
   // Device endpoints authenticate their own narrow bearer token, independently
   // from browser cookies. Avoid session refreshes or HTML redirects for Shortcuts.
-  if (request.nextUrl.pathname.startsWith("/api/shortcut/"))
+  if (
+    request.nextUrl.pathname.startsWith("/api/shortcut/") ||
+    request.nextUrl.pathname.startsWith("/api/widget/") ||
+    request.nextUrl.pathname.startsWith("/widgets/")
+  )
     return NextResponse.next();
   const config = supabaseConfig();
   if (!config || request.nextUrl.pathname.startsWith("/demo"))

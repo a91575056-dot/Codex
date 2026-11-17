@@ -1,3 +1,4 @@
+import type { WidgetDevice } from "@/lib/widget";
 import type { Loan } from "@/lib/loans";
 import type {
   EnvelopePlan,
@@ -53,6 +54,7 @@ type Table<Row, Required extends keyof Row> = {
 export type Database = {
   public: {
     Tables: {
+      widget_devices: Table<WidgetDevice, "user_id" | "name" | "token_hash">;
       loans: Table<
         Loan,
         | "id"
@@ -165,6 +167,7 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      widget_budget_snapshot: { Args: { p_token: string }; Returns: unknown };
       record_loan: {
         Args: {
           p_id: string;
