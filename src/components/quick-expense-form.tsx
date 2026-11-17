@@ -1,4 +1,5 @@
 "use client";
+import { matchesPaymentMethod } from "@/lib/wallets";
 import { useActionState, useRef, useState, useSyncExternalStore } from "react";
 import { Banknote, CreditCard, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
@@ -51,14 +52,17 @@ export function QuickExpenseForm({
     },
     () => "",
   );
+  const availableAccounts = accounts.filter((a) =>
+    matchesPaymentMethod(a, method),
+  );
   const preferences = storedAccounts(
     saved,
-    accounts.map((a) => a.id),
+    availableAccounts.map((a) => a.id),
   );
   const selected =
     overrides[method] ||
     preferences[method] ||
-    (accounts.length === 1 ? accounts[0].id : "");
+    (availableAccounts.length === 1 ? availableAccounts[0].id : "");
   const [state, action, pending] = useActionState(
     async (previous: QuickState, form: FormData): Promise<QuickState> => {
       try {
@@ -158,7 +162,7 @@ export function QuickExpenseForm({
             <option value="" disabled>
               Selectează contul
             </option>
-            {accounts.map((a) => (
+            {availableAccounts.map((a) => (
               <option value={a.id} key={a.id}>
                 {a.name} · {a.currency}
               </option>

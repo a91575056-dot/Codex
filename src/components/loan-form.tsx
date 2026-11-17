@@ -102,6 +102,11 @@ export function LoanForm({
             onChange={(e) => change("note", e.target.value)}
           />
         </label>
+        <label className="confirm-label">
+          <input type="checkbox" name="opening_loan" value="yes" />
+          Împrumut existent înainte să încep evidența — fără mișcare inițială de
+          bani
+        </label>
       </fieldset>
       <p className="lab-help">
         Banii dați scad soldul contului; banii primiți îl cresc. Principalul nu

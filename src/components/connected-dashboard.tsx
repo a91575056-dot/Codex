@@ -39,6 +39,11 @@ export function ConnectedStats({ data }: { data: FinanceData }) {
         note="conturi MDL · până astăzi"
         icon={Wallet}
         featured
+        detail={
+          data.wallets && (
+            <WalletBreakdown balance={data.wallets.MDL} currency="MDL" />
+          )
+        }
         action={{ href: "/settings", label: "Gestionează conturile" }}
       />
       <StatCard
@@ -142,6 +147,9 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
 
       {data.euro && (
         <section className="currency-summary" aria-label="Conturi în euro">
+          {data.wallets && (
+            <WalletBreakdown balance={data.wallets.EUR} currency="EUR" />
+          )}
           <h2>Conturi în EUR</h2>
           <p>
             Sold: <strong>{money(data.euro.balance, "EUR")}</strong> · Venituri
@@ -381,5 +389,35 @@ export function ConnectedDashboard({ data }: { data: FinanceData }) {
         viitoare nu intră în soldul de astăzi.
       </p>
     </>
+  );
+}
+
+function WalletBreakdown({
+  balance,
+  currency,
+}: {
+  balance: import("@/lib/wallets").WalletBalance;
+  currency: "MDL" | "EUR";
+}) {
+  return (
+    <dl
+      className="wallet-breakdown"
+      aria-label={`Solduri separate ${currency}`}
+    >
+      <div>
+        <dt>Cash</dt>
+        <dd>{money(balance.cash, currency)}</dd>
+      </div>
+      <div>
+        <dt>Card</dt>
+        <dd>{money(balance.card, currency)}</dd>
+      </div>
+      {balance.other !== 0 && (
+        <div>
+          <dt>Alte conturi</dt>
+          <dd>{money(balance.other, currency)}</dd>
+        </div>
+      )}
+    </dl>
   );
 }

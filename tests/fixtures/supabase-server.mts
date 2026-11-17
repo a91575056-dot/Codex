@@ -17,6 +17,7 @@ for (const name of (await readdir("supabase/migrations"))
   .sort())
   await db.exec(await readFile("supabase/migrations/" + name, "utf8"));
 const users = [
+  { id: "00000000-0000-4000-8000-000000000008", email: "h@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000007", email: "g@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000006", email: "f@fintrack.invalid" },
   { id: "00000000-0000-4000-8000-000000000005", email: "e@fintrack.invalid" },
@@ -187,6 +188,7 @@ const server = createServer(async (req, res) => {
           "p_amount_minor",
           "p_occurred_on",
           "p_note",
+          "p_opening_loan",
         ],
         settle_loan: ["p_id", "p_account_id"],
         configure_shortcut_loans: ["p_device_id", "p_enabled"],

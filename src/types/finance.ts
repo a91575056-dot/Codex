@@ -9,6 +9,7 @@ export interface Transaction {
   paymentMethod?: "unspecified" | "cash" | "card";
 }
 export interface FinanceData {
+  wallets?: Record<"MDL" | "EUR", import("@/lib/wallets").WalletBalance>;
   loanSummary?: Record<"MDL" | "EUR", { receivable: number; payable: number }>;
   expenseDistribution?: { name: string; amount: number }[];
   portfolioDetails?: {

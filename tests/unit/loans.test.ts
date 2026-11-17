@@ -240,6 +240,101 @@ test("loan SQL enforces opt-in, owner/currency isolation, idempotence, cross-kin
     await db.query("delete from public.shortcut_devices where id=$1", [device]);
     await as();
     await assert.rejects(post("revoked-request-05"), /neautorizat/);
+    await as(a);
+    const typedCard = (
+      await db.query<{ id: string }>(
+        "insert into public.accounts(user_id,name,currency,account_type) values($1,'Card separat','MDL','card') returning id",
+        [a],
+      )
+    ).rows[0].id;
+    const openingId = "00000000-0000-4000-8000-000000000091";
+    await db.query(
+      "select public.record_loan($1,$2,'lent','Datorie veche',25000,'2026-01-01','',true)",
+      [openingId, acc],
+    );
+    await db.query(
+      "select public.record_loan($1,$2,'lent','Datorie veche',25000,'2026-01-01','',true)",
+      [openingId, acc],
+    );
+    assert.equal(
+      (
+        await db.query<{ opening_loan: boolean }>(
+          "select opening_loan from public.loans where id=$1",
+          [openingId],
+        )
+      ).rows[0].opening_loan,
+      true,
+    );
+    await assert.rejects(
+      db.query(
+        "select public.record_loan($1,$2,'lent','Datorie veche',25000,'2026-01-01','',false)",
+        [openingId, acc],
+      ),
+      /alte date/,
+    );
+    await assert.rejects(
+      db.query("update public.loans set opening_loan=false where id=$1", [
+        openingId,
+      ]),
+      /permission denied/,
+    );
+    await db.query("select public.settle_loan($1,$2)", [openingId, typedCard]);
+    await db.query("select public.settle_loan($1,$2)", [openingId, typedCard]);
+    assert.equal(
+      (
+        await db.query<{ settled_account_id: string }>(
+          "select settled_account_id from public.loans where id=$1",
+          [openingId],
+        )
+      ).rows[0].settled_account_id,
+      typedCard,
+    );
+    await assert.rejects(
+      db.query(
+        "insert into public.transactions(user_id,account_id,category_id,kind,description,amount_minor,payment_method,occurred_on) values($1,$2,$3,'expense','Wrong wallet',100,'cash','2026-01-01')",
+        [a, typedCard, expense],
+      ),
+      /corespunzător/,
+    );
+    await db.query(
+      "update public.accounts set account_type='cash' where id=$1",
+      [acc],
+    );
+    const walletToken = "ft_sc_" + "c".repeat(64);
+    await db.query(
+      "insert into public.shortcut_devices(user_id,name,token_hash,cash_account_id,card_account_id) values($1,'Separate wallets',$2,$3,$4)",
+      [
+        a,
+        createHash("sha256").update(walletToken).digest("hex"),
+        acc,
+        typedCard,
+      ],
+    );
+    await as();
+    for (const method of ["cash", "card"]) {
+      await db.query("select public.shortcut_expense($1,$2,100,$3,$4,$5)", [
+        walletToken,
+        "wallet-native-" + method,
+        method,
+        expense,
+        "Wallet " + method,
+      ]);
+    }
+    await as(a);
+    const routed = (
+      await db.query<{ account_id: string; payment_method: string }>(
+        "select account_id,payment_method from public.transactions where description in ('Wallet cash','Wallet card') order by payment_method",
+      )
+    ).rows;
+    assert.deepEqual(routed, [
+      { account_id: typedCard, payment_method: "card" },
+      { account_id: acc, payment_method: "cash" },
+    ]);
+    await as(b);
+    await assert.rejects(
+      db.query("select public.settle_loan($1,$2)", [openingId, typedCard]),
+      /indisponibil/,
+    );
   } finally {
     await db.close();
   }

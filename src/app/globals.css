@@ -12,3 +12,25 @@
   --color-border: var(--border);
   --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
 }
+
+.wallet-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin: 12px 0;
+}
+.wallet-breakdown div {
+  min-width: 0;
+  flex: 1 1 100px;
+}
+.wallet-breakdown dt {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.wallet-breakdown dd {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}

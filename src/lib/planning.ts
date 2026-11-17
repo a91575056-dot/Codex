@@ -78,6 +78,7 @@ export const budgetSchema = z.object({
   ),
 });
 export const accountSchema = z.object({
+  account_type: z.enum(["cash", "card", "other"]).default("other"),
   currency: z.enum(["MDL", "EUR"]).default("MDL"),
   id: optionalId,
   name: z.string().trim().min(1, "Numele este obligatoriu.").max(80),

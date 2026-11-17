@@ -1,4 +1,5 @@
 "use server";
+import { matchesPaymentMethod } from "@/lib/wallets";
 import { randomBytes, createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
@@ -19,14 +20,14 @@ export async function createShortcutDevice(
   const [cash, card] = await Promise.all([
     client
       .from("accounts")
-      .select("id")
+      .select("id,account_type")
       .eq("user_id", user.id)
       .eq("id", p.cash_account_id)
       .eq("currency", "MDL")
       .maybeSingle(),
     client
       .from("accounts")
-      .select("id")
+      .select("id,account_type")
       .eq("user_id", user.id)
       .eq("id", p.card_account_id)
       .eq("currency", "MDL")
@@ -34,6 +35,13 @@ export async function createShortcutDevice(
   ]);
   if (cash.error || card.error || !cash.data || !card.data)
     return { error: "Alege conturile tale în MDL pentru cash și card." };
+  if (
+    !matchesPaymentMethod(cash.data, "cash") ||
+    !matchesPaymentMethod(card.data, "card")
+  )
+    return {
+      error: "Asociază Cash cu un cont numerar și Card cu un cont bancar.",
+    };
   const token = "ft_sc_" + randomBytes(32).toString("hex");
   const token_hash = createHash("sha256").update(token).digest("hex");
   const { data, error } = await client

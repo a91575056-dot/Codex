@@ -6,6 +6,17 @@ const moneyPattern = "[0-9]{1,10}([.,][0-9]{1,2})?";
 export const accountFields = (row?: AccountRow): FieldSpec[] => [
   { name: "name", label: "Numele contului", value: row?.name, maxLength: 80 },
   {
+    name: "account_type",
+    label: "Tipul contului",
+    value: row?.account_type || "other",
+    options: [
+      { value: "cash", label: "Cash · Numerar" },
+      { value: "card", label: "Card · Cont bancar" },
+      { value: "other", label: "Alt cont / neclasificat" },
+    ],
+    hint: "Cash și Card au solduri separate. Totalul adună conturile din aceeași monedă.",
+  },
+  {
     name: "currency",
     label: "Moneda contului",
     value: row?.currency || "MDL",

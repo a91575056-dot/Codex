@@ -16,6 +16,7 @@ export type Loan = {
   settled_on: string | null;
   settled_account_id: string | null;
   created_at: string;
+  opening_loan?: boolean;
 };
 export const loanSchema = z.object({
   id: z.uuid(),
@@ -28,6 +29,10 @@ export const loanSchema = z.object({
     "Data nu poate fi în viitor.",
   ),
   note: z.string().trim().max(160).default(""),
+  opening_loan: z
+    .enum(["yes", "no"])
+    .default("no")
+    .transform((v) => v === "yes"),
 });
 export function loanAccountDelta(
   rows: Loan[],
@@ -38,7 +43,7 @@ export function loanAccountDelta(
     rows.flatMap((l) => {
       const sign = l.direction === "borrowed" ? 1 : -1;
       return [
-        l.account_id === accountId && l.occurred_on <= today
+        !l.opening_loan && l.account_id === accountId && l.occurred_on <= today
           ? sign * l.amount_minor
           : 0,
         l.settled_account_id === accountId &&
@@ -85,7 +90,7 @@ export function loanActivity(
     };
     return l.settled_on
       ? [
-          funding,
+          ...(l.opening_loan ? [] : [funding]),
           {
             ...funding,
             id: l.id + ":repayment",
@@ -97,6 +102,8 @@ export function loanActivity(
             paymentMethod: "unspecified" as const,
           },
         ]
-      : [funding];
+      : l.opening_loan
+        ? []
+        : [funding];
   });
 }

@@ -81,3 +81,29 @@ loan/borrowed. Every list retains all mocked normal categories plus the loan
 option, normal choices resolve their category ID and retain transaction mode,
 and loan choices select loan mode. This is an action-graph regression check,
 not a claim of physical iOS execution.
+
+## Solduri Cash/Card și datorii de început
+
+Conturile au un `account_type` (`cash`, `card`, `other`). Soldul fiecărui cont
+include soldul inițial, tranzacțiile, transferurile și mișcările împrumuturilor.
+Panoul afișează separat Cash și Card, apoi totalul conturilor din aceeași monedă.
+MDL și EUR nu sunt adunate și nu există conversie implicită. Conturile vechi
+neclasificate rămân `other`; nu le deducem tipul din nume.
+
+Pentru `opening_loan=true`, acordarea/primirea inițială nu modifică soldul:
+împrumutul exista înainte de începutul evidenței. Rambursarea unui împrumut dat
+creditează contul ales; rambursarea unuia primit debitează acel cont. Închiderea
+rămâne integrală, idempotentă și limitată la un cont propriu în aceeași monedă.
+Principalul nu generează venit salarial, cheltuială de consum sau alocări de buget.
+Împrumuturile noi (`opening_loan=false`, implicit) își păstrează fluxurile normale.
+Soldurile negative reale nu sunt mascate prin limitare la zero.
+
+Formularele sincronizează metoda Cash/Card cu tipul contului. Verificarea există
+și în acțiunile server și în trigger-ele bazei de date, inclusiv pentru scrierile
+scurtăturii. Asocierea Cash/Card a telefonului determină contul folosit; schimbarea
+asocierii nu necesită schimbarea tokenului. Soldurile inițiale ale economiilor se
+introduc separat în Setări pentru fiecare cont.
+
+Migrarea schemei nu convertește automat datoriile tuturor utilizatorilor și nu
+modifică soldurile lor inițiale. Corectarea datoriilor istorice necesită identificare
+explicită și păstrarea sumelor, monedelor, persoanelor, notelor și datelor.

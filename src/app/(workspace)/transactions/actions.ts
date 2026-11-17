@@ -1,4 +1,5 @@
 "use server";
+import { matchesPaymentMethod } from "@/lib/wallets";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
 import { supabaseConfig } from "@/lib/supabase/config";
@@ -17,7 +18,7 @@ export async function saveTransaction(
   const [a, c] = await Promise.all([
     client
       .from("accounts")
-      .select("id")
+      .select("id,account_type")
       .eq("id", fields.account_id)
       .eq("user_id", user.id)
       .maybeSingle(),
@@ -37,6 +38,10 @@ export async function saveTransaction(
     return {
       error:
         "Contul sau categoria nu îți aparține ori nu corespunde tipului selectat.",
+    };
+  if (!matchesPaymentMethod(a.data, fields.payment_method))
+    return {
+      error: "Alege contul Cash sau Card corespunzător metodei de plată.",
     };
   const payload = { ...fields, amount_minor: amount, user_id: user.id };
   const result = id

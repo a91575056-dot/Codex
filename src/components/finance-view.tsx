@@ -55,6 +55,7 @@ export function StatCard({
   change,
   icon: Icon,
   featured = false,
+  detail,
   note = "sold și activitate în MDL",
   action,
 }: {
@@ -63,6 +64,7 @@ export function StatCard({
   change: string;
   icon: typeof Wallet;
   featured?: boolean;
+  detail?: React.ReactNode;
   note?: string;
   action?: { href: string; label: string };
 }) {
@@ -77,6 +79,7 @@ export function StatCard({
       <strong className="stat-value">
         {money(value).replace("\u00a0", " ")}
       </strong>
+      {detail}
       <div className="stat-bottom">
         <span>
           {change.includes("%") && <ArrowUpRight size={12} />}

@@ -21,9 +21,9 @@ export function LoanSection({
     <section aria-label="Împrumuturi date și primite" className="mb-8">
       <h2 className="overview-heading">Împrumuturi date și primite</h2>
       <p className="lab-help">
-        Înregistrările de aici schimbă soldul contului. Sunt separate de
-        salariu, consum și bugete. Rambursarea integrală inversează mișcarea de
-        numerar, o singură dată.
+        Împrumuturile noi schimbă soldul contului. Datoriile de început nu
+        modifică soldul inițial. Rambursarea adaugă banii de primit sau scade
+        banii de restituit din contul ales, o singură dată, separat de bugete.
       </p>
       <div className="goal-grid mb-6">
         {(["MDL", "EUR"] as const)
@@ -84,6 +84,11 @@ export function LoanSection({
               <p>
                 {l.occurred_on} · {names.get(l.account_id)}
               </p>
+              {l.opening_loan && (
+                <p className="lab-help">
+                  Datorie de început · fără scădere sau încasare inițială
+                </p>
+              )}
               <p className="debt-note">{l.note}</p>
               {l.settled_on ? (
                 <p>

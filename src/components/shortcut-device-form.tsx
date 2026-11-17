@@ -1,4 +1,5 @@
 "use client";
+import { matchesPaymentMethod } from "@/lib/wallets";
 import { useActionState, useState } from "react";
 import {
   setShortcutIncome,
@@ -39,24 +40,31 @@ export function ShortcutDeviceForm({ accounts }: { accounts: AccountRow[] }) {
               <select
                 name={method + "_account_id"}
                 required
-                defaultValue={accounts.length === 1 ? accounts[0].id : ""}
+                defaultValue={
+                  accounts.filter((a) => matchesPaymentMethod(a, method))
+                    .length === 1
+                    ? accounts.find((a) => matchesPaymentMethod(a, method))?.id
+                    : ""
+                }
               >
                 <option value="" disabled>
                   Alege contul
                 </option>
-                {accounts.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.name} · MDL
-                  </option>
-                ))}
+                {accounts
+                  .filter((a) => matchesPaymentMethod(a, method))
+                  .map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} · MDL
+                    </option>
+                  ))}
               </select>
             </label>
           ))}
         </div>
         <p className="lab-help">
-          Plățile Cash și Card vor actualiza conturile alese aici. Poți alege
-          același cont. Pentru a schimba asocierea, revocă tokenul și conectează
-          telefonul din nou.
+          Plățile Cash și Card actualizează conturile alese separat. Creează
+          conturile și setează tipul lor în Setări. Pentru a schimba asocierea
+          unui telefon, revocă tokenul și conectează telefonul din nou.
         </p>
         {state.error && (
           <p className="form-error" role="alert">

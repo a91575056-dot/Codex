@@ -21,6 +21,7 @@ export type AccountRow = {
   name: string;
   currency: "MDL" | "EUR";
   opening_balance_minor: number;
+  account_type?: "cash" | "card" | "other";
   created_at: string;
 };
 export type CategoryRow = {
@@ -173,6 +174,7 @@ export type Database = {
           p_amount_minor: number;
           p_occurred_on: string;
           p_note: string;
+          p_opening_loan?: boolean;
         };
         Returns: string;
       };

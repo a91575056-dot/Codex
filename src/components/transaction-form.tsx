@@ -1,4 +1,5 @@
 "use client";
+import { matchesPaymentMethod } from "@/lib/wallets";
 import Link from "next/link";
 import { Modal } from "./ui/modal";
 import { useActionState, useState } from "react";
@@ -32,7 +33,12 @@ export function TransactionForm({
     amount: transaction ? (transaction.amount_minor / 100).toFixed(2) : "",
     account_id: transaction?.account_id || accounts[0]?.id || "",
     category_id: transaction?.category_id || "",
-    payment_method: transaction?.payment_method || "unspecified",
+    payment_method:
+      transaction?.payment_method ||
+      (accounts[0]?.account_type === "cash" ||
+      accounts[0]?.account_type === "card"
+        ? accounts[0].account_type
+        : "unspecified"),
     occurred_on:
       transaction?.occurred_on ||
       new Intl.DateTimeFormat("en-CA", {
@@ -43,7 +49,23 @@ export function TransactionForm({
       }).format(new Date()),
   });
   function change(name: keyof typeof fields, value: string) {
-    setFields((current) => ({ ...current, [name]: value }));
+    setFields((current) => {
+      const next = { ...current, [name]: value };
+      if (name === "account_id") {
+        const type = accounts.find((a) => a.id === value)?.account_type;
+        if (type === "cash" || type === "card") next.payment_method = type;
+      }
+      if (name === "payment_method") {
+        const selected = accounts.find((a) => a.id === current.account_id);
+        if (selected && !matchesPaymentMethod(selected, value))
+          next.account_id =
+            accounts.find(
+              (a) =>
+                a.currency === selected.currency && a.account_type === value,
+            )?.id || "";
+      }
+      return next;
+    });
   }
   const [state, action, pending] = useActionState(
     async (previous: Parameters<typeof saveTransaction>[0], form: FormData) => {
@@ -117,11 +139,16 @@ export function TransactionForm({
               onChange={(e) => change("account_id", e.target.value)}
               required
             >
-              {accounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name} · {a.currency}
-                </option>
-              ))}
+              <option value="" disabled>
+                Alege contul
+              </option>
+              {accounts
+                .filter((a) => matchesPaymentMethod(a, fields.payment_method))
+                .map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} · {a.currency}
+                  </option>
+                ))}
             </select>
           </label>
           <label>

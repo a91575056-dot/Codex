@@ -113,6 +113,7 @@ export async function saveLoan(
     p_amount_minor: p.data.amount,
     p_occurred_on: p.data.occurred_on,
     p_note: p.data.note,
+    p_opening_loan: p.data.opening_loan,
   });
   if (error || !data)
     return {
@@ -121,8 +122,9 @@ export async function saveLoan(
     };
   revalidatePath("/", "layout");
   return {
-    success:
-      "Împrumut salvat. Soldul contului a fost actualizat; bugetele rămân separate.",
+    success: p.data.opening_loan
+      ? "Datorie de început salvată. Soldul nu a fost modificat; rambursarea va actualiza contul ales."
+      : "Împrumut salvat. Soldul contului a fost actualizat; bugetele rămân separate.",
   };
 }
 export async function settleLoan(

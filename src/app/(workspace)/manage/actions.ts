@@ -28,11 +28,12 @@ export async function saveResource(
   if (resource === "account") {
     const p = accountSchema.safeParse(raw);
     if (!p.success) return { error: p.error.issues[0].message };
-    const { id, name, opening_balance, currency } = p.data;
+    const { id, name, opening_balance, currency, account_type } = p.data;
     const data = {
       user_id: user.id,
       name,
       opening_balance_minor: opening_balance,
+      account_type,
       currency,
     };
     const r = id
@@ -115,7 +116,7 @@ export async function saveResource(
   if (error?.code === "23514")
     return {
       error:
-        "Moneda unui cont existent nu poate fi schimbată. Creează un cont nou în EUR sau MDL.",
+        "Moneda unui cont existent nu poate fi schimbată. Tipul Cash/Card trebuie să corespundă operațiilor existente; pentru altă metodă creează un cont separat.",
     };
   if (error?.code === "23505")
     return {

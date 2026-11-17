@@ -159,7 +159,12 @@ test("connected UI: accounts, categories, transactions, budgets, investments, go
   expect(csv).toContain("Curs de programare");
   expect(csv).not.toContain("Venit istoric");
   await page.goto("/");
-  await expect(page.getByText("5.899,5 MDL", { exact: true })).toBeVisible();
+  await expect(
+    page
+      .locator(".stat-card")
+      .filter({ hasText: "Sold total" })
+      .locator(".stat-value"),
+  ).toHaveText("5.899,5 MDL");
   await expect(
     page.locator(".stats-grid").getByText("325 MDL", { exact: true }),
   ).toBeVisible();
@@ -1490,7 +1495,9 @@ test("loans: native opt-in, cash balances, no salary allocation, browser creatio
   await device
     .getByRole("button", { name: "Dezactivează împrumuturile" })
     .click();
-  await expect(device.getByRole("status")).toContainText("Împrumuturi dezactivate");
+  await expect(device.getByRole("status")).toContainText(
+    "Împrumuturi dezactivate",
+  );
   expect(
     (
       await api.post("/api/shortcut/loans", {
@@ -1499,4 +1506,118 @@ test("loans: native opt-in, cash balances, no salary allocation, browser creatio
     ).status(),
   ).toBe(403);
   await api.dispose();
+});
+
+test("Cash/Card wallets and opening debt repayment keep real balances separate", async ({
+  page,
+}) => {
+  await login(page, "h@fintrack.invalid");
+  for (const [name, type, amount] of [
+    ["Cash separat", "cash", "100"],
+    ["Card separat", "card", "200"],
+  ]) {
+    await page.goto("/settings");
+    const form = card(page, "Adaugă un cont");
+    await form.getByLabel("Numele contului").fill(name);
+    await form.getByLabel("Tipul contului").selectOption(type);
+    await form.getByLabel("Sold inițial (în moneda contului)").fill(amount);
+    await form.getByRole("button", { name: "Adaugă înregistrarea" }).click();
+    await expect(
+      page.getByRole("heading", { name, exact: true }),
+    ).toBeVisible();
+  }
+  for (const [method, amount] of [
+    ["cash", "25"],
+    ["card", "40"],
+  ]) {
+    await page.goto("/transactions");
+    const form = card(page, "Adaugă o tranzacție");
+    await form
+      .getByRole("button", { name: "Adaugă o tranzacție", exact: true })
+      .click();
+    await form.getByLabel("Descriere", { exact: true }).fill("Plată " + method);
+    await form.locator('[name="payment_method"]').selectOption("cash");
+    await form
+      .locator('[name="account_id"]')
+      .selectOption({ label: "Cash separat · MDL" });
+    await form.locator('[name="payment_method"]').selectOption(method);
+    await expect(form.locator('[name="account_id"] option:checked')).toHaveText(
+      (method === "cash" ? "Cash" : "Card") + " separat · MDL",
+    );
+    await form.getByLabel("Sumă (MDL)").fill(amount);
+    await form
+      .locator('[name="category_id"]')
+      .selectOption({ label: "Alimente" });
+    await form
+      .getByRole("button", { name: "Adaugă tranzacția", exact: true })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Plată " + method, exact: true }),
+    ).toBeVisible();
+  }
+  await page.goto("/");
+  const wallets = page.getByRole("definition");
+  const summary = page.getByLabel("Solduri separate MDL");
+  await expect(summary).toContainText("75 MDL");
+  await expect(summary).toContainText("160 MDL");
+  await expect(page.locator(".stats-grid .stat-card").first()).toContainText(
+    "235 MDL",
+  );
+  await page.goto("/debts");
+  await page
+    .getByRole("button", { name: "Adaugă împrumut", exact: true })
+    .click();
+  const dialog = page.getByRole("dialog");
+  await dialog
+    .getByLabel("Persoana", { exact: true })
+    .fill("Datorie existentă QA");
+  await dialog
+    .getByLabel("Contul împrumutului")
+    .selectOption({ label: "Cash separat · MDL" });
+  await dialog.getByLabel("Sumă împrumut (MDL)").fill("250");
+  await dialog
+    .getByLabel("Împrumut existent înainte", { exact: false })
+    .check();
+  await dialog.getByRole("button", { name: "Salvează împrumutul" }).click();
+  await expect(dialog.getByRole("status")).toContainText(
+    "Soldul nu a fost modificat",
+  );
+  await dialog.getByRole("button", { name: "Închide dialogul" }).click();
+  await page.goto("/");
+  await expect(page.locator(".stats-grid .stat-card").first()).toContainText(
+    "235 MDL",
+  );
+  await page.goto("/debts");
+  const loan = card(page, "Datorie existentă QA");
+  await expect(loan).toContainText("Datorie de început");
+  await loan.getByText("Înregistrează rambursarea", { exact: true }).click();
+  await loan
+    .getByLabel("Cont pentru rambursare")
+    .selectOption({ label: "Card separat · MDL" });
+  await loan
+    .getByLabel("Confirm că am primit integral", { exact: false })
+    .check();
+  await loan
+    .getByRole("button", { name: "Confirmă rambursarea integrală" })
+    .click();
+  await expect(loan).toHaveCount(0);
+  await page.goto("/");
+  await expect(summary).toContainText("75 MDL");
+  await expect(summary).toContainText("410 MDL");
+  await expect(page.locator(".stats-grid .stat-card").first()).toContainText(
+    "485 MDL",
+  );
+  for (const width of [375, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: `artifacts/wallets-${width}.png`,
+      fullPage: true,
+    });
+  }
+  await expect(wallets).not.toHaveCount(0);
 });

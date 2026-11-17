@@ -141,6 +141,14 @@ export default async function SettingsPage() {
             <Card key={a.id}>
               <CardHeader>
                 <CardTitle>{a.name}</CardTitle>
+                <span className="category">
+                  {a.account_type === "cash"
+                    ? "Cash · Numerar"
+                    : a.account_type === "card"
+                      ? "Card · Cont bancar"
+                      : "Alt cont / neclasificat"}{" "}
+                  · {a.currency}
+                </span>
               </CardHeader>
               <CardContent>
                 <strong className="stat-value">

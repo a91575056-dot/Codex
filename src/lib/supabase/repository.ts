@@ -1,3 +1,4 @@
+import { walletBalances } from "@/lib/wallets";
 import { loanActivity, loanTotals, type Loan } from "@/lib/loans";
 import { financialReport } from "@/lib/reports";
 import { currentMonth } from "@/lib/finance-calculations";
@@ -97,6 +98,12 @@ export async function getUserFinance() {
   const names = new Map(ledger.categories.map((c) => [c.id, c.name]));
   return {
     ...data,
+    wallets: walletBalances(
+      ledger.accounts,
+      ledger.transactions,
+      ledger.transfers,
+      ledger.loans,
+    ),
     envelopeAccounts: ledger.accounts.map((a) => ({
       id: a.id,
       name: a.name,

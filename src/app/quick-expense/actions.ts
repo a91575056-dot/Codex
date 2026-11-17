@@ -1,4 +1,5 @@
 "use server";
+import { matchesPaymentMethod } from "@/lib/wallets";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { supabaseConfig } from "@/lib/supabase/config";
@@ -25,7 +26,7 @@ export async function saveQuickExpense(
   const [account, category] = await Promise.all([
     client
       .from("accounts")
-      .select("id,currency")
+      .select("id,currency,account_type")
       .eq("user_id", user.id)
       .eq("id", fields.account_id)
       .maybeSingle(),
@@ -45,6 +46,10 @@ export async function saveQuickExpense(
   if (!account.data || !category.data)
     return {
       error: "Alege un cont și o categorie de cheltuieli care îți aparțin.",
+    };
+  if (!matchesPaymentMethod(account.data, fields.payment_method))
+    return {
+      error: "Alege contul Cash sau Card corespunzător metodei de plată.",
     };
   const payload = {
     id: request_id,
