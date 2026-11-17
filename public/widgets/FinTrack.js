@@ -83,7 +83,7 @@ widget.backgroundColor = Color.dynamic(
   new Color("F8FAFC"),
   new Color("111827"),
 );
-widget.setPadding(12, 12, 12, 12);
+widget.setPadding(10, 10, 10, 10);
 widget.url = SITE + "/budgets";
 widget.refreshAfterDate = new Date(Date.now() + 30 * 60 * 1000);
 const ink = Color.dynamic(new Color("0F172A"), new Color("F8FAFC"));
@@ -177,7 +177,7 @@ const header = widget.addStack();
 text(header, "FinTrack", 13, ink, true);
 header.addSpacer();
 text(header, "MDL", 10, muted, false);
-widget.addSpacer(8);
+widget.addSpacer(6);
 if (!data) {
   const t = widget.addText(message);
   t.font = Font.systemFont(12);
@@ -234,7 +234,7 @@ if (!data) {
       color,
       true,
     );
-    widget.addSpacer(2);
+    widget.addSpacer(1);
     text(
       widget,
       (negative
@@ -246,24 +246,24 @@ if (!data) {
       muted,
       false,
     );
-    widget.addSpacer(3);
+    widget.addSpacer(2);
     const width = family === "small" ? 110 : 250;
     const context = new DrawContext();
-    context.size = new Size(width, 3);
+    context.size = new Size(width, 2);
     context.opaque = false;
     context.setFillColor(
       Color.dynamic(new Color("CBD5E1"), new Color("334155")),
     );
-    context.fillRect(new Rect(0, 0, width, 3));
+    context.fillRect(new Rect(0, 0, width, 2));
     const ratio =
       b.remaining_percent === null
         ? 0
         : Math.max(0, Math.min(1, b.remaining_percent / 100));
     context.setFillColor(color);
-    if (ratio > 0) context.fillRect(new Rect(0, 0, width * ratio, 3));
+    if (ratio > 0) context.fillRect(new Rect(0, 0, width * ratio, 2));
     const image = widget.addImage(context.getImage());
-    image.imageSize = new Size(width, 3);
-    if (index < selected.length - 1) widget.addSpacer(7);
+    image.imageSize = new Size(width, 2);
+    if (index < selected.length - 1) widget.addSpacer(5);
   });
   widget.addSpacer();
   const date = new Date(data.updated_at);
