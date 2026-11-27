@@ -95,10 +95,15 @@ public struct BudgetClient {
         request.cachePolicy = .reloadIgnoringLocalCacheData
         request.setValue("Bearer " + token, forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        let (data, response) = try await session.data(for: request)
+        let data: Data
+        let response: URLResponse
+        do { (data, response) = try await session.data(for: request) }
+        catch { throw BudgetError.unavailable }
         guard let response = response as? HTTPURLResponse else { throw BudgetError.invalidResponse }
         switch response.statusCode {
-        case 200: return try BudgetSnapshot.decode(data)
+        case 200:
+            do { return try BudgetSnapshot.decode(data) }
+            catch { throw BudgetError.invalidResponse }
         case 401, 403: throw BudgetError.unauthorized
         case 429: throw BudgetError.rateLimited
         default: throw BudgetError.unavailable

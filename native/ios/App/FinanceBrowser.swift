@@ -19,11 +19,23 @@ final class BrowserModel: NSObject, ObservableObject, WKNavigationDelegate, WKDo
         webView.allowsBackForwardNavigationGestures = true
         webView.isOpaque = false
         webView.backgroundColor = .systemBackground
+        let content = webView.configuration.userContentController
+        content.add(PrintHandler(model: self), name: "fintrackPrint")
+        content.addUserScript(WKUserScript(source: "window.print = function () { window.webkit.messageHandlers.fintrackPrint.postMessage(null); };", injectionTime: .atDocumentEnd, forMainFrameOnly: true))
     }
     func navigate(_ url: URL) {
         guard FinTrack.isInternal(url), requestedURL != url else { return }
         requestedURL = url; error = nil
         webView.load(URLRequest(url: url))
+    }
+    func printReport() {
+        guard UIPrintInteractionController.isPrintingAvailable else { error = "Tipărirea nu este disponibilă pe acest dispozitiv."; return }
+        let controller = UIPrintInteractionController.shared
+        let info = UIPrintInfo(dictionary: nil); info.jobName = "Raport FinTrack"
+        controller.printInfo = info; controller.printFormatter = webView.viewPrintFormatter()
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            controller.present(from: CGRect(x: webView.bounds.midX, y: 0, width: 1, height: 1), in: webView, animated: true, completionHandler: nil)
+        } else { controller.present(animated: true, completionHandler: nil) }
     }
     func retry() {
         // A safe GET; never automatically replay a failed payment POST.
@@ -90,7 +102,7 @@ struct FinanceBrowser: View {
             }
             .navigationTitle("FinTrack").navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) { Button { if model.webView.canGoBack { model.webView.goBack() } } label: { Image(systemName: "chevron.backward") }.accessibilityLabel("Înapoi") }
+                ToolbarItem(placement: .topBarLeading) { Button { if model.webView.canGoBack { model.webView.goBack() } } label: { Image(systemName: "chevron.backward") }.accessibilityLabel("Înapoi").disabled(!model.webView.canGoBack) }
                 ToolbarItem(placement: .topBarTrailing) { Button { model.retry() } label: { Image(systemName: "arrow.clockwise") }.accessibilityLabel("Reîncarcă FinTrack") }
             }
             .onAppear { model.navigate(url) }
@@ -116,4 +128,15 @@ private struct ShareExport: UIViewControllerRepresentable {
         return controller
     }
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+@MainActor
+private final class PrintHandler: NSObject, WKScriptMessageHandler {
+    private weak var model: BrowserModel?
+    init(model: BrowserModel) { self.model = model }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.name == "fintrackPrint", message.frameInfo.isMainFrame,
+              message.frameInfo.securityOrigin.protocol == "https", message.frameInfo.securityOrigin.host == FinTrack.home.host else { return }
+        model?.printReport()
+    }
 }
