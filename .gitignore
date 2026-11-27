@@ -52,3 +52,16 @@ next-env.d.ts
 
 # Local Netlify linkage and build artifacts
 /.netlify/
+
+# Native iOS generated outputs and signing material
+/native/build/
+/native/dist/
+/native/ios/*.xcodeproj/
+/native/FinTrackCore/.build/
+/native/FinTrackCore/.swiftpm/
+/native/ios/Widget/Info.plist
+/native/ios/App/Info.plist
+*.mobileprovision
+*.p12
+*.xcuserstate
+xcuserdata/
