@@ -11,4 +11,5 @@ cp -R "$NATIVE_ROOT/build/Build/Products/Release-iphoneos/FinTrack.app" "$NATIVE
 cd "$NATIVE_ROOT/dist"
 /usr/bin/ditto -c -k --keepParent Payload FinTrack-unsigned.ipa
 shasum -a 256 FinTrack-unsigned.ipa > FinTrack-unsigned.ipa.sha256
+python3 "$NATIVE_ROOT/scripts/verify-ipa.py" "$NATIVE_ROOT/dist/FinTrack-unsigned.ipa"
 printf '%s\n' 'IPA nesemnat creat. Nu se instalează direct prin Safari; trebuie semnat înainte de instalare.'
